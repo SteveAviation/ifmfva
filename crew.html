@@ -1057,8 +1057,7 @@
     </div>
   </aside>
 
-  <script src="cloud-sync.js?v=20260823-cloud1"></script>
-  <script src="auth.js?v=20260823-cloud1"></script>
+  <script src="auth.js?v=20260823-passwordfix"></script>
   <script>
     (function () {
       "use strict";
@@ -1087,22 +1086,6 @@
       // ---------- Year ----------
       var y = document.getElementById("year");
       if (y) y.textContent = new Date().getFullYear();
-
-      // ---------- Cloud sync: pull latest data from GitHub on page load ----------
-      function cloudSyncAndRender() {
-        if (auth.syncFromCloud) {
-          auth.syncFromCloud().then(function (r) {
-            // Re-render after sync
-            if (typeof renderPIREPStatsAndRecent === "function") {
-              try { renderPIREPStatsAndRecent(); } catch (e) {}
-            }
-            // Re-render member list if admin
-            if (isAdmin && typeof renderMemberList === "function") {
-              try { renderMemberList(); } catch (e) {}
-            }
-          }).catch(function () {});
-        }
-      }
 
       // ---------- Render profile with SAFE placeholders when data is empty ----------
       var displayName = (grants && grants.displayName) || "Pilot Name";
@@ -1254,8 +1237,6 @@
         }
       }
       renderPIREPStatsAndRecent();
-      // Trigger cloud sync after initial render
-      cloudSyncAndRender();
 
       // Keep the neutral placeholder feel: never render raw credentials in a loud way.
       // If somehow the values are empty string, fall back again.
@@ -1598,135 +1579,6 @@
       }
 
       if (mmSection) mmSection.style.display = "";
-
-      // ============================================================
-      // CLOUD SYNC CONFIG (admin only)
-      // ============================================================
-      (function initCloudConfig() {
-        var cloud = window.MFVAcloud;
-        if (!cloud) return;
-
-        var container = document.createElement("section");
-        container.className = "card mm-section";
-        container.id = "cloudConfigPanel";
-        container.style.cssText = "grid-column: 1 / -1;";
-
-        var cfg = cloud.getConfig();
-        var repoInfo = cloud.getRepoInfo();
-        var hasToken = !!(cloud.getWriteToken && cloud.getWriteToken());
-        var statusText;
-        if (repoInfo && hasToken) {
-          statusText = '<span style="color:#16a34a; font-weight:600;">Active</span>';
-        } else if (repoInfo && !hasToken) {
-          statusText = '<span style="color:#d97706; font-weight:600;">No token (read-only)</span>';
-        } else {
-          statusText = '<span style="color:#dc2626; font-weight:600;">Not configured</span>';
-        }
-
-        container.innerHTML =
-          '<div class="mm-head">' +
-            '<h2 style="text-transform:none; font-size:22px; letter-spacing:-.01em; color:var(--ink);">' +
-              '<span style="display:inline-flex; align-items:center; gap:10px;">' +
-                '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="color:#4b5563;"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg>' +
-                'Cloud Sync (GitHub)' +
-              '</span>' +
-            '</h2>' +
-          '</div>' +
-          '<div style="padding:12px 0;">' +
-            '<div style="margin-bottom:8px;">Status: ' + statusText + '</div>' +
-            (repoInfo ? '<div style="font-size:13px; color:#4b5563; margin-bottom:8px;">Repo: ' + repoInfo.owner + '/' + repoInfo.repo + '</div>' : '') +
-            '<div style="font-size:13px; color:#4b5563; line-height:1.5; margin-bottom:12px;">' +
-              'When a token is set, all member applications and PIREPs sync to your GitHub repo. ' +
-              'Other devices can see registrations in real-time. ' +
-              (hasToken ? '' : '<br><br><strong style="color:#d97706;">To enable write access, embed your GitHub Token in cloud-sync.js (EMBEDDED_TOKEN variable).</strong>') +
-            '</div>' +
-            '<div style="display:flex; gap:8px; flex-wrap:wrap;">' +
-              '<button type="button" class="mm-btn" id="btnCloudConfig" style="background:#6366f1; color:#fff; border-color:#6366f1;">' + (cfg ? 'Edit Config' : 'Set Up Cloud Sync') + '</button>' +
-              (cfg ? '<button type="button" class="mm-btn mm-btn--danger" id="btnCloudClear">Remove Config</button>' : '') +
-              '<button type="button" class="mm-btn" id="btnCloudTest" style="background:#0369a1; color:#fff; border-color:#0369a1;">Test Connection</button>' +
-              '<button type="button" class="mm-btn" id="btnCloudSync" style="background:#16a34a; color:#fff; border-color:#16a34a;">Sync Now</button>' +
-            '</div>' +
-            '<div id="cloudStatus" style="margin-top:10px; font-size:13px; color:#4b5563;"></div>' +
-          '</div>';
-
-        // Insert before member management
-        if (mmSection && mmSection.parentNode) {
-          mmSection.parentNode.insertBefore(container, mmSection);
-        }
-
-        function setCloudStatus(msg, isError) {
-          var el = document.getElementById("cloudStatus");
-          if (el) {
-            el.innerHTML = msg;
-            el.style.color = isError ? "#dc2626" : "#16a34a";
-          }
-        }
-
-        // --- Config button ---
-        var btnCfg = document.getElementById("btnCloudConfig");
-        if (btnCfg) {
-          btnCfg.addEventListener("click", function () {
-            var existing = cloud.getConfig() || {};
-            var owner = prompt("GitHub owner (username):", existing.owner || "");
-            if (owner === null) return;
-            owner = String(owner).trim();
-            if (!owner) { alert("Owner is required."); return; }
-
-            var repo = prompt("Repo name:", existing.repo || "");
-            if (repo === null) return;
-            repo = String(repo).trim();
-            if (!repo) { alert("Repo name is required."); return; }
-
-            var token = prompt("Personal Access Token (fine-grained, Contents: Read+Write):\n\nLeave blank to keep existing token.", "");
-            if (token === null) return;
-            if (token === "") token = existing.token || "";
-
-            cloud.setConfig({ owner: owner, repo: repo, token: token });
-            alert("Cloud sync configured! Page will reload.");
-            location.reload();
-          });
-        }
-
-        // --- Clear config ---
-        var btnClear = document.getElementById("btnCloudClear");
-        if (btnClear) {
-          btnClear.addEventListener("click", function () {
-            if (!confirm("Remove cloud sync config? Data will stay local only.")) return;
-            cloud.clearConfig();
-            alert("Cloud config removed. Page will reload.");
-            location.reload();
-          });
-        }
-
-        // --- Test connection ---
-        var btnTest = document.getElementById("btnCloudTest");
-        if (btnTest) {
-          btnTest.addEventListener("click", function () {
-            setCloudStatus("Testing connection...", false);
-            cloud.testConnection().then(function (r) {
-              setCloudStatus("Connected to " + r.repo + " (private: " + r.private + ", write: " + r.canWrite + ")", false);
-            }).catch(function (e) {
-              setCloudStatus("Connection failed: " + e.message, true);
-            });
-          });
-        }
-
-        // --- Sync now ---
-        var btnSync = document.getElementById("btnCloudSync");
-        if (btnSync) {
-          btnSync.addEventListener("click", function () {
-            setCloudStatus("Syncing...", false);
-            auth.syncFromCloud().then(function (r) {
-              var msg = "Members: " + (r.members.synced ? r.members.count + " synced" : "failed (" + r.members.reason + ")") +
-                        " | PIREPs: " + (r.pireps.synced ? r.pireps.count + " synced" : "failed (" + r.pireps.reason + ")");
-              setCloudStatus(msg, !r.members.synced && !r.pireps.synced);
-              // Re-render
-              if (typeof renderPIREPStatsAndRecent === "function") try { renderPIREPStatsAndRecent(); } catch (e) {}
-              if (typeof renderMemberList === "function") try { renderMemberList(); } catch (e) {}
-            });
-          });
-        }
-      })();
 
       var btnAdd = document.getElementById("btnAddMember");
 

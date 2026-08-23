@@ -372,83 +372,6 @@
 
   function saveMembers(list) {
     storeSet(LS_MEMBERS, JSON.stringify(list));
-    // Cloud sync: push to GitHub if configured (fire-and-forget)
-    try {
-      var cloud = root.MFVAcloud;
-      if (cloud && cloud.hasConfig && cloud.hasConfig()) {
-        cloud.pushMembers(list, "Update members by " +
-          (currentUser() ? currentUser().email : "system"));
-      }
-    } catch (e) { /* swallow — localStorage is the fallback */ }
-  }
-
-  // ---- Cloud sync: pull from GitHub ----
-  function syncMembersFromCloud() {
-    var cloud = root.MFVAcloud;
-    if (!cloud || !cloud.hasConfig || !cloud.hasConfig()) {
-      return Promise.resolve({ synced: false, reason: "no_config" });
-    }
-    return cloud.fetchMembers().then(function (result) {
-      var cloudList = result.list || [];
-      var localList = [];
-      try { localList = JSON.parse(storeGet(LS_MEMBERS) || "[]"); } catch (e) {}
-
-      // Merge: cloud is source of truth, but always re-add seed admins
-      var merged = cloudList.slice();
-
-      // Ensure seed admins exist (they're hardcoded in source)
-      for (var s = 0; s < SEED_ADMINS.length; s++) {
-        var found = false;
-        for (var j = 0; j < merged.length; j++) {
-          if (normEmail(merged[j].email) === normEmail(SEED_ADMINS[s].email)) {
-            found = true; break;
-          }
-        }
-        if (!found) {
-          merged.unshift(Object.assign({}, SEED_ADMINS[s], {
-            password: simpleHash(SEED_ADMINS[s].password),
-            createdAt: nowISO(),
-            updatedAt: nowISO()
-          }));
-        }
-      }
-
-      storeSet(LS_MEMBERS, JSON.stringify(merged));
-      // Update cloud cache SHA for future writes
-      if (result.sha !== undefined) {
-        try { cloud._cache = cloud._cache || {}; } catch (e) {}
-      }
-      return { synced: true, count: merged.length };
-    }).catch(function (err) {
-      return { synced: false, reason: err.message };
-    });
-  }
-
-  function syncPirepsFromCloud() {
-    var cloud = root.MFVAcloud;
-    if (!cloud || !cloud.hasConfig || !cloud.hasConfig()) {
-      return Promise.resolve({ synced: false, reason: "no_config" });
-    }
-    return cloud.fetchPireps().then(function (result) {
-      var cloudList = result.list || [];
-      storeSet(LS_PIREPS, JSON.stringify(cloudList));
-      return { synced: true, count: cloudList.length };
-    }).catch(function (err) {
-      return { synced: false, reason: err.message };
-    });
-  }
-
-  // Full sync: call on page load
-  function syncFromCloud() {
-    return Promise.all([
-      syncMembersFromCloud(),
-      syncPirepsFromCloud()
-    ]).then(function (results) {
-      return {
-        members: results[0],
-        pireps: results[1]
-      };
-    });
   }
 
   function findMemberByEmail(email) {
@@ -1440,14 +1363,6 @@
   }
   function writePireps(list) {
     storeSet(LS_PIREPS, JSON.stringify(list || []));
-    // Cloud sync: push to GitHub if configured
-    try {
-      var cloud = root.MFVAcloud;
-      if (cloud && cloud.hasConfig && cloud.hasConfig()) {
-        cloud.pushPireps(list || [], "Update PIREPs by " +
-          (currentUser() ? currentUser().email : "system"));
-      }
-    } catch (e) { /* swallow */ }
   }
 
   function addPirep(data) {
@@ -1862,12 +1777,6 @@
     updatePirepStatus: updatePirepStatus,
     deletePirep: deletePirep,
     pirepStats: pirepStats,
-
-    // Cloud sync
-    syncFromCloud: syncFromCloud,
-    syncMembersFromCloud: syncMembersFromCloud,
-    syncPirepsFromCloud: syncPirepsFromCloud,
-
     // Internal helpers useful for UI
     _hmmToMin: hhmmToMinutes,
     _minToHmm: minutesToHHMM
