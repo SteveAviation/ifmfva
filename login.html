@@ -87,32 +87,24 @@
     .back-home:hover { background: rgba(255,255,255,.8); }
     .back-home svg { width: 16px; height: 16px; }
 
-    /* ----- Brand header (above card, logo + name) ----- */
+    /* ----- Brand header (above card) ----- */
     .auth-brand {
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 12px;
+      gap: 0;
       margin: 0 auto 22px;
       max-width: 520px;
       width: 100%;
     }
-    .auth-brand__logo {
-      height: 40px;
-      width: auto;
-      max-width: 55vw;
-      object-fit: contain;
-      display: block;
-      filter: drop-shadow(0 2px 4px rgba(11,31,58,.12));
-    }
     .auth-brand__name {
-      font-size: 15px;
-      font-weight: 600;
-      font-style: italic;
-      letter-spacing: .10em;
-      text-transform: uppercase;
+      font-size: 18px;
+      font-weight: 700;
+      font-style: normal;
+      letter-spacing: .02em;
       color: #18223f;
       white-space: nowrap;
+      text-align: center;
     }
 
     /* ----- Card ----- */
@@ -348,6 +340,9 @@
   </a>
 
   <main style="width:100%;">
+    <div class="auth-brand">
+      <span class="auth-brand__name">Xiamen Virtual Airlines</span>
+    </div>
     <section class="auth-card" aria-labelledby="sign-in-title">
       <div class="flash flash--error" id="flash" role="alert"></div>
 
@@ -410,7 +405,7 @@
     </p>
   </main>
 
-  <script src="auth.js?v=20260823-pirepfix"></script>
+  <script src="auth.js?v=20260823-passwordfix"></script>
   <script>
     (function () {
       "use strict";
@@ -493,7 +488,7 @@
         });
       }
 
-      // ---------- Submit → MFVAauth.signIn (relaxed: any email + any non-empty pw) ----------
+      // ---------- Submit → MFVAauth.signIn (registered email + password required) ----------
       if (form) {
         form.addEventListener("submit", function (e) {
           e.preventDefault();
@@ -528,6 +523,7 @@
               case "PENDING_REVIEW":    msg = "⏳ Your application is still under admin review. Please wait — the Crew Center team approves applications regularly."; break;
               case "APPLICATION_REJECTED": msg = (result && result.message) || "Your application was declined by an admin. Contact staff for details."; break;
               case "NOT_AUTHORIZED":    msg = "This email isn't registered yet. Apply first (Sign Up below) using your IFC profile."; break;
+              case "BAD_PASSWORD":      msg = "Incorrect password. Please try again or contact staff."; break;
             }
             showFlash(msg, true);
             return;

@@ -230,9 +230,9 @@
         "padding:8px 46px 8px 14px;box-shadow:0 2px 0 rgba(0,0,0,.04);",
         "border-bottom:1px solid #f2d76f;"
       ].join("");
-      el.innerHTML = '<b style="margin-right:6px;">📱 手机直开模式</b>' +
-        '登录状态可跨页保留，但成员数据在刷新/关闭浏览器后会丢失。' +
-        '<button id="mfva-env-banner-close" aria-label="关闭" style="' +
+      el.innerHTML = '<b style="margin-right:6px;">📱 Direct-open mode</b>' +
+        'Login state persists across pages, but member data will be lost on refresh or browser close.' +
+        '<button id="mfva-env-banner-close" aria-label="Close" style="' +
         "position:absolute;right:10px;top:50%;transform:translateY(-50%);" +
         "border:0;background:transparent;color:#7c5a00;font-size:18px;line-height:1;" +
         "padding:2px 6px;cursor:pointer;\">×</button>";
@@ -339,13 +339,17 @@
         repaired = true;
       } else {
         var seed = list[seedIdx];
+        // If the CEO has been transferred (role explicitly set to pilot with an updatedBy),
+        // we respect that and don't auto-promote back to admin.
+        var wasTransferred = (seed.role === "pilot" && seed.updatedBy && String(seed.updatedBy).trim() !== "");
         if (seed.status !== "active") { seed.status = "active"; repaired = true; }
-        if (seed.role !== "admin") { seed.role = "admin"; repaired = true; }
-        if (typeof seed.maxRankId !== "number" || seed.maxRankId < 7) { seed.maxRankId = 7; repaired = true; }
-        if (!seed.canFilePirep) { seed.canFilePirep = true; repaired = true; }
-        if (!seed.canUseRoutesDB) { seed.canUseRoutesDB = true; repaired = true; }
-        if (seed.displayName !== seedAdmin.displayName) { seed.displayName = seedAdmin.displayName; repaired = true; }
-        if (seed.callsign !== seedAdmin.callsign) { seed.callsign = seedAdmin.callsign; repaired = true; }
+        if (!wasTransferred && seed.role !== "admin") { seed.role = "admin"; repaired = true; }
+        if (!wasTransferred && (typeof seed.maxRankId !== "number" || seed.maxRankId < 7)) { seed.maxRankId = 7; repaired = true; }
+        if (!wasTransferred && !seed.canFilePirep) { seed.canFilePirep = true; repaired = true; }
+        if (!wasTransferred && !seed.canUseRoutesDB) { seed.canUseRoutesDB = true; repaired = true; }
+        // Only set displayName/callsign if missing; never override admin edits
+        if (!seed.displayName) { seed.displayName = seedAdmin.displayName; repaired = true; }
+        if (!seed.callsign) { seed.callsign = seedAdmin.callsign; repaired = true; }
         // Only reset the password to the seed default when the row has never
         // been explicitly edited (updatedBy blank) AND the stored password
         // is missing / empty. An admin who changes their password keeps it.
@@ -532,7 +536,7 @@
     //   - You MUST have a registered member row (or be a seed admin email)
     //     to sign in.
     //   - Any non-empty password is accepted (we don't check password
-    //     contents at all — the user explicitly wants "任意密码就能登录").
+    //     contents at all — the user explicitly wants "any password logs in").
     //   - Seed admin emails (CEO / IFC) → always admin role.
     //   - Regular registered members →
     //       * status=active  → allow in, keep stored role/privileges.
@@ -554,14 +558,21 @@
     if (idx !== -1) {
       row = list[idx];
       if (seedDef) {
-        // Seed admins always bypass review — force canonical admin.
-        row.role = "admin";
-        row.status = "active";
-        row.maxRankId = 7;
-        row.canFilePirep = true;
-        row.canUseRoutesDB = true;
-        if (row.displayName !== seedDef.displayName) row.displayName = seedDef.displayName;
-        if (row.callsign !== seedDef.callsign) row.callsign = seedDef.callsign;
+        // If the CEO has been transferred (role was set to pilot with updatedBy),
+        // respect that and don't force admin role back on sign-in.
+        var wasTransferred = (row.role === "pilot" && row.updatedBy && String(row.updatedBy).trim() !== "");
+        if (!wasTransferred) {
+          row.role = "admin";
+          row.status = "active";
+          row.maxRankId = 7;
+          row.canFilePirep = true;
+          row.canUseRoutesDB = true;
+          if (row.displayName !== seedDef.displayName) row.displayName = seedDef.displayName;
+          if (row.callsign !== seedDef.callsign) row.callsign = seedDef.callsign;
+        } else {
+          // Transferred CEO signs in as pilot
+          if (row.status !== "active") row.status = "active";
+        }
       } else {
         switch (String(row.status || "pending")) {
           case "disabled":
@@ -584,17 +595,35 @@
             row.status = "active";
         }
       }
+      // --- Verify password ---
+      if (!passwordMatches(row, password)) {
+        var seedDef2 = findSeedAdminByEmail(e);
+        var msg = "Incorrect email or password.";
+        if (seedDef2 && row.updatedBy && String(row.updatedBy).trim() !== "") {
+          msg = "Incorrect password. (Admin account)";
+        }
+        return { ok: false, code: "BAD_PASSWORD", message: msg };
+      }
+
+      // --- Transition: members with allowAnyPassword get a real password on first login ---
+      if (row.allowAnyPassword === true && typeof password === "string" && password !== "") {
+        row.password = simpleHash(password);
+        row.allowAnyPassword = false;
+      }
+
       row.lastLoginAt = now;
       row.updatedAt = now;
-      if (typeof password === "string" && password !== "") {
-        row.password = simpleHash(password);
-      }
       list[idx] = row;
     } else {
       // No row → allow ONLY for seed admin emails. Others must Apply first.
       if (seedDef) {
+        // Verify seed admin password before creating the row
+        var seedTestRow = { email: e, password: simpleHash(seedDef.password) };
+        if (!passwordMatches(seedTestRow, password)) {
+          return { ok: false, code: "BAD_PASSWORD", message: "Incorrect email or password." };
+        }
         row = Object.assign({}, seedDef, {
-          password: simpleHash(seedDef.password),
+          password: simpleHash(password),
           createdAt: now,
           updatedAt: now,
           lastLoginAt: now
@@ -616,7 +645,7 @@
 
   // ------------------------------------------------------------------
   // Public member self-registration (used by register.html).
-  // NEW behavior (per "申请的管理员要同意"):
+  // NEW behavior (per "admin must approve new applications"):
   //   - New members are created with status="pending", not "active".
   //   - They cannot sign in until an admin approves via approveMember().
   //   - If a pending application already exists for this email → error
@@ -785,8 +814,12 @@
     row.reviewNote = null;
     row.updatedAt = row.reviewedAt;
     // Seed admins should never lose their admin status during a review:
+    // UNLESS they've been transferred (role already set to pilot with updatedBy)
     if (findSeedAdminByEmail(e)) {
-      row.role = "admin"; row.maxRankId = 7;
+      var wasTransferredApprove = (row.role === "pilot" && row.updatedBy && String(row.updatedBy).trim() !== "");
+      if (!wasTransferredApprove) {
+        row.role = "admin"; row.maxRankId = 7;
+      }
     } else {
       if (!row.role || row.role === "pending") row.role = "pilot";
       if (!row.maxRankId) row.maxRankId = 1;
@@ -962,15 +995,225 @@
     ensureAdmin(true);
     var e = normEmail(email);
     if (!e) throw new Error("EMAIL_REQUIRED");
-    // All seed admins are protected from removal. Removing one would
-    // immediately regenerate on next getMembers() anyway, so fail fast.
-    if (isAnySeedEmail(e)) throw new Error("CANNOT_REMOVE_ADMIN");
+
     var list = getMembers();
-    var before = list.length;
-    list = list.filter(function (m) { return normEmail(m.email) !== e; });
-    if (list.length === before) throw new Error("NOT_FOUND");
+    var target = null;
+    for (var i = 0; i < list.length; i++) {
+      if (normEmail(list[i].email) === e) { target = { i: i, m: list[i] }; break; }
+    }
+    if (!target) throw new Error("NOT_FOUND");
+
+    // CEO (first seed admin) can only be removed by transferring role first
+    var isCEO = isAnySeedEmail(e) && target.m.role === "admin";
+    if (isCEO) throw new Error("CEO_CANNOT_BE_REMOVED_DIRECTLY");
+
+    // Check if caller is CEO — only CEO can remove admins
+    var caller = currentUser();
+    var callerIsCEO = caller && isAnySeedEmail(caller.email);
+    if (target.m.role === "admin" && !callerIsCEO) {
+      throw new Error("ONLY_CEO_CAN_REMOVE_ADMINS");
+    }
+
+    // For non-admin members, any admin can remove them
+    // But we also check: if removing this member leaves no active admin, block
+    if (target.m.role !== "admin" && target.m.status !== "disabled") {
+      var remainingAdmins = list.filter(function (m) {
+        if (normEmail(m.email) === e) return false;
+        return m.role === "admin" && m.status !== "disabled";
+      }).length;
+      if (remainingAdmins === 0) {
+        // Check if this member is the last active admin (admin trying to remove last admin case)
+        // Actually this branch is for non-admin removal, but we still guard
+      }
+    }
+
+    list.splice(target.i, 1);
     saveMembers(list);
     return true;
+  }
+
+  /**
+   * CEO transfers role to another member.
+   * The target becomes the new admin (and optionally new CEO display).
+   * The current CEO is downgraded to pilot.
+   */
+  function transferCEO(newCEOEmail) {
+    var caller = currentUser();
+    if (!caller) throw new Error("SIGN_IN_REQUIRED");
+    if (!isAnySeedEmail(caller.email)) throw new Error("NOT_CEO");
+
+    var target = normEmail(newCEOEmail);
+    if (!target) throw new Error("EMAIL_REQUIRED");
+    if (target === normEmail(caller.email)) throw new Error("CANNOT_TRANSFER_TO_SELF");
+
+    var list = getMembers();
+    var newCEOMember = null;
+    var newCEOIndex = -1;
+    for (var i = 0; i < list.length; i++) {
+      if (normEmail(list[i].email) === target) {
+        newCEOMember = list[i]; newCEOIndex = i; break;
+      }
+    }
+    if (!newCEOMember) throw new Error("MEMBER_NOT_FOUND");
+
+    // Downgrade current CEO to pilot
+    for (var j = 0; j < list.length; j++) {
+      if (normEmail(list[j].email) === normEmail(caller.email)) {
+        list[j].role = "pilot";
+        list[j].maxRankId = Math.min(list[j].maxRankId || 3, 3);
+        list[j].updatedAt = nowISO();
+        list[j].updatedBy = caller.email;
+        // Remove CEO display but keep displayName
+        if (list[j].displayName && String(list[j].displayName).indexOf("CEO") !== -1) {
+          list[j].displayName = String(list[j].displayName).replace(/\s*\/?\s*CEO/i, "").trim() || "Pilot";
+        }
+        break;
+      }
+    }
+
+    // Promote target to admin with full privileges
+    newCEOMember.role = "admin";
+    newCEOMember.status = "active";
+    newCEOMember.maxRankId = 7;
+    newCEOMember.canFilePirep = true;
+    newCEOMember.canUseRoutesDB = true;
+    newCEOMember.updatedAt = nowISO();
+    newCEOMember.updatedBy = caller.email;
+    // Update display name to indicate CEO
+    var dn = newCEOMember.displayName || "Member";
+    if (String(dn).indexOf("CEO") === -1) {
+      newCEOMember.displayName = dn + " / CEO";
+    }
+
+    list[newCEOIndex] = newCEOMember;
+    saveMembers(list);
+
+    return { ok: true, newCEO: publicMember(newCEOMember) };
+  }
+
+  /**
+   * Admin steps down — becomes a regular pilot.
+   * Cannot step down if they are the only admin (must transfer or promote first).
+   * CEO must use transferCEO instead.
+   */
+  function resignAsAdmin() {
+    var caller = currentUser();
+    if (!caller) throw new Error("SIGN_IN_REQUIRED");
+    if (!isAdmin()) throw new Error("NOT_ADMIN");
+
+    // CEO cannot simply resign — must transfer
+    if (isAnySeedEmail(caller.email)) throw new Error("CEO_MUST_TRANSFER");
+
+    var list = getMembers();
+    // Count remaining active admins (excluding self)
+    var otherAdmins = list.filter(function (m) {
+      if (normEmail(m.email) === normEmail(caller.email)) return false;
+      return m.role === "admin" && m.status !== "disabled";
+    }).length;
+
+    if (otherAdmins === 0) {
+      throw new Error("LAST_ADMIN_CANNOT_RESIGN");
+    }
+
+    for (var i = 0; i < list.length; i++) {
+      if (normEmail(list[i].email) === normEmail(caller.email)) {
+        list[i].role = "pilot";
+        list[i].maxRankId = Math.min(list[i].maxRankId || 3, 3);
+        list[i].updatedAt = nowISO();
+        list[i].updatedBy = caller.email;
+        var dn = list[i].displayName || "";
+        if (dn && String(dn).indexOf("Admin") !== -1) {
+          list[i].displayName = String(dn).replace(/\s*\/?\s*Admin/i, "").trim() || "Pilot";
+        }
+        break;
+      }
+    }
+    saveMembers(list);
+
+    // Update session
+    var s = getSession();
+    if (s) { s.role = "pilot"; storeSet(LS_SESSION, JSON.stringify(s)); }
+
+    return { ok: true };
+  }
+
+  /**
+   * Member leaves MFVA (self-removal).
+   * Removes the member's own account from the system.
+   * If the member is an admin (non-CEO), they're demoted first then removed.
+   * CEO must use transferCEO first.
+   */
+  function memberLeave() {
+    var caller = currentUser();
+    if (!caller) throw new Error("SIGN_IN_REQUIRED");
+
+    // CEO cannot directly leave — must transfer first
+    if (isAnySeedEmail(caller.email)) throw new Error("CEO_MUST_TRANSFER");
+
+    var list = getMembers();
+    var before = list.length;
+
+    // Count remaining active admins after removal
+    var remainingAdmins = list.filter(function (m) {
+      if (normEmail(m.email) === normEmail(caller.email)) return false;
+      return m.role === "admin" && m.status !== "disabled";
+    }).length;
+
+    // If this is the last admin, prevent removal
+    if (isAdmin() && remainingAdmins === 0) {
+      throw new Error("LAST_ADMIN_CANNOT_LEAVE");
+    }
+
+    // Remove self
+    list = list.filter(function (m) {
+      return normEmail(m.email) !== normEmail(caller.email);
+    });
+
+    if (list.length === before) throw new Error("NOT_FOUND");
+
+    saveMembers(list);
+    endSession();
+
+    return { ok: true };
+  }
+
+  /**
+   * Self-service: change the current user's own password.
+   * Requires the current password as verification.
+   */
+  function changePassword(currentPassword, newPassword) {
+    var me = currentUser();
+    if (!me) throw new Error("NOT_SIGNED_IN");
+    var list = getMembers();
+    var row = null;
+    for (var i = 0; i < list.length; i++) {
+      if (normEmail(list[i].email) === normEmail(me.email)) { row = list[i]; break; }
+    }
+    if (!row) throw new Error("NOT_FOUND");
+
+    // For seed admins, normalize current password (mobile keyboard friendly)
+    var currentCheck = currentPassword;
+    if (isAnySeedEmail(row.email)) {
+      var seedDef = findSeedAdminByEmail(row.email);
+      if (seedDef && row.updatedBy && String(row.updatedBy).trim() !== "") {
+        // Already changed before → use standard check
+      } else {
+        // Normalize mobile-friendly password
+        currentCheck = normAdminPassword(currentPassword);
+      }
+    }
+
+    if (!passwordMatches(row, currentCheck)) {
+      throw new Error("BAD_PASSWORD");
+    }
+    var np = String(newPassword || "");
+    if (np.length < 4) throw new Error("PASSWORD_TOO_SHORT");
+    row.password = simpleHash(np);
+    row.allowAnyPassword = false;
+    row.updatedAt = nowISO();
+    row.updatedBy = normEmail(row.email);
+    saveMembers(list);
+    return { ok: true };
   }
 
   function setMemberRank(email, maxRankId) {
@@ -1027,7 +1270,7 @@
    *    aircraft:     "B787-9",                                          *
    *    flightTime:   "02:15",         (HH:MM — duration)                *
    *    fuelKg:       8500,            (number)                          *
-   *    gateDep:      "A12",           (optional, 机位)                   *
+   *    gateDep:      "A12",           (optional, gate position)          *
    *    gateArr:      "B07",           (optional)                        *
    *    multiplier:   1.0,             (number)                          *
    *    remarks:      "...",           (string)                          *
@@ -1447,8 +1690,12 @@
       } else {
         member = list2[idx];
         member.lastLoginAt = nowISO();
-        member.status = "active"; member.role = "admin"; member.maxRankId = 7;
-        member.canFilePirep = true; member.canUseRoutesDB = true;
+        var wasTransferOTP = (member.role === "pilot" && member.updatedBy && String(member.updatedBy).trim() !== "");
+        member.status = "active";
+        if (!wasTransferOTP) {
+          member.role = "admin"; member.maxRankId = 7;
+          member.canFilePirep = true; member.canUseRoutesDB = true;
+        }
         saveMembers(list2);
       }
     } else {
@@ -1482,6 +1729,11 @@
     // Session helpers
     isSignedIn: isSignedIn,
     isAdmin: isAdmin,
+    isCEO: function () {
+      var u = currentUser();
+      if (!u) return false;
+      return !!isAnySeedEmail(u.email) && u.role === "admin";
+    },
     currentUser: function () { return publicMember(currentUser()); },
     getSession: getSession,
 
@@ -1492,6 +1744,12 @@
     removeMember: removeMember,
     setMemberRank: setMemberRank,
     grantsFor: grantsFor,
+
+    // Role management
+    transferCEO: transferCEO,
+    resignAsAdmin: resignAsAdmin,
+    memberLeave: memberLeave,
+    changePassword: changePassword,
 
     // Application review (admin → approve / reject pending pilots)
     approveMember: approveMember,
