@@ -87,32 +87,24 @@
     .back-home:hover { background: rgba(255,255,255,.8); }
     .back-home svg { width: 16px; height: 16px; }
 
-    /* ----- Brand header (above card, logo + name) ----- */
+    /* ----- Brand header (above card) ----- */
     .auth-brand {
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 12px;
+      gap: 0;
       margin: 0 auto 22px;
       max-width: 520px;
       width: 100%;
     }
-    .auth-brand__logo {
-      height: 40px;
-      width: auto;
-      max-width: 55vw;
-      object-fit: contain;
-      display: block;
-      filter: drop-shadow(0 2px 4px rgba(11,31,58,.12));
-    }
     .auth-brand__name {
-      font-size: 15px;
-      font-weight: 600;
-      font-style: italic;
-      letter-spacing: .10em;
-      text-transform: uppercase;
+      font-size: 18px;
+      font-weight: 700;
+      font-style: normal;
+      letter-spacing: .02em;
       color: #18223f;
       white-space: nowrap;
+      text-align: center;
     }
 
     /* ----- Card ----- */
@@ -348,6 +340,9 @@
   </a>
 
   <main style="width:100%;">
+    <div class="auth-brand">
+      <span class="auth-brand__name">Xiamen Virtual Airlines</span>
+    </div>
     <section class="auth-card" aria-labelledby="sign-in-title">
       <div class="flash flash--error" id="flash" role="alert"></div>
 
@@ -410,7 +405,7 @@
     </p>
   </main>
 
-  <script src="auth.js?v=20260823-pirepfix"></script>
+  <script src="auth.js?v=20260823-origlogo"></script>
   <script>
     (function () {
       "use strict";

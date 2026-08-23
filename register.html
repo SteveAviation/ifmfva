@@ -398,7 +398,7 @@
     </section>
   </div>
 
-  <script src="auth.js?v=20260823-pirepfix"></script>
+  <script src="auth.js?v=20260823-origlogo"></script>
   <script>
     (function () {
       "use strict";
@@ -493,7 +493,7 @@
           }
 
           // Success → application pending review.
-          // Per user rule "申请的管理员要同意": new pilots start as pending
+          // Per user rule "admin must approve": new pilots start as pending
           // and cannot sign in until an admin clicks Approve in the CC.
           var handle = ((result.user && (result.user.callsign || result.user.displayName)) || "Pilot");
           showFlash(

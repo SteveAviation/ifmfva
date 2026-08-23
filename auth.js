@@ -230,9 +230,9 @@
         "padding:8px 46px 8px 14px;box-shadow:0 2px 0 rgba(0,0,0,.04);",
         "border-bottom:1px solid #f2d76f;"
       ].join("");
-      el.innerHTML = '<b style="margin-right:6px;">📱 手机直开模式</b>' +
-        '登录状态可跨页保留，但成员数据在刷新/关闭浏览器后会丢失。' +
-        '<button id="mfva-env-banner-close" aria-label="关闭" style="' +
+      el.innerHTML = '<b style="margin-right:6px;">📱 Direct-open mode</b>' +
+        'Login state persists across pages, but member data will be lost on refresh or browser close.' +
+        '<button id="mfva-env-banner-close" aria-label="Close" style="' +
         "position:absolute;right:10px;top:50%;transform:translateY(-50%);" +
         "border:0;background:transparent;color:#7c5a00;font-size:18px;line-height:1;" +
         "padding:2px 6px;cursor:pointer;\">×</button>";
@@ -344,8 +344,9 @@
         if (typeof seed.maxRankId !== "number" || seed.maxRankId < 7) { seed.maxRankId = 7; repaired = true; }
         if (!seed.canFilePirep) { seed.canFilePirep = true; repaired = true; }
         if (!seed.canUseRoutesDB) { seed.canUseRoutesDB = true; repaired = true; }
-        if (seed.displayName !== seedAdmin.displayName) { seed.displayName = seedAdmin.displayName; repaired = true; }
-        if (seed.callsign !== seedAdmin.callsign) { seed.callsign = seedAdmin.callsign; repaired = true; }
+        // Only set displayName/callsign if missing; never override admin edits
+        if (!seed.displayName) { seed.displayName = seedAdmin.displayName; repaired = true; }
+        if (!seed.callsign) { seed.callsign = seedAdmin.callsign; repaired = true; }
         // Only reset the password to the seed default when the row has never
         // been explicitly edited (updatedBy blank) AND the stored password
         // is missing / empty. An admin who changes their password keeps it.
@@ -532,7 +533,7 @@
     //   - You MUST have a registered member row (or be a seed admin email)
     //     to sign in.
     //   - Any non-empty password is accepted (we don't check password
-    //     contents at all — the user explicitly wants "任意密码就能登录").
+    //     contents at all — the user explicitly wants "any password logs in").
     //   - Seed admin emails (CEO / IFC) → always admin role.
     //   - Regular registered members →
     //       * status=active  → allow in, keep stored role/privileges.
@@ -616,7 +617,7 @@
 
   // ------------------------------------------------------------------
   // Public member self-registration (used by register.html).
-  // NEW behavior (per "申请的管理员要同意"):
+  // NEW behavior (per "admin must approve new applications"):
   //   - New members are created with status="pending", not "active".
   //   - They cannot sign in until an admin approves via approveMember().
   //   - If a pending application already exists for this email → error
@@ -1027,7 +1028,7 @@
    *    aircraft:     "B787-9",                                          *
    *    flightTime:   "02:15",         (HH:MM — duration)                *
    *    fuelKg:       8500,            (number)                          *
-   *    gateDep:      "A12",           (optional, 机位)                   *
+   *    gateDep:      "A12",           (optional, gate position)          *
    *    gateArr:      "B07",           (optional)                        *
    *    multiplier:   1.0,             (number)                          *
    *    remarks:      "...",           (string)                          *

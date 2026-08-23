@@ -973,7 +973,7 @@
         <button type="button" class="mm-btn mm-btn--ghost" id="mmCancelBtn">Cancel</button>
         <button type="button" class="mm-btn" id="mmSaveBtn">Save Member</button>
       </div>
-      <!-- 保存结果 → 给用户肉眼可见的证据：密码是否真的写入 storage、写入的哈希、updatedBy 是谁 -->
+      <!-- Save result: show user visible evidence: password hash, updatedBy, etc. -->
       <div class="mm-save-diagnostic" id="mmSaveDiagnostic"
            style="display:none;margin:12px 20px 20px;padding:12px 14px;border:1px solid #c7e4d6;border-radius:10px;background:#f1fbf5;color:#14532d;font-size:12.5px;line-height:1.55;letter-spacing:.01em;">
       </div>
@@ -1057,7 +1057,7 @@
     </div>
   </aside>
 
-  <script src="auth.js?v=20260823-pirepfix"></script>
+  <script src="auth.js?v=20260823-origlogo"></script>
   <script>
     (function () {
       "use strict";
@@ -1119,7 +1119,7 @@
       function renderPIREPStatsAndRecent() {
         try {
           var pilotEmail = email || null;
-          var useAllForView = isAdmin ? false : true; // admin 仪表盘的自己数字部分（个人）也看自己的
+          var useAllForView = isAdmin ? false : true; // admin dashboard shows own stats
           var stats = auth.pirepStats(pilotEmail);
           var recent = auth.listPireps(isAdmin ? null : { pilotEmail: pilotEmail });
 
@@ -1146,14 +1146,14 @@
             }
           }
 
-          // ---- Rank progress 重算 ----
+          // ---- Rank progress recalculation ----
           var ranks = auth.rankLadder();
           var curRank = auth.rankById(maxRankId) || ranks[0];
           var nextRank = null;
           for (var rri = 0; rri < ranks.length; rri++) {
             if (ranks[rri].id === maxRankId) { nextRank = ranks[rri + 1] || null; break; }
           }
-          // 每个等级所需小时数：按简单递增（TSO→SO 10h，逐级增加）
+          // Hours required per rank step (increasing: TSO->SO 10h, etc.)
           var HOURS_PER_STEP = [ 600, 1200, 2100, 3600, 5400, 8400 ]; // min: 10h / 20h / 35h / 60h / 90h / 140h
           var stepIndex = Math.max(0, Math.min(HOURS_PER_STEP.length - 1, (maxRankId || 1) - 1));
           var requiredMin = nextRank ? HOURS_PER_STEP[stepIndex] : 0;
@@ -1226,7 +1226,7 @@
             }
           }
         } catch (e) {
-          // 任何 PIREP 统计 UI 失败不能让其他 UI 崩掉
+          // PIREP stats UI failure must not crash other UI
           try {
             var tbodies = document.querySelectorAll(".card.flights tbody");
             for (var ii = 0; ii < tbodies.length; ii++) {
@@ -1376,25 +1376,8 @@
       var mmSection = document.getElementById("memberMgmt");
       var mmBody = document.getElementById("mmBody");
       if (!isAdmin) {
-        // Don't silently hide — show the panel with a clear diagnostic so
-        // the admin knows *why* members are not rendering.
-        if (mmSection) mmSection.style.display = "";
-        if (mmBody) {
-          var meInfo = me || {};
-          mmBody.innerHTML =
-            '<div class="mm-empty" style="padding:24px 20px; text-align:left; border:1px solid #fecaca; background:#fff1f2; color:#991b1b;">' +
-              '<div style="font-size:15px; font-weight:700; margin-bottom:6px;">🔒 Member Management is hidden because this account is not an Admin.</div>' +
-              '<div style="font-size:13px; line-height:1.6; opacity:.92;">' +
-                '当前登录账号：<b style="color:#7f1d1d;">' +
-                  ((meInfo && meInfo.email) ? String(meInfo.email).replace(/[&<>]/g, "") : "(未识别)") +
-                '</b><br>' +
-                '当前角色 (role)：<b>' + ((meInfo && meInfo.role) ? String(meInfo.role).replace(/[&<>]/g, "") : "(空)") + '</b>　（需要值为 <code>admin</code>）<br>' +
-                '解决方法：<br>' +
-                '　1) 退出当前账号，使用管理员邮箱登录：<b>3689442439@qq.com</b> 或 <b>G6082@outlook.com</b>（任意密码即可）<br>' +
-                '　2) 如果当前邮箱本应是管理员，请在 localStorage 的 <code>mfva_members</code> 中确认该账号的 <code>role</code> 字段等于 <code>"admin"</code> 且 <code>status</code> 等于 <code>"active"</code>。' +
-              '</div>' +
-            '</div>';
-        }
+        // Regular members cannot see Member Management at all
+        if (mmSection) mmSection.style.display = "none";
         return;
       }
 
@@ -1795,7 +1778,7 @@
           auth.upsertMember(patch, (me && me.email) || "admin");
           renderMembers();
 
-          // ---------- 保存成功 → 把 storage 里实际存的值 dump 出来给用户看 ----------
+          // ---------- Save success: dump stored values for verification ----------
           var diagHtml = '';
           var pwChanged = false;   // declared here so setTimeout closeDelay can read it
           try {
@@ -1814,24 +1797,25 @@
               var plaintextLen = (typeof password === "string" && password !== "") ? password.length : null;
               var pwChanged = (plaintextLen !== null);
               diagHtml =
-                '<div style="font-weight:600;margin-bottom:6px;">✅ 保存成功。已写入 localStorage 的真实内容：</div>' +
+                '<div style="font-weight:600;margin-bottom:6px;">✅ Saved. Values written to localStorage:</div>' +
                 '<div style="margin:2px 0;"><span style="opacity:.7;">email:</span> <b style="color:#065f46;">' + escapeHtml(saved.email) + '</b></div>' +
+                '<div style="margin:2px 0;"><span style="opacity:.7;">displayName:</span> <b>' + escapeHtml(saved.displayName || "") + '</b> &nbsp;·&nbsp; <span style="opacity:.7;">callsign:</span> <b>' + escapeHtml(saved.callsign || "") + '</b></div>' +
                 '<div style="margin:2px 0;"><span style="opacity:.7;">role:</span> <b>' + escapeHtml(saved.role || "") + '</b> &nbsp;·&nbsp; <span style="opacity:.7;">status:</span> <b>' + escapeHtml(saved.status || "") + '</b> &nbsp;·&nbsp; <span style="opacity:.7;">maxRankId:</span> <b>' + saved.maxRankId + '</b></div>' +
-                '<div style="margin:2px 0;"><span style="opacity:.7;">updatedBy（谁改的）:</span> <b style="color:#065f46;">' + escapeHtml(saved.updatedBy || "") + '</b> &nbsp;·&nbsp; <span style="opacity:.7;">updatedAt:</span> ' + escapeHtml(saved.updatedAt || "") + '</div>' +
+                '<div style="margin:2px 0;"><span style="opacity:.7;">updatedBy:</span> <b style="color:#065f46;">' + escapeHtml(saved.updatedBy || "") + '</b> &nbsp;·&nbsp; <span style="opacity:.7;">updatedAt:</span> ' + escapeHtml(saved.updatedAt || "") + '</div>' +
                 (pwChanged ?
                   ('<div style="margin:4px 0 2px;padding:8px 10px;background:#ecfdf5;border:1px solid #a7f3d0;border-radius:8px;">' +
-                    '<div style="margin-bottom:3px;"><span style="opacity:.85;">🔐 密码已保存。明文长度 <b>' + plaintextLen + '</b> 字符。存储的密码哈希值（DJB2,不可逆）：</span></div>' +
+                    '<div style="margin-bottom:3px;"><span style="opacity:.85;">🔐 Password saved. Plaintext length <b>' + plaintextLen + '</b> chars. Stored hash (DJB2, irreversible):</span></div>' +
                     '<div style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12.5px;letter-spacing:.03em;word-break:break-all;color:#083344;">' + escapeHtml(saved.password || "(EMPTY)") + '</div>' +
-                    '<div style="margin-top:4px;opacity:.85;">📒 下次登出后，只能用这个 <b>新密码</b> 登录；源代码里的默认 ashy********. 会自动锁死（直到你把密码改回那个值）。</div>' +
+                    '<div style="margin-top:4px;opacity:.85;">📒 After signing out, you must use this <b>new password</b> to log in; the default ashy********. will be locked out.</div>' +
                   '</div>')
                   :
-                  ('<div style="margin-top:2px;opacity:.86;">Password 字段这次是空白，所以 <b>保持原来的密码哈希不变</b>（上面 updatedBy 仍然标记是谁最后一次修改了这个成员的任意字段）。</div>')
+                  ('<div style="margin-top:2px;opacity:.86;">Password field was left blank, so the <b>existing password hash is kept unchanged</b>.</div>')
                 );
             } else {
-              diagHtml = '<div style="color:#b91c1c;">⚠ 保存成功但在 localStorage 中找不到 ' + escapeHtml(email) + ' 行，请刷新页面再试。</div>';
+              diagHtml = '<div style="color:#b91c1c;">⚠ Saved but could not find ' + escapeHtml(email) + ' in localStorage. Please refresh and try again.</div>';
             }
           } catch (de) {
-            diagHtml = '<div>保存成功，但读取 storage 诊断时出错：' + escapeHtml((de && de.message) || String(de)) + '</div>';
+            diagHtml = '<div>Saved, but an error occurred reading storage diagnostics: ' + escapeHtml((de && de.message) || String(de)) + '</div>';
           }
           showModalFlash("Member saved successfully.", false);
           showDiagnostic(diagHtml, false);
@@ -1844,7 +1828,7 @@
           else if (msg === "MEMBER_EMAIL_REQUIRED") msg = "Email is required.";
           else if (msg === "CANNOT_REMOVE_ADMIN") msg = "The seeded admin account cannot be removed or disabled while it's the only admin.";
           showModalFlash(msg, true);
-          showDiagnostic('<div style="font-weight:600;margin-bottom:4px;">❌ 保存失败</div><div style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12.5px;">' + escapeHtml(msg) + '</div><div style="margin-top:4px;opacity:.85;">（密码未写入 localStorage）</div>', true);
+          showDiagnostic('<div style="font-weight:600;margin-bottom:4px;">❌ Save failed</div><div style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12.5px;">' + escapeHtml(msg) + '</div><div style="margin-top:4px;opacity:.85;">(Password was not written to localStorage)</div>', true);
         }
       });
 
@@ -1907,7 +1891,7 @@
         ".pirep-empty-notice { padding: 24px 18px; text-align:center; color:#6b7280; background:#f9fafb; border:1px dashed #e5e7eb; border-radius: 14px; font-size: 14px; }";
       document.head.appendChild(css);
 
-      mmSection.style.display = ""; // memberMgmt 显示了我们也要显示
+      mmSection.style.display = ""; // memberMgmt is visible, so PIREP panel too
       var panel = document.getElementById("pirepMgmt");
       var tabBtn = "pending";
       var listEl = document.getElementById("pirepList");
@@ -2052,7 +2036,7 @@
             return;
           }
           renderPIREPs();
-          // 同步刷新仪表盘 & member list 的 Pending 徽章
+          // Sync refresh dashboard & member list pending badge
           if (typeof renderPIREPStatsAndRecent === "function") try { renderPIREPStatsAndRecent(); } catch (e) {}
           if (typeof renderMembers === "function") try { renderMembers(); } catch (e) {}
         } catch (err) {
@@ -2062,7 +2046,7 @@
         }
       });
 
-      // 初始显示和 member management 的 display 设置同步（用户不切换时也要能看到）
+      // Initial display synced with member management (visible without tab switch)
       panel.style.display = "";
       renderPIREPs();
     })();
