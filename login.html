@@ -405,7 +405,8 @@
     </p>
   </main>
 
-  <script src="auth.js?v=20260823-passwordfix"></script>
+  <script src="cloud-sync.js?v=20260823-cloud1"></script>
+  <script src="auth.js?v=20260823-cloud1"></script>
   <script>
     (function () {
       "use strict";
@@ -531,7 +532,16 @@
 
           var name = (result && result.user && (result.user.displayName || result.user.callsign)) || "Pilot";
           showFlash("Welcome back, " + name + "!", false);
-          setTimeout(gotoCrewOrSaved, 350);
+          // Sync from cloud before redirecting
+          if (MFVAauth.syncFromCloud) {
+            MFVAauth.syncFromCloud().then(function () {
+              setTimeout(gotoCrewOrSaved, 200);
+            }).catch(function () {
+              setTimeout(gotoCrewOrSaved, 350);
+            });
+          } else {
+            setTimeout(gotoCrewOrSaved, 350);
+          }
         });
       }
     })();
