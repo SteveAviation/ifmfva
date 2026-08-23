@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, shrink-to-fit=no" />
+  <meta name="theme-color" content="#eef2ff" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#0b1f3a" media="(prefers-color-scheme: dark)" />
+  <meta name="format-detection" content="telephone=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <title>MFVA — Hubs</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --nav-h: 68px;
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+      --ease: cubic-bezier(.22,.61,.36,1);
+      --brand: #0057b8;
+      --brand-dark: #00418c;
+      --ink: #0b1220;
+      --ink-2: #1f2937;
+      --ink-soft: #6b7280;
+      --line: #e5e7eb;
+      --bg-1: #e7edff;
+      --bg-2: #f3f5ff;
+      --card: #ffffff;
+      --radius-card: 22px;
+      --shadow-card: 0 1px 2px rgba(17,24,39,.04), 0 6px 22px -10px rgba(17,24,39,.12);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      -webkit-text-size-adjust: 100%;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+      min-height: 100%;
+    }
+
+    body {
+      font-family: "Barlow", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(1200px 700px at 85% -10%, #dce4ff 0%, transparent 60%),
+        radial-gradient(900px 600px at -10% 110%, #e3ecff 0%, transparent 55%),
+        linear-gradient(180deg, var(--bg-1) 0%, var(--bg-2) 100%);
+      min-height: 100vh;
+      min-height: 100dvh;
+      padding: calc(16px + var(--safe-top)) 16px calc(60px + var(--safe-bottom));
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    a { color: inherit; text-decoration: none; }
+    button { font-family: inherit; cursor: pointer; border: none; background: none; }
+
+    /* ---------- Top bar ---------- */
+    .hubs-topbar {
+      max-width: 1080px;
+      margin: 0 auto 22px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .hubs-topbar__crumb {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: #4b5563;
+      font-weight: 500;
+      font-size: 13px;
+      padding: 6px 10px;
+      border-radius: 8px;
+      background: transparent;
+      transition: background .2s var(--ease), color .2s var(--ease);
+    }
+    .hubs-topbar__crumb:hover { background: rgba(255,255,255,.55); color: #111827; }
+    .hubs-topbar__crumb svg { width: 15px; height: 15px; }
+    .hubs-topbar__brand { color: #374151; font-weight: 600; }
+    .hubs-topbar__actions { display: flex; align-items: center; gap: 10px; }
+    .icon-btn {
+      width: 42px; height: 42px;
+      border-radius: 12px;
+      background: rgba(255,255,255,.7);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: #1f2937;
+      transition: transform .15s var(--ease), background .2s var(--ease);
+    }
+    .icon-btn:hover { background: #fff; }
+    .icon-btn:active { transform: scale(.96); }
+    .icon-btn svg { width: 18px; height: 18px; }
+
+    /* ---------- Header ---------- */
+    .hubs-header {
+      max-width: 1080px;
+      margin: 0 auto 28px;
+      padding: 0 2px;
+    }
+    .hubs-header__eyebrow {
+      display: inline-block;
+      padding: 7px 14px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.65);
+      color: #303957;
+      font-size: 11.5px;
+      font-weight: 700;
+      letter-spacing: .24em;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+    .hubs-header__title {
+      font-size: clamp(30px, 5vw, 44px);
+      font-weight: 800;
+      letter-spacing: -0.01em;
+      line-height: 1.1;
+      color: var(--ink);
+      margin-bottom: 10px;
+    }
+    .hubs-header__desc {
+      font-size: 16px;
+      color: var(--ink-soft);
+      line-height: 1.65;
+      max-width: 720px;
+    }
+
+    /* ---------- Hub grid ---------- */
+    .hubs-wrap {
+      max-width: 1080px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+    @media (min-width: 780px) {
+      .hubs-wrap { grid-template-columns: 1fr 1fr; }
+    }
+
+    .hub {
+      background: var(--card);
+      border-radius: var(--radius-card);
+      box-shadow: var(--shadow-card);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: transform .25s var(--ease), box-shadow .25s var(--ease);
+    }
+    @media (hover: hover) and (pointer: fine) {
+      .hub:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 2px 4px rgba(17,24,39,.05), 0 16px 32px -14px rgba(17,24,39,.18);
+      }
+    }
+
+    .hub__image {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      background: linear-gradient(135deg, #c7d2fe 0%, #dbeafe 50%, #ede9fe 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #6366f1;
+      font-weight: 700;
+      font-size: 15px;
+      letter-spacing: .04em;
+      overflow: hidden;
+    }
+    .hub__image::before {
+      content: "";
+      position: absolute;
+      inset: 14px;
+      border: 2px dashed rgba(99,102,241,.45);
+      border-radius: 16px;
+      pointer-events: none;
+    }
+    .hub__image::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(600px 300px at 20% 20%, rgba(255,255,255,.55), transparent 60%),
+        radial-gradient(400px 200px at 80% 90%, rgba(255,255,255,.35), transparent 60%);
+      pointer-events: none;
+    }
+    .hub__image span {
+      position: relative;
+      z-index: 1;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 16px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.8);
+      color: #4338ca;
+      box-shadow: 0 8px 22px -14px rgba(67,56,202,.5);
+    }
+    .hub__image svg { width: 18px; height: 18px; }
+
+    /* Real hub image — raw, no overlays; fall back if missing */
+    .hub__image--real {
+      background: center/cover no-repeat,
+                  linear-gradient(135deg, #c7d2fe 0%, #dbeafe 50%, #ede9fe 100%);
+    }
+    /* Only hide placeholder overlays when background-image actually loaded */
+    .hub__image--real.is-loaded::before,
+    .hub__image--real.is-loaded::after,
+    .hub__image--real.is-loaded span {
+      display: none;
+    }
+
+    .hub__body {
+      padding: 22px 22px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      flex: 1;
+    }
+
+    .hub__head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 14px;
+    }
+    .hub__name {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--ink);
+      letter-spacing: -0.01em;
+      line-height: 1.2;
+    }
+    .hub__country {
+      font-size: 13px;
+      color: var(--ink-soft);
+      margin-top: 3px;
+      font-weight: 500;
+      letter-spacing: .02em;
+    }
+    .hub__code {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: flex-end;
+      flex-shrink: 0;
+      text-align: right;
+    }
+    .hub__icao {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--brand);
+      background: rgba(0,87,184,.08);
+      padding: 4px 10px;
+      border-radius: 8px;
+      letter-spacing: .08em;
+    }
+    .hub__iata {
+      font-size: 11.5px;
+      color: var(--ink-soft);
+      margin-top: 4px;
+      font-weight: 600;
+      letter-spacing: .12em;
+    }
+
+    .hub__desc {
+      font-size: 14.5px;
+      line-height: 1.7;
+      color: #374151;
+      font-weight: 400;
+    }
+    .hub__desc strong { color: var(--ink); font-weight: 700; }
+
+    .hub__stats {
+      margin-top: auto;
+      padding-top: 14px;
+      border-top: 1px solid #f1f3f9;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+    .hub__stat {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .hub__stat-value {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--ink);
+    }
+    .hub__stat-label {
+      font-size: 11.5px;
+      color: var(--ink-soft);
+      text-transform: uppercase;
+      letter-spacing: .14em;
+      font-weight: 600;
+    }
+
+    /* ---------- Drawer & crewmenu (shared look with crew dashboard) ---------- */
+    .crewmenu {
+      position: fixed;
+      right: max(16px, calc(16px + var(--safe-bottom)));
+      bottom: calc(20px + var(--safe-bottom));
+      z-index: 50;
+    }
+    .crewmenu__btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      min-height: 42px;
+      border-radius: 999px;
+      background: #ffffff;
+      color: #1f2937;
+      font-size: 14px;
+      font-weight: 600;
+      box-shadow: 0 8px 22px -12px rgba(17,24,39,.25), 0 1px 2px rgba(17,24,39,.06);
+      border: 1px solid var(--line);
+      transition: transform .15s var(--ease), box-shadow .2s var(--ease), background .2s var(--ease);
+    }
+    .crewmenu__btn:hover { background: #f8faff; }
+    .crewmenu__btn:active { transform: translateY(1px) scale(.99); }
+    .crewmenu__btn svg { width: 17px; height: 17px; color: #374151; }
+
+    .drawer {
+      position: fixed;
+      top: 0; right: 0; bottom: 0;
+      width: min(340px, 86vw);
+      background: #fff;
+      transform: translateX(102%);
+      transition: transform .28s var(--ease);
+      z-index: 70;
+      box-shadow: -20px 0 40px -20px rgba(17,24,39,.25);
+      display: flex;
+      flex-direction: column;
+      padding: calc(18px + var(--safe-top)) 20px calc(20px + var(--safe-bottom));
+    }
+    .drawer.is-open { transform: translateX(0); }
+    .drawer__header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 18px;
+    }
+    .drawer__title {
+      font-weight: 800;
+      font-size: 18px;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      color: var(--ink);
+    }
+    .drawer__close {
+      width: 38px; height: 38px;
+      border-radius: 10px;
+      background: #f3f4f6;
+      display: inline-flex; align-items: center; justify-content: center;
+      color: var(--ink-2); font-size: 22px; line-height: 1;
+    }
+    .drawer ul { list-style: none; display: flex; flex-direction: column; gap: 2px; }
+    .drawer li a, .drawer li button {
+      width: 100%;
+      text-align: left;
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 14px;
+      border-radius: 12px;
+      color: var(--ink-2);
+      font-weight: 600;
+      font-size: 15px;
+      letter-spacing: .02em;
+    }
+    .drawer li a:hover, .drawer li button:hover { background: #f4f6ff; color: var(--ink); }
+    .drawer li a svg, .drawer li button svg { width: 18px; height: 18px; color: #6b7280; flex-shrink: 0; }
+    .drawer__divider { height: 1px; background: #eef0f5; margin: 14px 2px; }
+    .drawer__footer {
+      margin-top: auto;
+      padding-top: 12px;
+      color: var(--ink-soft);
+      font-size: 13px;
+      text-align: center;
+    }
+    .drawer__signout { color: #b91c1c !important; }
+    .drawer__signout svg { color: #ef4444 !important; }
+
+    .drawer-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(11,18,32,.45);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .25s var(--ease);
+      z-index: 60;
+    }
+    .drawer-backdrop.is-open { opacity: 1; pointer-events: auto; }
+  </style>
+</head>
+<body>
+  <div class="hubs-topbar" role="navigation" aria-label="Hubs top bar">
+    <a href="crew.html" class="hubs-topbar__crumb" title="Back to dashboard">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+      <span>Crew Center</span>
+      <span aria-hidden="true">/</span>
+      <span class="hubs-topbar__brand">Hubs</span>
+    </a>
+    <div class="hubs-topbar__actions">
+      <button type="button" class="icon-btn" id="openDrawer" aria-label="Open crew menu" title="Crew Menu">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <header class="hubs-header">
+    <span class="hubs-header__eyebrow">Our Network</span>
+    <h1 class="hubs-header__title">MFVA Hubs &amp; Focus Cities</h1>
+    <p class="hubs-header__desc">
+      From our primary headquarters in Xiamen to key focus cities across China and beyond, every MFVA hub delivers realistic operations, dense route networks, and tailored fleet assignments for Infinite Flight pilots.
+    </p>
+  </header>
+
+  <main class="hubs-wrap">
+    <!-- Hub 1: Xiamen (HQ / Primary) -->
+    <article class="hub">
+      <div class="hub__image hub__image--real" data-bg="assets/hub-zsam.jpg" aria-hidden="true">
+        <span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+          Image coming soon
+        </span>
+      </div>
+      <div class="hub__body">
+        <div class="hub__head">
+          <div>
+            <h2 class="hub__name">Xiamen Gaoqi International</h2>
+            <div class="hub__country">Xiamen, Fujian &middot; People&rsquo;s Republic of China</div>
+          </div>
+          <div class="hub__code">
+            <div class="hub__icao">ZSAM</div>
+            <div class="hub__iata">XMN</div>
+          </div>
+        </div>
+        <p class="hub__desc">
+          <strong>Headquarters &amp; Primary Hub.</strong> Located on China&rsquo;s southeast coast, Xiamen is the historic home of Xiamen Virtual Airlines and our largest base of operations. MFVA pilots fly a dense domestic schedule from <strong>ZSAM</strong> alongside long-haul services to Northeast Asia, Southeast Asia, Oceania, Europe, and North America.
+        </p>
+        <div class="hub__stats">
+          <div class="hub__stat">
+            <div class="hub__stat-value">4E</div>
+            <div class="hub__stat-label">Category</div>
+          </div>
+          <div class="hub__stat">
+            <div class="hub__stat-value">1</div>
+            <div class="hub__stat-label">Runways</div>
+          </div>
+          <div class="hub__stat">
+            <div class="hub__stat-value">2</div>
+            <div class="hub__stat-label">Terminals</div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- Hub 2: Fuzhou -->
+    <article class="hub">
+      <div class="hub__image" aria-hidden="true">
+        <span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+          Image coming soon
+        </span>
+      </div>
+      <div class="hub__body">
+        <div class="hub__head">
+          <div>
+            <h2 class="hub__name">Fuzhou Changle International</h2>
+            <div class="hub__country">Fuzhou, Fujian &middot; People&rsquo;s Republic of China</div>
+          </div>
+          <div class="hub__code">
+            <div class="hub__icao">ZSFZ</div>
+            <div class="hub__iata">FOC</div>
+          </div>
+        </div>
+        <p class="hub__desc">
+          <strong>Primary Hub.</strong> As the provincial capital gateway, Fuzhou serves as MFVA&rsquo;s second-largest Fujian base. From <strong>ZSFZ</strong> we operate a full domestic trunk network, regional cross-Strait routes, and selected international services to Tokyo, Osaka, Seoul, Jakarta, and Singapore.
+        </p>
+        <div class="hub__stats">
+          <div class="hub__stat">
+            <div class="hub__stat-value">4F</div>
+            <div class="hub__stat-label">Category</div>
+          </div>
+          <div class="hub__stat">
+            <div class="hub__stat-value">2</div>
+            <div class="hub__stat-label">Runways</div>
+          </div>
+          <div class="hub__stat">
+            <div class="hub__stat-value">2</div>
+            <div class="hub__stat-label">Terminals</div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- Hub 3: Hangzhou -->
+    <article class="hub">
+      <div class="hub__image" aria-hidden="true">
+        <span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+          Image coming soon
+        </span>
+      </div>
+      <div class="hub__body">
+        <div class="hub__head">
+          <div>
+            <h2 class="hub__name">Hangzhou Xiaoshan International</h2>
+            <div class="hub__country">Hangzhou, Zhejiang &middot; People&rsquo;s Republic of China</div>
+          </div>
+          <div class="hub__code">
+            <div class="hub__icao">ZSHC</div>
+            <div class="hub__iata">HGH</div>
+          </div>
+        </div>
+        <p class="hub__desc">
+          <strong>Focus City.</strong> A major East China hub just south of Shanghai, Hangzhou anchors our Yangtze River Delta operations. MFVA flights from <strong>ZSHC</strong> connect tech and commerce centers across China with high-frequency regional jets and widebody services to Bangkok, Kuala Lumpur, Dubai, and beyond.
+        </p>
+        <div class="hub__stats">
+          <div class="hub__stat">
+            <div class="hub__stat-value">4F</div>
+            <div class="hub__stat-label">Category</div>
+          </div>
+          <div class="hub__stat">
+            <div class="hub__stat-value">2</div>
+            <div class="hub__stat-label">Runways</div>
+          </div>
+          <div class="hub__stat">
+            <div class="hub__stat-value">4</div>
+            <div class="hub__stat-label">Terminals</div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- Hub 4: Beijing Daxing -->
+    <article class="hub">
+      <div class="hub__image" aria-hidden="true">
+        <span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+          Image coming soon
+        </span>
+      </div>
+      <div class="hub__body">
+        <div class="hub__head">
+          <div>
+            <h2 class="hub__name">Beijing Daxing International</h2>
+            <div class="hub__country">Beijing &middot; People&rsquo;s Republic of China</div>
+          </div>
+          <div class="hub__code">
+            <div class="hub__icao">ZBAD</div>
+            <div class="hub__iata">PKX</div>
+          </div>
+        </div>
+        <p class="hub__desc">
+          <strong>Focus City.</strong> Serving the nation&rsquo;s capital from its iconic star-shaped terminal, Daxing is MFVA&rsquo;s northern anchor. Pilots flying from <strong>ZBAD</strong> operate premium domestic trunk services alongside long-range widebody rotations to Frankfurt, Amsterdam, Sydney, Vancouver, and Los Angeles.
+        </p>
+        <div class="hub__stats">
+          <div class="hub__stat">
+            <div class="hub__stat-value">4F</div>
+            <div class="hub__stat-label">Category</div>
+          </div>
+          <div class="hub__stat">
+            <div class="hub__stat-value">4</div>
+            <div class="hub__stat-label">Runways</div>
+          </div>
+          <div class="hub__stat">
+            <div class="hub__stat-value">1</div>
+            <div class="hub__stat-label">Terminals</div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- Hub 5: Shanghai Hongqiao -->
+    <article class="hub">
+      <div class="hub__image" aria-hidden="true">
+        <span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+          Image coming soon
+        </span>
+      </div>
+      <div class="hub__body">
+        <div class="hub__head">
+          <div>
+            <h2 class="hub__name">Shanghai Hongqiao International</h2>
+            <div class="hub__country">Shanghai &middot; People&rsquo;s Republic of China</div>
+          </div>
+          <div class="hub__code">
+            <div class="hub__icao">ZSSS</div>
+            <div class="hub__iata">SHA</div>
+          </div>
+        </div>
+        <p class="hub__desc">
+          <strong>Focus City.</strong> Located minutes from downtown Shanghai, Hongqiao is our premium domestic business market base. <strong>ZSSS</strong> sees high-frequency MFVA shuttle services to Beijing, Guangzhou, Shenzhen, Chengdu, and Chongqing using our latest narrowbody and regional widebody fleets.
+        </p>
+        <div class="hub__stats">
+          <div class="hub__stat">
+            <div class="hub__stat-value">4E</div>
+            <div class="hub__stat-label">Category</div>
+          </div>
+          <div class="hub__stat">
+            <div class="hub__stat-value">2</div>
+            <div class="hub__stat-label">Runways</div>
+          </div>
+          <div class="hub__stat">
+            <div class="hub__stat-value">2</div>
+            <div class="hub__stat-label">Terminals</div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- Hub 6: Guangzhou -->
+    <article class="hub">
+      <div class="hub__image" aria-hidden="true">
+        <span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+          Image coming soon
+        </span>
+      </div>
+      <div class="hub__body">
+        <div class="hub__head">
+          <div>
+            <h2 class="hub__name">Guangzhou Baiyun International</h2>
+            <div class="hub__country">Guangzhou, Guangdong &middot; People&rsquo;s Republic of China</div>
+          </div>
+          <div class="hub__code">
+            <div class="hub__icao">ZGGG</div>
+            <div class="hub__iata">CAN</div>
+          </div>
+        </div>
+        <p class="hub__desc">
+          <strong>Focus City.</strong> The primary gateway of the Greater Bay Area, Baiyun is MFVA&rsquo;s southern hub for South China and ASEAN traffic. From <strong>ZGGG</strong> we run a dense Pearl River Delta domestic network plus regional and long-haul services to Ho Chi Minh, Manila, Singapore, Melbourne, and London.
+        </p>
+        <div class="hub__stats">
+          <div class="hub__stat">
+            <div class="hub__stat-value">4F</div>
+            <div class="hub__stat-label">Category</div>
+          </div>
+          <div class="hub__stat">
+            <div class="hub__stat-value">5</div>
+            <div class="hub__stat-label">Runways</div>
+          </div>
+          <div class="hub__stat">
+            <div class="hub__stat-value">3</div>
+            <div class="hub__stat-label">Terminals</div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- Hub 7: Chengdu Tianfu -->
+    <article class="hub">
+      <div class="hub__image" aria-hidden="true">
+        <span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+          Image coming soon
+        </span>
+      </div>
+      <div class="hub__body">
+        <div class="hub__head">
+          <div>
+            <h2 class="hub__name">Chengdu Tianfu International</h2>
+            <div class="hub__country">Chengdu, Sichuan &middot; People&rsquo;s Republic of China</div>
+          </div>
+          <div class="hub__code">
+            <div class="hub__icao">ZUTF</div>
+            <div class="hub__iata">TFU</div>
+          </div>
+        </div>
+        <p class="hub__desc">
+          <strong>Focus City.</strong> Our key inland western base, Tianfu connects central China with MFVA&rsquo;s domestic network and opens high-potential international markets. Flights from <strong>ZUTF</strong> serve Lhasa, Urumqi, Kathmandu, Singapore, and direct long-haul rotations to Frankfurt and beyond.
+        </p>
+        <div class="hub__stats">
+          <div class="hub__stat">
+            <div class="hub__stat-value">4F</div>
+            <div class="hub__stat-label">Category</div>
+          </div>
+          <div class="hub__stat">
+            <div class="hub__stat-value">3</div>
+            <div class="hub__stat-label">Runways</div>
+          </div>
+          <div class="hub__stat">
+            <div class="hub__stat-value">2</div>
+            <div class="hub__stat-label">Terminals</div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- Hub 8: Shenzhen -->
+    <article class="hub">
+      <div class="hub__image" aria-hidden="true">
+        <span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+          Image coming soon
+        </span>
+      </div>
+      <div class="hub__body">
+        <div class="hub__head">
+          <div>
+            <h2 class="hub__name">Shenzhen Bao&rsquo;an International</h2>
+            <div class="hub__country">Shenzhen, Guangdong &middot; People&rsquo;s Republic of China</div>
+          </div>
+          <div class="hub__code">
+            <div class="hub__icao">ZGSZ</div>
+            <div class="hub__iata">SZX</div>
+          </div>
+        </div>
+        <p class="hub__desc">
+          <strong>Focus City.</strong> Adjacent to Hong Kong in the heart of the Greater Bay Area, Shenzhen powers MFVA&rsquo;s tech-sector premium traffic. From <strong>ZGSZ</strong> we operate all-day domestic shuttles and a fast-growing international network including Hanoi, Taipei, Osaka, Seattle, and Johannesburg.
+        </p>
+        <div class="hub__stats">
+          <div class="hub__stat">
+            <div class="hub__stat-value">4F</div>
+            <div class="hub__stat-label">Category</div>
+          </div>
+          <div class="hub__stat">
+            <div class="hub__stat-value">3</div>
+            <div class="hub__stat-label">Runways</div>
+          </div>
+          <div class="hub__stat">
+            <div class="hub__stat-value">2</div>
+            <div class="hub__stat-label">Terminals</div>
+          </div>
+        </div>
+      </div>
+    </article>
+  </main>
+
+  <!-- ---------- Floating crew menu + side drawer ---------- -->
+  <div class="crewmenu">
+    <button type="button" class="crewmenu__btn" id="crewMenuBtn" aria-label="Open crew menu">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      Crew Menu
+    </button>
+  </div>
+
+  <div class="drawer-backdrop" id="drawerBackdrop" aria-hidden="true"></div>
+  <aside class="drawer" id="drawer" aria-hidden="true" aria-label="Crew menu">
+    <div class="drawer__header">
+      <div class="drawer__title">Crew Menu</div>
+      <button type="button" class="drawer__close" id="drawerClose" aria-label="Close crew menu">&times;</button>
+    </div>
+    <ul>
+      <li>
+        <a href="crew.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+          Dashboard
+        </a>
+      </li>
+      <li>
+        <a href="pirep.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3h7v7"/><path d="M10 14 21 3"/><path d="M21 14v7H3V3h7"/></svg>
+          File PIREP
+        </a>
+      </li>
+      <li>
+        <button type="button" id="drawerFindRoutes">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          Find Routes
+        </button>
+      </li>
+      <li>
+        <a href="hubs.html" aria-current="page">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s7-7.5 7-13a7 7 0 0 0-14 0c0 5.5 7 13 7 13z"/><circle cx="12" cy="9" r="2.5"/></svg>
+          Hubs
+        </a>
+      </li>
+      <li>
+        <a href="fleet.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 17v2h20v-2"/><path d="M6 17 2 7l4-1 4 4h6l4-4 4 1-4 10H6z"/></svg>
+          Fleet
+        </a>
+      </li>
+      <li>
+        <a href="routes.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="6" r="2.5"/><circle cx="19" cy="6" r="2.5"/><path d="M7.5 6h9M5 8.5c0 3 3.5 4 7 4s7-1 7-4"/><path d="M12 12.5v3M8 19h8l-2-3.5h-4L8 19z"/></svg>
+          Routes
+        </a>
+      </li>
+      <li>
+        <a href="about.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v5h1"/></svg>
+          About MFVA
+        </a>
+      </li>
+    </ul>
+    <div class="drawer__divider"></div>
+    <ul>
+      <li>
+        <button type="button" id="signOutBtn" class="drawer__signout">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="m10 17 5-5-5-5"/><path d="M15 12H3"/></svg>
+          Sign out
+        </button>
+      </li>
+    </ul>
+    <div class="drawer__footer">
+      &copy; <span id="year"></span> MFVA &middot; Xiamen Virtual Airlines
+    </div>
+  </aside>
+
+  <script>
+    (function () {
+      // ---- Auth gate: signed-out users go back to the login page. ----
+      // (Do NOT auto-mark as logged in here — only login.html writes the flag.)
+      (function authGate() {
+        var logged = false;
+        try { logged = localStorage.getItem("mfva_logged_in") === "1"; } catch (e) {}
+        if (!logged) {
+          sessionStorage.setItem("mfva_redirect_after_login", "hubs.html");
+          window.location.replace("login.html");
+          return;
+        }
+      })();
+
+      var y = document.getElementById("year");
+      if (y) y.textContent = new Date().getFullYear();
+
+      // --- Drawer open/close ---
+      var drawer = document.getElementById("drawer");
+      var backdrop = document.getElementById("drawerBackdrop");
+      function openDrawer() {
+        drawer.classList.add("is-open");
+        drawer.setAttribute("aria-hidden", "false");
+        backdrop.classList.add("is-open");
+        backdrop.setAttribute("aria-hidden", "false");
+      }
+      function closeDrawer() {
+        drawer.classList.remove("is-open");
+        drawer.setAttribute("aria-hidden", "true");
+        backdrop.classList.remove("is-open");
+        backdrop.setAttribute("aria-hidden", "true");
+      }
+      var openers = [document.getElementById("crewMenuBtn"), document.getElementById("openDrawer")];
+      openers.forEach(function (el) { if (el) el.addEventListener("click", openDrawer); });
+      var closeEl = document.getElementById("drawerClose");
+      if (closeEl) closeEl.addEventListener("click", closeDrawer);
+      if (backdrop) backdrop.addEventListener("click", closeDrawer);
+      document.addEventListener("keydown", function (e) { if (e.key === "Escape") closeDrawer(); });
+
+      // Placeholders
+      var fr = document.getElementById("drawerFindRoutes");
+      if (fr) fr.addEventListener("click", function () { closeDrawer(); alert("Find Routes — coming soon."); });
+
+      // --- Preload real hub backgrounds; hide placeholder only when image exists ---
+      document.querySelectorAll(".hub__image--real[data-bg]").forEach(function (el) {
+        var url = el.getAttribute("data-bg");
+        if (!url) return;
+        var probe = new Image();
+        probe.onload = function () {
+          el.style.backgroundImage = "url('" + url + "')";
+          el.classList.add("is-loaded");
+        };
+        probe.src = url;
+      });
+
+      // Sign out
+      var so = document.getElementById("signOutBtn");
+      if (so) {
+        so.addEventListener("click", function () {
+          try { localStorage.removeItem("mfva_logged_in"); } catch (e) {}
+          window.location.replace("index.html");
+        });
+      }
+    })();
+  </script>
+</body>
+</html>

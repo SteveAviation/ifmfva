@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, shrink-to-fit=no" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <meta name="theme-color" content="#eef2ff" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#0b1f3a" media="(prefers-color-scheme: dark)" />
+  <meta name="format-detection" content="telephone=no" />
+  <title>MFVA — Apply to Join</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+      --ease: cubic-bezier(.22,.61,.36,1);
+      --brand: #2463ff;
+      --brand-dark: #1d4fd1;
+      --ink: #0b1220;
+      --ink-soft: #4b5563;
+      --ink-mute: #6b7280;
+      --field-bg: #eaf1ff;
+      --field-border: #d7e4ff;
+      --req-bg: #f8fafc;
+      --req-border: #e5e7eb;
+      --radius-card: 28px;
+      --radius-field: 16px;
+      --radius-req: 20px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      -webkit-text-size-adjust: 100%;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+    }
+    body {
+      font-family: "Barlow", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(1200px 700px at 90% -10%, #dce4ff 0%, transparent 60%),
+        radial-gradient(900px 600px at -10% 110%, #e3ecff 0%, transparent 55%),
+        linear-gradient(180deg, #e7edff 0%, #f3f5ff 100%);
+      min-height: 100vh;
+      min-height: 100dvh;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: calc(28px + var(--safe-top)) 16px calc(40px + var(--safe-bottom));
+    }
+    a, button, input { touch-action: manipulation; -webkit-user-drag: none; font-family: inherit; }
+    a { color: inherit; text-decoration: none; }
+    button { cursor: pointer; border: none; background: none; }
+
+    .back {
+      position: absolute;
+      top: calc(18px + var(--safe-top));
+      left: 16px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.55);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      color: #27304a;
+      font-size: 14px;
+      font-weight: 500;
+      transition: background .2s var(--ease);
+    }
+    .back:hover { background: rgba(255,255,255,.8); }
+    .back svg { width: 16px; height: 16px; }
+
+    .wrap { width: 100%; max-width: 680px; padding-top: 46px; }
+
+    /* -------- Card -------- */
+    .card {
+      width: 100%;
+      background: #ffffff;
+      border-radius: var(--radius-card);
+      padding: 48px clamp(22px, 5vw, 56px) 40px;
+      box-shadow:
+        0 18px 50px -20px rgba(30,45,95,.25),
+        0 2px 10px -4px rgba(30,45,95,.08);
+    }
+
+    .card__title {
+      font-size: clamp(30px, 5.6vw, 48px);
+      font-weight: 800;
+      letter-spacing: -.01em;
+      line-height: 1.08;
+      color: #0b1220;
+      margin-bottom: 14px;
+    }
+    .card__title .va { color: var(--brand); }
+    .card__subtitle {
+      font-size: clamp(17px, 2.3vw, 22px);
+      color: var(--ink-soft);
+      font-weight: 400;
+      line-height: 1.5;
+      margin-bottom: 36px;
+    }
+
+    /* -------- Requirements panel -------- */
+    .req {
+      background: var(--req-bg);
+      border: 1px solid var(--req-border);
+      border-radius: var(--radius-req);
+      padding: clamp(22px, 4vw, 34px) clamp(20px, 4vw, 32px);
+      margin-bottom: 34px;
+    }
+    .req__title {
+      font-size: clamp(22px, 3.6vw, 32px);
+      font-weight: 800;
+      letter-spacing: -.005em;
+      color: #0b1220;
+      margin-bottom: 22px;
+    }
+    .req__list {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .req__item {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      font-size: clamp(16px, 2.1vw, 20px);
+      line-height: 1.5;
+      color: #1f2740;
+    }
+    .req__item::before {
+      content: "";
+      flex-shrink: 0;
+      width: 8px; height: 8px;
+      margin-top: 12px;
+      border-radius: 50%;
+      background: #0b1220;
+    }
+
+    /* -------- Fields -------- */
+    .field { margin-bottom: 28px; }
+    .field label {
+      display: block;
+      font-size: clamp(17px, 2.2vw, 21px);
+      font-weight: 500;
+      color: #1f2740;
+      margin-bottom: 12px;
+    }
+    .field input[type="text"],
+    .field input[type="email"],
+    .field input[type="url"],
+    .field input[type="password"] {
+      width: 100%;
+      display: block;
+      padding: 20px clamp(16px, 2.5vw, 22px);
+      font-size: clamp(17px, 2.3vw, 21px);
+      font-family: inherit;
+      color: #0b1220;
+      background: var(--field-bg);
+      border: 2px solid var(--field-border);
+      border-radius: var(--radius-field);
+      outline: none;
+      transition: border-color .2s var(--ease), box-shadow .2s var(--ease), background .2s var(--ease);
+      -webkit-appearance: none;
+      appearance: none;
+      letter-spacing: .005em;
+    }
+    .field input::placeholder {
+      color: #99a3bd;
+    }
+    .field input:focus {
+      border-color: var(--brand);
+      background: #ffffff;
+      box-shadow: 0 0 0 5px rgba(36, 99, 255, .15);
+    }
+    .field input[aria-invalid="true"] {
+      border-color: #d94040;
+      background: #fff5f5;
+    }
+    .field .stacked {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .field__hint {
+      font-size: clamp(14px, 1.9vw, 17px);
+      color: var(--ink-soft);
+      line-height: 1.55;
+      margin-top: 12px;
+    }
+    .field__hint a { color: var(--brand); font-weight: 600; }
+    .field__hint a:hover { color: var(--brand-dark); }
+
+    .field__alert {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: clamp(14px, 1.9vw, 17px);
+      color: var(--ink-soft);
+      margin-top: 12px;
+      line-height: 1.5;
+    }
+    .field__alert svg {
+      flex-shrink: 0;
+      width: 20px; height: 20px;
+      color: #2463ff;
+      margin-top: 2px;
+    }
+
+    .field__pw {
+      position: relative;
+    }
+    .field__pw-toggle {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 42px; height: 42px;
+      border-radius: 10px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: #5b6586;
+      transition: background .15s var(--ease), color .15s var(--ease);
+    }
+    .field__pw-toggle:hover { background: rgba(36,99,255,.08); color: var(--brand); }
+    .field__pw-toggle svg { width: 20px; height: 20px; }
+
+    /* -------- Flash -------- */
+    .flash {
+      display: none;
+      padding: 14px 16px;
+      margin-bottom: 26px;
+      border-radius: 14px;
+      font-size: 15px;
+      line-height: 1.5;
+    }
+    .flash.is-visible { display: block; }
+    .flash--error   { background: #fff1f1; color: #8b1f1f; border: 1px solid #ffd0d0; }
+    .flash--success { background: #ecf9ee; color: #1f6b2b; border: 1px solid #bfe8c5; }
+
+    /* -------- Apply button -------- */
+    .btn-apply {
+      width: 100%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px 22px;
+      margin-top: 8px;
+      background: var(--brand);
+      color: #ffffff;
+      font-size: clamp(19px, 2.6vw, 22px);
+      font-weight: 600;
+      letter-spacing: .02em;
+      border-radius: 16px;
+      box-shadow: 0 12px 26px -14px rgba(36,99,255,.85);
+      transition: transform .12s var(--ease), background .2s var(--ease), box-shadow .2s var(--ease);
+    }
+    .btn-apply:hover {
+      background: var(--brand-dark);
+      box-shadow: 0 16px 32px -14px rgba(29,79,209,.9);
+    }
+    .btn-apply:active { transform: translateY(1px); }
+
+    /* -------- Footer lines -------- */
+    .legal {
+      text-align: center;
+      font-size: clamp(15px, 2vw, 18px);
+      color: var(--ink-mute);
+      margin-top: 26px;
+      line-height: 1.65;
+    }
+    .legal a { color: var(--brand); font-weight: 600; }
+    .legal a:hover { color: var(--brand-dark); }
+
+    .signin-line {
+      text-align: center;
+      font-size: clamp(19px, 2.6vw, 24px);
+      color: var(--ink-soft);
+      margin-top: 32px;
+      line-height: 1.5;
+    }
+    .signin-line a {
+      color: var(--brand);
+      font-weight: 700;
+    }
+    .signin-line a:hover { color: var(--brand-dark); }
+
+    @media (max-width: 520px) {
+      .wrap { padding-top: 52px; }
+      .card { padding: 40px 20px 32px; border-radius: 22px; }
+      .req { border-radius: 16px; padding: 22px 18px; }
+    }
+    @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+  </style>
+</head>
+<body>
+  <a href="index.html" class="back" aria-label="Back to home">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+    <span>Back to Home</span>
+  </a>
+
+  <div class="wrap">
+    <section class="card" aria-labelledby="apply-title">
+      <div class="flash flash--error" id="flash" role="alert"></div>
+
+      <h1 id="apply-title" class="card__title">Join <span class="va">MFVA</span> Today!</h1>
+      <p class="card__subtitle">Fill in the application form to get started</p>
+
+      <!-- Requirements -->
+      <div class="req" aria-label="Application requirements">
+        <h2 class="req__title">Application requirements</h2>
+        <ul class="req__list" role="list">
+          <li class="req__item">Must be 13 years of age or older</li>
+          <li class="req__item">Must be Grade 3 or above</li>
+          <li class="req__item">Must have an IFC account linked to the Infinite Flight App</li>
+          <li class="req__item">Must not be on the IFVARB&rsquo;s user blacklist/watchlist</li>
+          <li class="req__item">Must have an active Infinite Flight Pro Subscription</li>
+          <li class="req__item">Be in good standing with the IFC</li>
+          <li class="req__item">Should be able to participate actively</li>
+          <li class="req__item">Must be able to use Discord</li>
+        </ul>
+      </div>
+
+      <form id="applyForm" novalidate>
+        <div class="field">
+          <label for="name">Preferred Name</label>
+          <input id="name" name="name" type="text" autocomplete="name" placeholder="John Doe" required />
+        </div>
+
+        <div class="field">
+          <label for="email">Email Address</label>
+          <input id="email" name="email" type="email" inputmode="email" autocomplete="email" placeholder="pilot@example.com" required />
+        </div>
+
+        <div class="field">
+          <label for="ifc">Infinite Flight Community Profile URL</label>
+          <div class="stacked">
+            <input id="ifc" name="ifc" type="url" inputmode="url" autocomplete="url" placeholder="https://community.infiniteflight.com/u/" required />
+            <input id="ifcUser" name="ifcUser" type="text" placeholder="username" required />
+          </div>
+          <p class="field__hint">
+            All pilots are required to have an active
+            <a href="https://community.infiniteflight.com/" target="_blank" rel="noopener noreferrer">Infinite Flight Community</a> Account
+          </p>
+        </div>
+
+        <div class="field">
+          <label for="password">Password</label>
+          <div class="field__pw">
+            <input id="password" name="password" type="password" autocomplete="new-password" placeholder="Create a password" required minlength="8" />
+            <button type="button" class="field__pw-toggle" id="togglePw" aria-label="Show password">
+              <svg id="eyeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+            </button>
+          </div>
+          <div class="field__alert" aria-live="polite">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="12"/>
+              <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            <span>Must be at least 8 characters long</span>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="password2">Confirm Password</label>
+          <div class="field__pw">
+            <input id="password2" name="password2" type="password" autocomplete="new-password" placeholder="Re-enter password" required minlength="8" />
+            <button type="button" class="field__pw-toggle" id="togglePw2" aria-label="Show password">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-apply">Apply</button>
+      </form>
+
+      <p class="legal">
+        By applying, you agree to the <a href="#" onclick="alert('Terms of Service coming soon.');return false;">Terms of Service</a>
+        and acknowledge the <a href="#" onclick="alert('Privacy Policy coming soon.');return false;">Privacy Policy</a>.
+      </p>
+
+      <p class="signin-line">
+        Already have an account? <a href="login.html">Sign in</a>
+      </p>
+    </section>
+  </div>
+
+  <script src="auth.js?v=20260823-pirepfix"></script>
+  <script>
+    (function () {
+      "use strict";
+
+      function toggle(btn, input) {
+        if (!btn || !input) return;
+        btn.addEventListener("click", function () {
+          var show = input.type === "password";
+          input.type = show ? "text" : "password";
+          btn.setAttribute("aria-label", show ? "Hide password" : "Show password");
+        });
+      }
+      toggle(document.getElementById("togglePw"),  document.getElementById("password"));
+      toggle(document.getElementById("togglePw2"), document.getElementById("password2"));
+
+      var form  = document.getElementById("applyForm");
+      var flash = document.getElementById("flash");
+
+      function showFlash(msg, isError) {
+        if (!flash) return;
+        flash.textContent = msg || "";
+        flash.className = "flash " + (isError ? "flash--error" : "flash--success") + " is-visible";
+      }
+
+      if (form) {
+        form.addEventListener("submit", function (e) {
+          e.preventDefault();
+
+          var name     = document.getElementById("name").value.trim();
+          var email    = document.getElementById("email").value.trim();
+          var ifcUrl   = document.getElementById("ifc").value.trim();
+          var ifcUser  = document.getElementById("ifcUser").value.trim();
+          var pw       = document.getElementById("password").value;
+          var pw2      = document.getElementById("password2").value;
+
+          function mark(el, bad) {
+            if (!el) return;
+            if (bad) { el.setAttribute("aria-invalid", "true"); }
+            else     { el.removeAttribute("aria-invalid"); }
+          }
+          mark(document.getElementById("name"), !name);
+          mark(document.getElementById("email"), !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email));
+          mark(document.getElementById("ifc"),  !/^https?:\/\//.test(ifcUrl));
+          mark(document.getElementById("ifcUser"), !ifcUser);
+          mark(document.getElementById("password"), pw.length < 8);
+          mark(document.getElementById("password2"), pw !== pw2);
+
+          if (!name)  { showFlash("Please enter your preferred name.", true); return; }
+          if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showFlash("Please enter a valid email address.", true); return; }
+          if (!/^https?:\/\//.test(ifcUrl)) { showFlash("Please enter a valid Community Profile URL (https://…).", true); return; }
+          if (!ifcUser) { showFlash("Please enter your IFC username.", true); return; }
+          if (pw.length < 8) { showFlash("Password must be at least 8 characters long.", true); return; }
+          if (pw !== pw2) { showFlash("Passwords do not match.", true); return; }
+
+          if (!window.MFVAauth || typeof MFVAauth.registerMember !== "function") {
+            showFlash("The registration module failed to load. Please refresh and try again.", true);
+            return;
+          }
+
+          var btn = form.querySelector(".btn-apply");
+          if (btn) { btn.disabled = true; btn.style.opacity = "0.65"; btn.textContent = "Submitting…"; }
+
+          var result;
+          try {
+            result = MFVAauth.registerMember({
+              email: email,
+              displayName: name,
+              password: pw,
+              ifcUrl: ifcUrl,
+              ifcUser: ifcUser
+            });
+          } catch (err) {
+            result = { ok: false, message: (err && err.message) || "Submission failed. Please try again." };
+          }
+
+          if (!result || !result.ok) {
+            if (btn) { btn.disabled = false; btn.style.opacity = ""; btn.textContent = "Apply"; }
+            var msg = (result && result.message) || "Application failed. Please try again.";
+            switch ((result && result.code) || "") {
+              case "EMAIL_REQUIRED":         msg = "Please enter your email address."; break;
+              case "EMAIL_INVALID":          msg = "That email address doesn't look right — please double-check it."; break;
+              case "NAME_REQUIRED":          msg = "Please enter your preferred name."; break;
+              case "PASSWORD_REQUIRED":      msg = "Please create a password."; break;
+              case "PASSWORD_TOO_SHORT":     msg = "Password must be at least 8 characters long."; break;
+              case "EMAIL_ALREADY_REGISTERED": msg = "This email is already registered. Go sign in directly (any non-empty password works after approval)."; break;
+              case "APPLICATION_PENDING":    msg = "You already applied with this email and it's waiting for admin review — please be patient."; break;
+              case "ACCOUNT_DISABLED":       msg = "This account has been disabled. Contact staff before applying again."; break;
+              case "ADMIN_EMAIL_RESERVED":   msg = "That email is reserved for MFVA staff. Just sign in directly (any password works for the staff account)."; break;
+            }
+            showFlash(msg, true);
+            return;
+          }
+
+          // Success → application pending review.
+          // Per user rule "申请的管理员要同意": new pilots start as pending
+          // and cannot sign in until an admin clicks Approve in the CC.
+          var handle = ((result.user && (result.user.callsign || result.user.displayName)) || "Pilot");
+          showFlash(
+            "✓ Application submitted — please wait for admin approval. Your MFVA ID is " +
+              handle +
+              ". We'll review your Infinite Flight profile and reply shortly. Redirecting to sign-in page…",
+            false
+          );
+          try {
+            sessionStorage.setItem("mfva_last_registered_email", email);
+          } catch (eSess) {}
+          setTimeout(function () {
+            window.location.href = "login.html";
+          }, 2600);
+        });
+      }
+    })();
+  </script>
+</body>
+</html>

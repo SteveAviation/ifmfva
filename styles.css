@@ -1,0 +1,891 @@
+/* =========================================================
+   Virtual Airlines — Crew Center Homepage
+   Style inspired by ifczvg.com (clean modern airline VA)
+   ========================================================= */
+
+/* ---------- Resets ---------- */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --color-bg: #ffffff;
+  --color-text: #1a1a1a;
+  --color-muted: #6b7280;
+  --color-dark: #0b1f3a;
+  --color-accent: #2563eb;
+  --nav-h: 72px;
+  --ease: cubic-bezier(.22,.61,.36,1);
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+}
+
+html { scroll-behavior: smooth; }
+
+html, body {
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  overscroll-behavior-y: none;
+  touch-action: manipulation;
+}
+
+body {
+  font-family: "Barlow", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color: var(--color-text);
+  background: #0b1020;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+/* Prevent 300ms click delay & accidental selection on interactive elements */
+a, button, input, textarea, select, label, [role="button"] {
+  touch-action: manipulation;
+  -webkit-user-drag: none;
+}
+
+a { color: inherit; text-decoration: none; }
+button { font-family: inherit; cursor: pointer; border: none; background: none; }
+ul { list-style: none; }
+
+/* =========================================================
+   TOP BAR (transparent, sits over hero image)
+   ========================================================= */
+.topbar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  background: transparent;       /* 用户要求：顶部背景透明，不再用白色底 */
+  box-shadow: none;              /* 不做其他处理，无阴影 */
+  height: calc(var(--nav-h) + var(--safe-top));
+  padding-top: var(--safe-top);
+  /* 让汉堡和导航文字在顶图上依然清晰：加一层极浅的半透明保护，仅在极端亮色背景下生效 */
+  backdrop-filter: none;
+}
+
+.topbar__inner {
+  max-width: 1400px;
+  margin: 0 auto;
+  height: 100%;
+  padding: 0 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+/* ---- Brand : Logo + Virtual 文字 ---- */
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+  padding: 0;
+  margin: 0;
+  text-decoration: none;
+  /* 尺寸自行规划：让Logo高度随顶栏自适应。
+     顶栏内容高度约为 --nav-h = 72px，留出内边距后取约68%作为logo高度基线。 */
+}
+
+.brand__logo-img {
+  display: inline-block;
+  /* 高度随顶栏适配：clamp(移动端, 正常, 大上限) */
+  height: clamp(30px, calc(var(--nav-h) * 0.72), 54px);
+  width: auto;                 /* 保持原始宽高比 */
+  max-width: 46vw;             /* 防止窄屏撑破顶栏 */
+  object-fit: contain;
+  vertical-align: middle;
+  -webkit-user-drag: none;
+  user-select: none;
+  image-rendering: -webkit-optimize-contrast;
+}
+
+.brand__virtual {
+  display: inline-block;
+  font-family: "Barlow", "Segoe UI", Roboto, sans-serif;
+  font-weight: 600;
+  font-style: italic;
+  letter-spacing: .10em;
+  text-transform: uppercase;
+  color: #ffffff;              /* 顶图背景是山日出深色图，白字清晰 */
+  font-size: clamp(12px, 1.4vw, 16px);
+  line-height: 1.1;
+  padding-left: 2px;
+  padding-top: 2px;
+  vertical-align: middle;
+  text-shadow: 0 1px 2px rgba(0,0,0,.35);
+  white-space: nowrap;
+}
+
+/* 小屏紧凑一点，长文本换行也ok不过最好压字号 */
+@media (max-width: 640px) {
+  .brand { gap: 8px; }
+  .brand__virtual { letter-spacing: .05em; font-size: 12px; }
+}
+@media (max-width: 420px) {
+  .brand__virtual { display: none; } /* 特小屏只留Logo，避免挤掉汉堡 */
+}
+
+/* Visually hidden helper (keep for screen reader text only) */
+.visually-hidden {
+  position: absolute !important;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0);
+  white-space: nowrap; border: 0;
+}
+
+/* 不再需要旧占位器 */
+.brand__placeholder { display: none !important; }
+
+
+/* ---- Center nav (desktop) — text is white to stay visible on transparent bar over hero ---- */
+.primary-nav {
+  display: none;
+  align-items: center;
+  gap: 30px;
+  flex: 1 1 auto;
+  min-width: 0;
+  justify-content: center;
+  font-weight: 500;
+  font-size: 14px;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: #ffffff;
+  border-bottom: 1px solid rgba(255,255,255,.10);
+  padding-bottom: 4px;
+}
+
+.primary-nav a {
+  position: relative;
+  padding: 6px 2px;
+  color: #ffffff;
+  white-space: nowrap;
+  transition: color .2s var(--ease);
+  text-shadow: 0 1px 3px rgba(0,0,0,.35);
+}
+
+.primary-nav a::after {
+  content: "";
+  position: absolute;
+  left: 50%; bottom: 0;
+  width: 0; height: 2px;
+  background: #ffffff;
+  transition: all .25s var(--ease);
+  transform: translateX(-50%);
+}
+
+.primary-nav a:hover { color: #ffe8a8; }
+.primary-nav a:hover::after { width: 100%; }
+
+/* ALWAYS show center nav on desktop (was 1080px, now lower to 900px so it appears on wider laptops too) */
+@media (min-width: 900px) {
+  .primary-nav { display: inline-flex; }
+}
+
+/* ---- Hamburger — white lines on transparent bar ---- */
+.hamburger {
+  width: 52px;
+  height: 52px;
+  min-width: 48px;
+  min-height: 48px;
+  border-radius: 12px;
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  transition: background .15s var(--ease);
+  flex-shrink: 0;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.hamburger:active { background: rgba(255,255,255,.18); }
+@media (hover: hover) and (pointer: fine) {
+  .hamburger:hover { background: rgba(255,255,255,.12); }
+}
+
+.hamburger span {
+  display: block;
+  width: 24px;
+  height: 2.4px;
+  background: #ffffff;
+  border-radius: 3px;
+  transition: transform .3s var(--ease), opacity .2s var(--ease);
+}
+
+.hamburger[aria-expanded="true"] span:nth-child(1) { transform: translateY(7.4px) rotate(45deg); }
+.hamburger[aria-expanded="true"] span:nth-child(2) { opacity: 0; }
+.hamburger[aria-expanded="true"] span:nth-child(3) { transform: translateY(-7.4px) rotate(-45deg); }
+
+/* =========================================================
+   SIDE MENU
+   ========================================================= */
+.sidemenu {
+  position: fixed;
+  top: 0; right: 0;
+  width: min(360px, 88vw);
+  height: 100vh;
+  height: 100dvh;
+  background: linear-gradient(180deg, #0b1f3a 0%, #0a1330 100%);
+  color: #e8ecf7;
+  z-index: 200;
+  transform: translateX(100%);
+  transition: transform .35s var(--ease);
+  padding: calc(20px + var(--safe-top)) calc(20px + var(--safe-right)) calc(20px + var(--safe-bottom)) 20px;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+  will-change: transform;
+}
+
+.sidemenu.is-open { transform: translateX(0); }
+
+/* Swipe-edge hint on mobile (small grab area) */
+.sidemenu::before {
+  content: "";
+  position: absolute;
+  top: 0; left: -14px; bottom: 0;
+  width: 14px;
+  pointer-events: auto;
+}
+
+.sidemenu__close {
+  position: absolute;
+  top: calc(12px + var(--safe-top));
+  right: calc(10px + var(--safe-right));
+  width: 48px;
+  height: 48px;
+  min-width: 48px;
+  min-height: 48px;
+  color: #fff;
+  font-size: 34px;
+  line-height: 1;
+  border-radius: 10px;
+  transition: background .15s var(--ease);
+  -webkit-appearance: none;
+  appearance: none;
+}
+.sidemenu__close:active { background: rgba(255,255,255,.14); }
+@media (hover: hover) and (pointer: fine) {
+  .sidemenu__close:hover { background: rgba(255,255,255,.08); }
+}
+
+.sidemenu__header {
+  /* 侧边栏顶部放 Logo + Virtual */
+  display: block;
+  padding: 12px 8px 8px;
+  margin: 0 0 6px;
+  border: 0;
+  background: transparent;
+}
+
+.sidemenu__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 6px;
+}
+
+.sidemenu__logo-img {
+  display: inline-block;
+  height: 34px;          /* 侧边栏里的logo不要太大 */
+  width: auto;
+  max-width: 65vw;
+  object-fit: contain;
+}
+
+.sidemenu__virtual {
+  display: inline-block;
+  font-family: "Barlow", sans-serif;
+  font-weight: 600;
+  font-style: italic;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: #ffffff;
+  font-size: 12px;
+  line-height: 1.1;
+  white-space: nowrap;
+  text-shadow: 0 1px 2px rgba(0,0,0,.35);
+}
+
+
+.sidemenu__list {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: 2px;
+}
+
+.sidemenu__list li a {
+  display: block;
+  padding: 16px 14px;
+  min-height: 52px;
+  border-radius: 10px;
+  font-size: 17px;
+  font-weight: 500;
+  letter-spacing: .02em;
+  color: #d6dcec;
+  border-bottom: 1px solid rgba(255,255,255,.05);
+  transition: background .15s var(--ease), color .15s var(--ease);
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.sidemenu__list li a::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 50%;
+  width: 3px; height: 0;
+  background: var(--color-accent);
+  transform: translateY(-50%);
+  border-radius: 2px;
+  transition: height .2s var(--ease);
+}
+
+.sidemenu__list li a:active {
+  background: rgba(255,255,255,.09);
+  color: #fff;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .sidemenu__list li a:hover {
+    background: rgba(255,255,255,.05);
+    color: #fff;
+  }
+  .sidemenu__list li a:hover::before { height: 20px; }
+}
+
+.sidemenu__footer {
+  font-size: 12px;
+  color: rgba(255,255,255,.4);
+  padding: 18px 8px 6px;
+  border-top: 1px solid rgba(255,255,255,.06);
+}
+
+.backdrop {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.55);
+  z-index: 150;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .3s var(--ease);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+}
+
+.backdrop.is-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* =========================================================
+   HERO — Full-screen background image
+   ========================================================= */
+.hero {
+  position: relative;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding-top: calc(var(--nav-h) + var(--safe-top));
+  padding-bottom: calc(60px + var(--safe-bottom));
+  padding-left: var(--safe-left);
+  padding-right: var(--safe-right);
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  color: #fff;
+  overflow: hidden;
+}
+
+/* Background image layer */
+.hero__bg {
+  position: absolute; inset: 0;
+  background: url("./hero-bg.jpg")
+    center center / cover no-repeat,
+    #0b1f3a;
+  transform: scale(1.05);
+  animation: slowZoom 18s ease-out forwards;
+  z-index: 1;
+}
+
+@keyframes slowZoom {
+  from { transform: scale(1.08); }
+  to   { transform: scale(1); }
+}
+
+/* Gradient overlay so text stays readable (matches style of ifczvg.com hero) */
+.hero__overlay {
+  position: absolute; inset: 0; z-index: 2;
+  background:
+    linear-gradient(180deg, rgba(6,14,38,.25) 0%, rgba(6,14,38,.1) 30%, rgba(6,14,38,.55) 100%),
+    linear-gradient(90deg, rgba(6,14,38,.55) 0%, rgba(6,14,38,.15) 55%, rgba(6,14,38,.2) 100%);
+}
+
+.hero__content {
+  position: relative;
+  z-index: 3;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+  padding: 0 28px;
+}
+
+.hero__eyebrow {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .32em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.88);
+  padding: 8px 16px;
+  border: 1px solid rgba(255,255,255,.3);
+  border-radius: 999px;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  background: rgba(255,255,255,.08);
+  margin-bottom: 28px;
+}
+
+.hero__title {
+  font-family: "Barlow", sans-serif;
+  font-weight: 800;
+  font-size: clamp(36px, 9vw, 84px);
+  line-height: 1.05;
+  letter-spacing: -.01em;
+  max-width: 16ch;
+  margin-bottom: 22px;
+  text-shadow: 0 2px 30px rgba(0,0,0,.4);
+  word-break: break-word;
+}
+
+.hero__subtitle {
+  font-size: clamp(15px, 1.4vw, 18px);
+  font-weight: 400;
+  color: rgba(255,255,255,.9);
+  max-width: 100%;
+  margin-bottom: 36px;
+  line-height: 1.7;
+}
+
+.hero__actions {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+/* ---- APPLY NEW button (white background, black text, no icons, minimal) ---- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  outline: none;
+  transition: transform .2s var(--ease), background .2s var(--ease), box-shadow .2s var(--ease);
+  user-select: none;
+  white-space: nowrap;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.btn--apply {
+  background: #ffffff;
+  color: #111111;
+  padding: 11px 30px;
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  border-radius: 2px;
+  box-shadow:
+    0 0 0 1px rgba(0,0,0,.15),
+    0 10px 30px -10px rgba(0,0,0,.65);
+  min-height: 42px;
+  height: auto;
+  line-height: 1;
+  width: auto;
+  max-width: 100%;
+  touch-action: manipulation;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .btn--apply:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 16px 40px -14px rgba(0,0,0,.6);
+    background: #f5f5f5;
+  }
+}
+
+.btn--apply:active {
+  transform: translateY(0);
+  background: #ececec;
+  box-shadow: 0 6px 18px -8px rgba(0,0,0,.55);
+}
+
+/* Scroll cue */
+.hero__scroll {
+  position: absolute;
+  left: 50%;
+  bottom: calc(24px + var(--safe-bottom));
+  transform: translateX(-50%);
+  z-index: 3;
+  width: 28px;
+  height: 46px;
+  border: 2px solid rgba(255,255,255,.55);
+  border-radius: 18px;
+  display: inline-flex;
+  justify-content: center;
+  padding-top: 8px;
+}
+
+.hero__scroll span {
+  display: block;
+  width: 3px;
+  height: 8px;
+  background: #fff;
+  border-radius: 2px;
+  animation: cue 1.8s ease-in-out infinite;
+}
+
+@keyframes cue {
+  0%   { transform: translateY(0); opacity: 1; }
+  100% { transform: translateY(16px); opacity: 0; }
+}
+
+/* =========================================================
+   RESPONSIVE — Mobile / Touch first adjustments
+   ========================================================= */
+@media (max-width: 900px) {
+  .hero__subtitle { max-width: 100%; }
+  .hero__actions { width: 100%; }
+  .hero__actions .btn { flex: 1 1 auto; }
+}
+
+@media (max-width: 640px) {
+  :root { --nav-h: 60px; }
+  .topbar__inner {
+    padding: 0 calc(12px + var(--safe-left)) 0 calc(12px + var(--safe-right));
+    gap: 10px;
+  }
+  .hero__content {
+    padding: 0 calc(20px + var(--safe-left)) 0 calc(20px + var(--safe-right));
+  }
+  .brand { min-width: 48px; }
+  .brand__placeholder { width: 48px; height: 28px; }
+  .hamburger { width: 48px; height: 48px; }
+  .hero__eyebrow {
+    font-size: 11px;
+    letter-spacing: .26em;
+    padding: 7px 14px;
+    margin-bottom: 22px;
+  }
+  .hero__title {
+    font-size: clamp(34px, 11.5vw, 52px);
+    max-width: 100%;
+    margin-bottom: 18px;
+  }
+  .hero__subtitle {
+    font-size: 15px;
+    line-height: 1.65;
+    margin-bottom: 30px;
+  }
+  .hero__actions { width: 100%; gap: 10px; }
+  .btn--apply {
+    width: 100%;
+    padding: 11px 24px;
+    font-size: 12.5px;
+    letter-spacing: .14em;
+    min-height: 42px;
+    box-shadow:
+      0 0 0 1px rgba(0,0,0,.15),
+      0 10px 30px -10px rgba(0,0,0,.7);
+  }
+  .sidemenu { padding: calc(14px + var(--safe-top)) calc(12px + var(--safe-right)) calc(14px + var(--safe-bottom)) 12px; }
+  .sidemenu__list li a { padding: 15px 14px; font-size: 16px; min-height: 52px; }
+  .sidemenu__footer { font-size: 11px; }
+}
+
+/* Very small screens (<380px) */
+@media (max-width: 380px) {
+  .brand { min-width: 36px; }
+  .brand__placeholder { width: 36px; height: 24px; }
+  .hero__title { font-size: 32px; }
+  .hero__eyebrow { letter-spacing: .22em; font-size: 10.5px; }
+  .btn--apply { font-size: 12px; letter-spacing: .12em; padding: 9px 20px; min-height: 38px; }
+}
+
+/* Landscape mobile — tighten hero */
+@media (max-height: 520px) and (orientation: landscape) {
+  .hero__eyebrow { margin-bottom: 14px; padding: 6px 14px; font-size: 10.5px; }
+  .hero__title { font-size: clamp(28px, 6.4vw, 44px); margin-bottom: 12px; }
+  .hero__subtitle { margin-bottom: 20px; font-size: 14px; }
+  .hero__scroll { display: none; }
+}
+
+/* =========================================================
+   PAGE BANNER (secondary pages — homepage-style top visual
+   so the transparent topbar remains visible)
+   ========================================================= */
+.page-banner {
+  position: relative;
+  min-height: 360px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  text-align: center;
+  overflow: hidden;
+  /* Hero inner content uses padding-top: calc(topbar height + safe-area) */
+  padding: calc(var(--topbar-h, 72px) + env(safe-area-inset-top, 0) + 40px) 28px 48px;
+  box-sizing: border-box;
+}
+
+.page-banner__inner {
+  position: relative;
+  z-index: 2;
+  max-width: 920px;
+  margin: 0 auto;
+  color: #fff;
+}
+
+.page-banner__crumb {
+  font-family: "Barlow", system-ui, sans-serif;
+  font-weight: 500;
+  letter-spacing: .24em;
+  text-transform: uppercase;
+  font-size: 12px;
+  color: rgba(255,255,255,.8);
+  margin-bottom: 14px;
+}
+
+.page-banner__title {
+  /* Match homepage hero title font: Barlow bold uppercase (no Playfair serif) */
+  font-family: "Barlow", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-weight: 800;
+  font-style: normal;
+  letter-spacing: -.01em;
+  text-transform: uppercase;
+  font-size: clamp(36px, 7vw, 72px);
+  line-height: 1.05;
+  letter-spacing: -0.005em;
+  color: #fff;
+  margin: 0;
+  text-shadow: 0 2px 12px rgba(0,0,0,.18);
+}
+
+@media (max-width: 640px) {
+  .page-banner { min-height: 300px; }
+  .page-banner__crumb { font-size: 11px; letter-spacing: .20em; margin-bottom: 10px; }
+}
+
+/* =========================================================
+   ABOUT SECTION
+   ========================================================= */
+.about {
+  background: var(--color-bg);
+  padding: clamp(80px, 12vw, 140px) 0 clamp(80px, 12vw, 140px);
+  position: relative;
+  overflow: hidden;
+}
+.about::before {
+  /* subtle diagonal accent so section feels intentional, not just a blank wall */
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(700px 400px at 100% 0%, rgba(37, 99, 235, .05) 0%, transparent 60%),
+    radial-gradient(500px 320px at 0% 100%, rgba(11, 31, 58, .04) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.about__inner {
+  position: relative;
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 0 28px;
+  text-align: center;
+}
+
+.about__eyebrow {
+  display: inline-block;
+  font-family: "Barlow", system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: .30em;
+  text-transform: uppercase;
+  color: var(--color-accent, #2563eb);
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: rgba(37, 99, 235, .08);
+  margin-bottom: 22px;
+}
+
+.about__title {
+  /* Match homepage hero title font: Barlow black uppercase headline */
+  font-family: "Barlow", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-weight: 800;
+  font-style: normal;
+  letter-spacing: -.01em;
+  text-transform: uppercase;
+  color: #0b1f3a;
+  font-size: clamp(36px, 6.4vw, 72px);
+  line-height: 1.04;
+  margin-bottom: 22px;
+}
+.about__va {
+  color: var(--color-accent, #2563eb);
+  font-family: "Barlow", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-style: normal;
+  font-weight: 800;
+  letter-spacing: .02em;
+}
+
+.about__lead {
+  /* Match homepage hero subtitle style: Barlow regular (no italics), slightly muted tone */
+  font-family: "Barlow", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-weight: 500;
+  font-style: normal;
+  color: #2b3a58;
+  font-size: clamp(16px, 1.8vw, 20px);
+  line-height: 1.65;
+  max-width: 640px;
+  margin: 0 auto 20px;
+}
+
+.about__body {
+  font-family: "Barlow", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color: #42506b;
+  font-size: clamp(15px, 1.8vw, 18px);
+  line-height: 1.8;
+  max-width: 680px;
+  margin: 0 auto;
+}
+
+/* Mobile: tweak text sizes */
+@media (max-width: 640px) {
+  .about__eyebrow { font-size: 11px; letter-spacing: .22em; padding: 7px 14px; }
+  .about__title { margin-bottom: 18px; }
+  .about__lead { margin-bottom: 20px; }
+  .about { padding: 72px 0 72px; }
+}
+
+/* Disable hover highlight on coarse pointers (touch) globally */
+@media (hover: none) and (pointer: coarse) {
+  a:hover, button:hover { background: transparent !important; color: inherit; }
+}
+
+/* ---------- Routes section (homepage anchor: #routes) ---------- */
+.routes {
+  background: #ffffff;
+  padding: 72px 22px 100px;
+}
+.routes__inner {
+  max-width: 1180px;
+  margin: 0 auto;
+}
+.routes__head {
+  max-width: 880px;
+  margin-bottom: 42px;
+  text-align: left;
+}
+.routes__title {
+  font-size: clamp(36px, 6vw, 64px);
+  line-height: 1.05;
+  font-weight: 800;
+  letter-spacing: -0.015em;
+  color: var(--navy, #07101f);
+  margin-bottom: 16px;
+}
+.routes__subtitle {
+  font-size: clamp(16px, 2vw, 20px);
+  line-height: 1.65;
+  color: var(--ink-soft, #6b7280);
+  font-weight: 400;
+}
+
+.routes__grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 26px;
+}
+@media (min-width: 860px) {
+  .routes__grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 28px;
+  }
+}
+
+.routecard {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  background: #ffffff;
+  border-radius: 22px;
+  padding: 0;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(15,23,42,.06), 0 10px 28px -16px rgba(7,16,31,.22);
+  border: 1px solid #edf0f6;
+}
+.routecard__title {
+  font-size: clamp(18px, 2.2vw, 22px);
+  font-weight: 700;
+  letter-spacing: -.005em;
+  color: var(--navy, #07101f);
+  padding: 22px 22px 0;
+}
+.routecard__frame {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  width: 100%;
+  overflow: hidden;
+  margin: 0 22px;
+  width: calc(100% - 44px);
+  border-radius: 18px;
+  background: #0d131f;
+  border: 1px solid rgba(148,163,184,.18);
+  box-shadow: 0 20px 40px -20px rgba(7,16,31,.25);
+}
+.routecard__img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: center/cover no-repeat;
+  /* Per user request: original image, no filter, no overlay, no transforms. */
+  filter: none;
+  transform: none;
+  opacity: 1;
+}
+.routecard__caption {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--ink-soft, #6b7280);
+  padding: 0 22px 22px;
+}
+.routecard__frame.is-fallback {
+  background:
+    linear-gradient(180deg, rgba(12,22,40,.78), rgba(8,14,28,.88)),
+    repeating-linear-gradient(135deg, #0e1626 0 8px, #0a1120 8px 16px);
+}
+.routecard__frame.is-fallback::after {
+  content: "Image coming soon";
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #cbd5e1;
+  font-weight: 600;
+  letter-spacing: .04em;
+  font-size: 15px;
+}
+

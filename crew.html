@@ -1,0 +1,2072 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, shrink-to-fit=no" />
+  <meta name="theme-color" content="#eef2ff" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#0b1f3a" media="(prefers-color-scheme: dark)" />
+  <meta name="format-detection" content="telephone=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <title>MFVA Crew Center — Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --nav-h: 68px;
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+      --ease: cubic-bezier(.22,.61,.36,1);
+      --brand: #0057b8;
+      --brand-dark: #00418c;
+      --ink: #0b1220;
+      --ink-2: #1f2937;
+      --ink-soft: #6b7280;
+      --line: #e5e7eb;
+      --bg-1: #e7edff;
+      --bg-2: #f3f5ff;
+      --card: #ffffff;
+      --radius-card: 22px;
+      --shadow-card: 0 1px 2px rgba(17,24,39,.04), 0 6px 22px -10px rgba(17,24,39,.12);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      -webkit-text-size-adjust: 100%;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+      min-height: 100%;
+    }
+
+    body {
+      font-family: "Barlow", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(1200px 700px at 85% -10%, #dce4ff 0%, transparent 60%),
+        radial-gradient(900px 600px at -10% 110%, #e3ecff 0%, transparent 55%),
+        linear-gradient(180deg, var(--bg-1) 0%, var(--bg-2) 100%);
+      min-height: 100vh;
+      min-height: 100dvh;
+      padding: calc(16px + var(--safe-top)) 16px calc(120px + var(--safe-bottom));
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    a { color: inherit; text-decoration: none; }
+    button { font-family: inherit; cursor: pointer; border: none; background: none; }
+
+    /* ---------- Top subtle header ---------- */
+    .crew-topbar {
+      max-width: 1040px;
+      margin: 0 auto 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .crew-topbar__crumb {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: #4b5563;
+      font-weight: 500;
+      font-size: 13px;
+      padding: 6px 10px;
+      border-radius: 8px;
+      background: transparent;
+      transition: background .2s var(--ease), color .2s var(--ease);
+    }
+    .crew-topbar__crumb:hover {
+      background: rgba(255,255,255,.55);
+      color: #111827;
+    }
+    .crew-topbar__crumb svg {
+      width: 15px; height: 15px;
+    }
+    .crew-topbar__brand {
+      color: #374151;
+      font-weight: 600;
+    }
+    .crew-topbar__actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .icon-btn {
+      width: 42px; height: 42px;
+      border-radius: 12px;
+      background: rgba(255,255,255,.7);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: #1f2937;
+      transition: transform .15s var(--ease), background .2s var(--ease);
+    }
+    .icon-btn:hover { background: #fff; }
+    .icon-btn:active { transform: scale(.96); }
+    .icon-btn svg { width: 18px; height: 18px; }
+
+    /* ---------- Card container ---------- */
+    .crew-wrap {
+      max-width: 1040px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 22px;
+    }
+    @media (min-width: 900px) {
+      .crew-wrap {
+        grid-template-columns: 1.25fr .95fr;
+        gap: 26px;
+      }
+      .card--profile { grid-column: 1 / -1; }
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-card);
+      box-shadow: var(--shadow-card);
+      padding: clamp(20px, 2.2vw, 28px);
+    }
+
+    /* ---------- Profile card ---------- */
+    .card--profile {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      align-items: center;
+      gap: 18px 22px;
+    }
+    .avatar {
+      width: 64px; height: 64px;
+      border-radius: 50%;
+      background: #eef2ff;
+      color: #1d4fd1;
+      font-weight: 700;
+      font-size: 28px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      grid-row: span 2;
+    }
+    @media (max-width: 520px) {
+      .avatar { width: 54px; height: 54px; font-size: 22px; }
+      .card--profile { grid-template-columns: auto minmax(0, 1fr); gap: 12px 16px; }
+    }
+    .profile__name-row {
+      display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px;
+      min-width: 0;
+    }
+    .profile__name {
+      font-size: clamp(26px, 3.2vw, 40px);
+      font-weight: 800;
+      line-height: 1.1;
+      letter-spacing: -.01em;
+      color: var(--ink);
+      /* Same style as register.html placeholders: neutral, never echoes real credentials. */
+    }
+    .badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 14px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: #fff;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: .02em;
+    }
+    .badge--active {
+      color: #065f46;
+      border-color: #a7f3d0;
+      background: #ecfdf5;
+    }
+    .badge--active::before {
+      content: "";
+      width: 8px; height: 8px; border-radius: 50%;
+      background: #10b981;
+      box-shadow: 0 0 0 4px rgba(16,185,129,.18);
+    }
+    .profile__callsign {
+      display: inline-flex; align-items: center;
+      padding: 7px 14px;
+      border-radius: 12px;
+      background: #f3f4f6;
+      border: 1px solid #e5e7eb;
+      font-size: 15px; font-weight: 600; color: #1f2937;
+      margin-top: 4px;
+      width: max-content; max-width: 100%;
+    }
+    .profile__email {
+      grid-column: 2;
+      color: var(--ink-soft);
+      font-size: 15px;
+      /* Matches register.html placeholder tone (example-style, never real data). */
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 2px;
+    }
+    @media (max-width: 520px) {
+      .profile__email { grid-column: 1 / -1; }
+    }
+
+    .profile__actions {
+      grid-column: 1 / -1;
+      display: flex; flex-wrap: wrap; gap: 12px;
+      margin-top: 10px;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 14px 20px;
+      min-height: 52px;
+      border-radius: 14px;
+      font-weight: 600;
+      font-size: 16px;
+      letter-spacing: .02em;
+      transition: transform .15s var(--ease), box-shadow .2s var(--ease), background .2s var(--ease);
+      white-space: nowrap;
+    }
+    .btn:active { transform: scale(.98); }
+    .btn--primary {
+      background: var(--brand);
+      color: #fff;
+      box-shadow: 0 8px 18px -8px rgba(0,87,184,.55);
+    }
+    .btn--primary:hover { background: var(--brand-dark); }
+    .btn--ghost {
+      background: #fff;
+      color: var(--ink-2);
+      border: 1px solid var(--line);
+    }
+    .btn--ghost:hover { border-color: #cdd6e9; background: #fafbff; }
+    .btn svg { width: 20px; height: 20px; }
+    @media (max-width: 520px) {
+      .profile__actions .btn { flex: 1 1 46%; min-width: 0; padding: 12px 14px; min-height: 48px; font-size: 15px; }
+    }
+
+    /* ---------- Generic stat card ---------- */
+    .card h2 {
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      color: var(--ink-soft);
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .card h2 svg {
+      width: 22px; height: 22px;
+      color: #9aa3b8;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 1.8;
+    }
+    .stat__value {
+      font-size: clamp(40px, 5.8vw, 60px);
+      font-weight: 800;
+      letter-spacing: -.02em;
+      line-height: 1.05;
+      color: var(--ink);
+      font-variant-numeric: tabular-nums;
+    }
+    .stat__note {
+      margin-top: 8px;
+      color: var(--ink-soft);
+      font-size: 15px;
+    }
+
+    /* ---------- Rank Progress ---------- */
+    .rank__until {
+      color: var(--ink-soft);
+      font-size: 15px;
+      margin-bottom: 22px;
+      font-variant-numeric: tabular-nums;
+    }
+    .rank__labels {
+      display: flex; justify-content: space-between; align-items: baseline;
+      font-weight: 700;
+      font-size: clamp(15px, 1.6vw, 18px);
+      color: var(--ink-2);
+      margin-bottom: 14px;
+      gap: 12px;
+    }
+    .rank__labels span:last-child { color: var(--ink-soft); font-weight: 600; }
+    .rank__bar {
+      width: 100%;
+      height: 14px;
+      border-radius: 999px;
+      background: #e5e7eb;
+      overflow: hidden;
+      position: relative;
+    }
+    .rank__bar::after {
+      content: "";
+      display: block;
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(90deg, var(--brand) 0%, #3b82f6 100%);
+      border-radius: inherit;
+    }
+    .rank__pct {
+      margin-top: 10px;
+      color: var(--ink-soft);
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    /* ---------- Recent flights table ---------- */
+    .flights__sub {
+      color: var(--ink-soft);
+      font-size: 15px;
+      margin: -6px 0 22px;
+    }
+    .flights table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+    }
+    .flights th {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--ink-soft);
+      text-align: left;
+      padding: 12px 12px;
+      border-bottom: 2px solid var(--line);
+      letter-spacing: .02em;
+    }
+    .flights td {
+      padding: 18px 12px;
+      color: var(--ink-2);
+      font-size: 15px;
+      font-weight: 500;
+      border-bottom: 1px solid #f0f1f5;
+    }
+    .flights tr:last-child td { border-bottom: 0; }
+    .flights tr.empty-row td {
+      padding: 30px 12px 14px;
+      text-align: center;
+      color: var(--ink-soft);
+      font-weight: 500;
+      font-size: 15px;
+    }
+    @media (max-width: 680px) {
+      .flights th:nth-child(4), .flights th:nth-child(5),
+      .flights td:nth-child(4), .flights td:nth-child(5) { display: none; }
+    }
+
+    /* ---------- Floating Crew Menu (bottom-left) ---------- */
+    .crewmenu {
+      position: fixed;
+      right: max(16px, calc(16px + var(--safe-bottom)));
+      bottom: calc(20px + var(--safe-bottom));
+      z-index: 50;
+    }
+    .crewmenu__btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      min-height: 42px;
+      border-radius: 999px;
+      background: #ffffff;
+      color: #1f2937;
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: .03em;
+      box-shadow: 0 8px 22px -12px rgba(17,24,39,.25), 0 1px 2px rgba(17,24,39,.06);
+      border: 1px solid var(--line);
+      transition: transform .15s var(--ease), box-shadow .2s var(--ease), background .2s var(--ease);
+    }
+    .crewmenu__btn:hover { background: #f8faff; box-shadow: 0 10px 24px -12px rgba(17,24,39,.3); }
+    .crewmenu__btn:active { transform: translateY(1px) scale(.99); }
+    .crewmenu__btn svg { width: 17px; height: 17px; color: #374151; }
+
+    /* ---------- Side drawer ---------- */
+    .drawer {
+      position: fixed;
+      top: 0; right: 0; bottom: 0;
+      width: min(340px, 86vw);
+      background: #fff;
+      transform: translateX(102%);
+      transition: transform .28s var(--ease);
+      z-index: 70;
+      box-shadow: -20px 0 40px -20px rgba(17,24,39,.25);
+      display: flex;
+      flex-direction: column;
+      padding: calc(18px + var(--safe-top)) 20px calc(20px + var(--safe-bottom));
+    }
+    .drawer.is-open { transform: translateX(0); }
+    .drawer__header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 18px;
+    }
+    .drawer__title {
+      font-weight: 800;
+      font-size: 18px;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      color: var(--ink);
+    }
+    .drawer__close {
+      width: 38px; height: 38px;
+      border-radius: 10px;
+      background: #f3f4f6;
+      display: inline-flex; align-items: center; justify-content: center;
+      color: var(--ink-2); font-size: 22px; line-height: 1;
+    }
+    .drawer ul { list-style: none; display: flex; flex-direction: column; gap: 2px; }
+    .drawer li a, .drawer li button {
+      width: 100%;
+      text-align: left;
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 14px;
+      border-radius: 12px;
+      color: var(--ink-2);
+      font-weight: 600;
+      font-size: 15px;
+      letter-spacing: .02em;
+    }
+    .drawer li a:hover, .drawer li button:hover { background: #f4f6ff; color: var(--ink); }
+    .drawer li a svg, .drawer li button svg { width: 18px; height: 18px; color: #6b7280; flex-shrink: 0; }
+    .drawer__divider { height: 1px; background: #eef0f5; margin: 14px 2px; }
+    .drawer__footer {
+      margin-top: auto;
+      padding-top: 12px;
+      color: var(--ink-soft);
+      font-size: 13px;
+      text-align: center;
+    }
+    .drawer__signout {
+      color: #b91c1c !important;
+    }
+    .drawer__signout svg { color: #ef4444 !important; }
+
+    .drawer-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(11,18,32,.45);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .25s var(--ease);
+      z-index: 60;
+    }
+    .drawer-backdrop.is-open { opacity: 1; pointer-events: auto; }
+
+    /* ---------- Member management (admin only) ---------- */
+    .mm-section { margin-top: 4px; }
+    .mm-head {
+      display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+      gap: 12px; margin-bottom: 14px;
+    }
+    .mm-head h2 { margin-bottom: 0; }
+    .mm-btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 11px 16px; min-height: 44px;
+      border-radius: 12px; font-weight: 600; font-size: 14px;
+      background: var(--brand); color: #fff;
+      box-shadow: 0 8px 18px -8px rgba(0,87,184,.5);
+      transition: background .2s var(--ease), transform .15s var(--ease);
+    }
+    .mm-btn:hover { background: var(--brand-dark); }
+    .mm-btn:active { transform: scale(.98); }
+    .mm-btn svg { width: 16px; height: 16px; }
+    .mm-btn--ghost {
+      background: #fff; color: var(--ink-2);
+      border: 1px solid var(--line); box-shadow: none;
+    }
+    .mm-btn--ghost:hover { background: #f8faff; border-color: #cdd6e9; }
+    .mm-btn--danger {
+      background: #fff; color: #b91c1c;
+      border: 1px solid #fecaca; box-shadow: none;
+    }
+    .mm-btn--danger:hover { background: #fef2f2; }
+
+    .mm-empty {
+      padding: 26px 14px;
+      text-align: center;
+      color: var(--ink-soft);
+      font-weight: 500;
+      border: 1px dashed #d6dbe9;
+      border-radius: 14px;
+    }
+
+    .mm-table-wrap {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      overflow: hidden;
+      background: #fff;
+    }
+    .mm-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      font-size: 14px;
+    }
+    .mm-table thead th {
+      text-align: left;
+      padding: 12px 14px;
+      background: #f8faff;
+      color: var(--ink-soft);
+      font-weight: 600;
+      letter-spacing: .02em;
+      font-size: 12px;
+      text-transform: uppercase;
+      border-bottom: 1px solid var(--line);
+      white-space: nowrap;
+    }
+    .mm-table tbody td {
+      padding: 14px;
+      border-bottom: 1px solid #f0f2f7;
+      vertical-align: middle;
+      color: var(--ink-2);
+      font-weight: 500;
+    }
+    .mm-table tbody tr:last-child td { border-bottom: 0; }
+    .mm-email-cell {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 13px;
+      color: #0b1220;
+      word-break: break-all;
+    }
+    .mm-pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 4px 10px; border-radius: 999px;
+      font-size: 12px; font-weight: 600; letter-spacing: .02em;
+      border: 1px solid transparent;
+    }
+    .mm-pill--admin  { background:#eef2ff; color:#3730a3; border-color:#c7d2fe; }
+    .mm-pill--pilot  { background:#f0fdf4; color:#166534; border-color:#bbf7d0; }
+    .mm-pill--active { background:#ecfdf5; color:#065f46; border-color:#a7f3d0; }
+    .mm-pill--disabled { background:#fef2f2; color:#991b1b; border-color:#fecaca; }
+    .mm-rank-tag {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 4px 10px; border-radius: 8px;
+      font-size: 12px; font-weight: 600;
+      background: #fff7ed; color:#9a3412; border:1px solid #fed7aa;
+    }
+    .mm-actions-cell {
+      white-space: nowrap;
+    }
+    .mm-icon-btn {
+      width: 36px; height: 36px;
+      border-radius: 10px;
+      display: inline-flex; align-items: center; justify-content: center;
+      background: #f3f4f6;
+      color: #374151;
+      transition: background .15s var(--ease), color .15s var(--ease);
+      margin-right: 6px;
+    }
+    .mm-icon-btn:hover { background: #e5e7eb; color: #0b1220; }
+    .mm-icon-btn svg { width: 16px; height: 16px; }
+    .mm-icon-btn--danger:hover { background:#fee2e2; color:#991b1b; }
+
+    @media (max-width: 760px) {
+      .mm-table thead { display: none; }
+      .mm-table, .mm-table tbody, .mm-table tr, .mm-table td { display: block; width: 100%; }
+      .mm-table tr {
+        border-bottom: 1px solid var(--line);
+        padding: 8px 0;
+      }
+      .mm-table tbody td {
+        border-bottom: 0;
+        padding: 8px 14px;
+        display: flex; align-items: center; justify-content: space-between;
+        gap: 10px;
+      }
+      .mm-table tbody td::before {
+        content: attr(data-label);
+        font-size: 11px; text-transform: uppercase; letter-spacing: .04em;
+        color: var(--ink-soft);
+        font-weight: 600;
+        flex-shrink: 0;
+        margin-right: 10px;
+      }
+      .mm-actions-cell { justify-content: flex-end !important; }
+    }
+
+    /* ---------- Modal ---------- */
+    .modal-backdrop {
+      position: fixed; inset: 0;
+      background: rgba(11,18,32,.55);
+      opacity: 0; pointer-events: none;
+      transition: opacity .22s var(--ease);
+      z-index: 80;
+      display: flex; align-items: center; justify-content: center;
+      padding: 20px;
+    }
+    .modal-backdrop.is-open { opacity: 1; pointer-events: auto; }
+    .modal {
+      width: 100%; max-width: 560px;
+      max-height: calc(100vh - 40px);
+      max-height: calc(100dvh - 40px);
+      background: #fff;
+      border-radius: 22px;
+      box-shadow: 0 30px 60px -20px rgba(17,24,39,.4);
+      transform: translateY(12px) scale(.98);
+      transition: transform .22s var(--ease);
+      display: flex; flex-direction: column;
+      overflow: hidden;
+    }
+    .modal-backdrop.is-open .modal { transform: translateY(0) scale(1); }
+    .modal__header {
+      padding: 22px 26px 14px;
+      display: flex; align-items: flex-start; justify-content: space-between;
+      gap: 12px;
+      border-bottom: 1px solid var(--line);
+    }
+    .modal__title {
+      font-size: 22px; font-weight: 800; letter-spacing: -.01em; color: var(--ink);
+    }
+    .modal__subtitle {
+      margin-top: 4px; font-size: 13px; color: var(--ink-soft); font-weight: 500; line-height: 1.5;
+    }
+    .modal__close {
+      width: 38px; height: 38px; border-radius: 10px;
+      background: #f3f4f6; color: var(--ink-2);
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: 22px; line-height: 1; flex-shrink: 0;
+    }
+    .modal__close:hover { background: #e5e7eb; }
+    .modal__body {
+      padding: 20px 26px;
+      overflow-y: auto;
+      flex: 1;
+    }
+    .modal__footer {
+      padding: 16px 26px 22px;
+      border-top: 1px solid var(--line);
+      display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-end;
+      background: #fafbff;
+    }
+    .modal-flash {
+      display: none;
+      padding: 11px 13px; border-radius: 11px;
+      font-size: 13px; line-height: 1.45; font-weight: 500;
+      margin-bottom: 14px;
+    }
+    .modal-flash.is-visible { display: block; }
+    .modal-flash--error   { background:#fff1f1; color:#8b1f1f; border:1px solid #ffd0d0; }
+    .modal-flash--success { background:#ecf9ee; color:#1f6b2b; border:1px solid #bfe8c5; }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px 16px;
+    }
+    @media (max-width: 520px) { .form-grid { grid-template-columns: 1fr; } }
+    .form-grid .full { grid-column: 1 / -1; }
+    .ff label {
+      display: block;
+      font-size: 13px; font-weight: 600;
+      color: #374151; letter-spacing: .01em;
+      margin-bottom: 6px;
+    }
+    .ff input, .ff select, .ff textarea {
+      width: 100%;
+      padding: 12px 13px;
+      font-size: 15px; font-family: inherit;
+      color: var(--ink);
+      background: #f8faff;
+      border: 1.5px solid #dce3f5;
+      border-radius: 11px;
+      outline: none;
+      transition: border-color .18s var(--ease), box-shadow .18s var(--ease), background .18s var(--ease);
+    }
+    .ff input:focus, .ff select:focus, .ff textarea:focus {
+      border-color: var(--brand);
+      background: #fff;
+      box-shadow: 0 0 0 4px rgba(36,99,255,.15);
+    }
+    .ff-help {
+      font-size: 12px; color: var(--ink-soft); margin-top: 4px; font-weight: 500;
+    }
+    .ff-checkbox-row {
+      display: flex; align-items: center; gap: 10px;
+      padding: 12px 14px;
+      border: 1.5px solid #e3e8f5;
+      border-radius: 11px;
+      background: #fafbff;
+    }
+    .ff-checkbox-row input[type="checkbox"] {
+      width: 18px; height: 18px; accent-color: var(--brand); flex-shrink: 0;
+    }
+    .ff-checkbox-row label {
+      margin: 0;
+      font-size: 14px;
+    }
+    .ff-checkbox-row small {
+      display: block;
+      font-size: 12px; color: var(--ink-soft); margin-top: 2px; font-weight: 500;
+    }
+  </style>
+</head>
+<body>
+  <!-- Top minimal bar (no logo, no personal info echo) -->
+  <div class="crew-topbar" role="navigation" aria-label="Crew center top bar">
+    <a href="index.html" class="crew-topbar__crumb" title="Back to homepage">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+      <span>Home</span>
+      <span aria-hidden="true">/</span>
+      <span class="crew-topbar__brand">MFVA Crew Center</span>
+    </a>
+    <div class="crew-topbar__actions">
+      <button type="button" class="icon-btn" id="openDrawer" aria-label="Open crew menu" title="Crew Menu">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <main class="crew-wrap">
+    <!-- ============ PROFILE CARD ============ -->
+    <section class="card card--profile" aria-label="Pilot profile">
+      <div class="avatar" aria-hidden="true">P</div>
+
+      <div>
+        <div class="profile__name-row">
+          <!--
+            IMPORTANT: The name/callsign/email below are STATIC placeholders
+            matching the tone used in register.html (e.g. John Doe / pilot@example.com).
+            We intentionally do NOT echo the email/password/username entered in
+            the login form or carried through any URL/localStorage — this ensures
+            no real credentials ever appear on screen. Later, when a proper
+            backend auth session is implemented, swap these placeholders for
+            safe server-rendered profile fields.
+          -->
+          <h1 class="profile__name">Pilot Name</h1>
+          <span class="badge badge--active">Active</span>
+        </div>
+        <div class="profile__callsign" aria-label="Callsign">
+          <!-- Callsign prefix follows MFVA convention. Placeholder only. -->
+          MFVA 0000
+        </div>
+      </div>
+
+      <div class="profile__email" title="Contact email">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="width:16px;height:16px;"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="m3 7 9 6 9-6"/></svg>
+        pilot@example.com
+      </div>
+
+      <div class="profile__actions">
+        <a href="pirep.html" class="btn btn--primary" id="btnFilePirep" title="File PIREP">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3h7v7"/><path d="M10 14 21 3"/><path d="M21 14v7H3V3h7"/></svg>
+          File PIREP
+        </a>
+        <button type="button" class="btn btn--ghost" id="btnFindRoutes" title="Find routes">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          Find Routes
+        </button>
+      </div>
+    </section>
+
+    <!-- ============ LEFT COLUMN ============ -->
+    <div style="display:flex;flex-direction:column;gap:22px;min-width:0;">
+      <!-- Rank Progress -->
+      <section class="card" aria-label="Rank progress">
+        <h2>Rank Progress</h2>
+        <div class="rank__until">
+          <!-- Placeholder hours to next rank; matches reference 21:00 pattern -->
+          21:00 until Second Officer
+        </div>
+        <div class="rank__labels">
+          <span>Trainee Second Officer</span>
+          <span>Second Officer</span>
+        </div>
+        <div class="rank__bar" role="progressbar" aria-label="Rank progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div>
+        <div class="rank__pct">0% complete</div>
+      </section>
+
+      <!-- Flight Time -->
+      <section class="card" aria-label="Flight time">
+        <h2>
+          <span>Flight Time</span>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+        </h2>
+        <div class="stat__value">00:00</div>
+        <div class="stat__note">Approved PIREP time</div>
+      </section>
+
+      <!-- Approved PIREPs -->
+      <section class="card" aria-label="Approved PIREPs">
+        <h2>
+          <span>Approved PIREPs</span>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 15h20l-2-8H4L2 15z"/><path d="m12 10 7 5v3H5v-3l7-5z"/><path d="M12 10V3"/></svg>
+        </h2>
+        <div class="stat__value">0</div>
+        <div class="stat__note">Counted toward rank</div>
+      </section>
+    </div>
+
+    <!-- ============ RIGHT COLUMN ============ -->
+    <div style="display:flex;flex-direction:column;gap:22px;min-width:0;">
+      <!-- Pending PIREPs -->
+      <section class="card" aria-label="Pending PIREPs">
+        <h2>
+          <span>Pending PIREPs</span>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h10l4 4v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M14 3v4h4"/><path d="M8 13h8M8 17h5"/></svg>
+        </h2>
+        <div class="stat__value">0</div>
+        <div class="stat__note">Awaiting staff review</div>
+      </section>
+
+      <!-- Member Since -->
+      <section class="card" aria-label="Member since">
+        <h2>
+          <span>Member Since</span>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2"/></svg>
+        </h2>
+        <div class="stat__value" style="font-size: clamp(34px, 5vw, 52px);">—</div>
+        <div class="stat__note">Current rank: Trainee Second Officer</div>
+      </section>
+
+      <!-- Recent Flights -->
+      <section class="card flights" aria-label="Recent flights">
+        <h2 style="text-transform: none; font-size: 24px; letter-spacing: -.01em; color: var(--ink);">
+          <span>Recent Flights</span>
+        </h2>
+        <div class="flights__sub">Your latest PIREP activity</div>
+        <table role="table" aria-label="Recent flights table">
+          <thead>
+            <tr>
+              <th>Flight</th>
+              <th>Route</th>
+              <th>Aircraft</th>
+              <th>Time</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="empty-row">
+              <td colspan="5">No PIREPs filed yet.</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+    </div>
+
+    <!-- ============ ADMIN: MEMBER MANAGEMENT ============ -->
+    <section class="card mm-section" id="memberMgmt" aria-label="Member management" style="display:none; grid-column: 1 / -1;">
+      <div class="mm-head">
+        <h2 style="text-transform:none; font-size:22px; letter-spacing:-.01em; color:var(--ink);">
+          <span style="display:inline-flex; align-items:center; gap:10px;">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="color:#4b5563;"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            Member Management
+            <span id="pendingBadge" title="Pending applications awaiting your review" style="display:none; margin-left:4px; padding:2px 9px; border-radius:999px; background:#dc2626; color:#fff; font-size:12px; font-weight:700; letter-spacing:.01em; line-height:1.4; box-shadow:0 6px 14px rgba(220,38,38,.35); animation: mmPulse 1.4s ease-in-out infinite;">0</span>
+          </span>
+        </h2>
+        <button type="button" class="mm-btn" id="btnAddMember">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add Member
+        </button>
+      </div>
+
+      <div id="mmBody">
+        <div class="mm-empty">Loading members…</div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ============ MEMBER FORM MODAL ============ -->
+  <div class="modal-backdrop" id="mmModal" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="mmModalTitle">
+      <div class="modal__header">
+        <div style="min-width:0;">
+          <div class="modal__title" id="mmModalTitle">Add Member</div>
+          <div class="modal__subtitle" id="mmModalSubtitle">Create a new pilot account and grant permissions.</div>
+        </div>
+        <button type="button" class="modal__close" id="mmModalClose" aria-label="Close">&times;</button>
+      </div>
+      <div class="modal__body">
+        <div class="modal-flash" id="mmFlash" role="alert"></div>
+        <form id="mmForm" novalidate>
+          <input type="hidden" id="mmOriginalEmail" />
+          <div class="form-grid">
+            <div class="ff full">
+              <label for="mmEmail">Email Address <span style="color:#b91c1c;">*</span></label>
+              <input id="mmEmail" type="email" placeholder="pilot@example.com" required />
+              <div class="ff-help">The email address they will use to sign in.</div>
+            </div>
+
+            <div class="ff">
+              <label for="mmDisplayName">Display Name</label>
+              <input id="mmDisplayName" type="text" placeholder="e.g. Alex Chen" />
+            </div>
+            <div class="ff">
+              <label for="mmCallsign">Callsign</label>
+              <input id="mmCallsign" type="text" placeholder="e.g. MFVA0123" />
+            </div>
+
+            <div class="ff">
+              <label for="mmPassword">Password</label>
+              <input id="mmPassword" type="text" autocomplete="new-password" placeholder="Leave blank to keep current" />
+              <div class="ff-help" id="mmPasswordHelp">Set a password for this member.</div>
+            </div>
+            <div class="ff">
+              <label for="mmMemberSince">Member Since</label>
+              <input id="mmMemberSince" type="date" />
+            </div>
+
+            <div class="ff">
+              <label for="mmRole">Role</label>
+              <select id="mmRole">
+                <option value="pilot">Pilot</option>
+                <option value="admin">Admin</option>
+              </select>
+              <div class="ff-help">Admins can also manage members.</div>
+            </div>
+            <div class="ff">
+              <label for="mmStatus">Status</label>
+              <select id="mmStatus">
+                <option value="active">Active</option>
+                <option value="disabled">Disabled</option>
+              </select>
+            </div>
+
+            <div class="ff full">
+              <label for="mmRank">Maximum Rank Permission</label>
+              <select id="mmRank"></select>
+              <div class="ff-help">Highest rank this pilot is authorized for. Controls fleet access.</div>
+            </div>
+
+            <div class="ff full">
+              <div class="ff-checkbox-row">
+                <input type="checkbox" id="mmCanFilePirep" />
+                <label for="mmCanFilePirep">
+                  Allow File PIREP
+                  <small>Permitted to submit pilot reports.</small>
+                </label>
+              </div>
+            </div>
+            <div class="ff full">
+              <div class="ff-checkbox-row">
+                <input type="checkbox" id="mmCanUseRoutesDB" />
+                <label for="mmCanUseRoutesDB">
+                  Allow Routes Database Access
+                  <small>Permitted to browse route networks.</small>
+                </label>
+              </div>
+            </div>
+            <div class="ff full">
+              <div class="ff-checkbox-row">
+                <input type="checkbox" id="mmAllowAnyPassword" />
+                <label for="mmAllowAnyPassword">
+                  Accept any non-empty password on sign-in (onboarding waiver)
+                  <small>Less secure — use this only temporarily while the pilot sets their password.</small>
+                </label>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal__footer">
+        <button type="button" class="mm-btn mm-btn--ghost" id="mmCancelBtn">Cancel</button>
+        <button type="button" class="mm-btn" id="mmSaveBtn">Save Member</button>
+      </div>
+      <!-- 保存结果 → 给用户肉眼可见的证据：密码是否真的写入 storage、写入的哈希、updatedBy 是谁 -->
+      <div class="mm-save-diagnostic" id="mmSaveDiagnostic"
+           style="display:none;margin:12px 20px 20px;padding:12px 14px;border:1px solid #c7e4d6;border-radius:10px;background:#f1fbf5;color:#14532d;font-size:12.5px;line-height:1.55;letter-spacing:.01em;">
+      </div>
+    </div>
+  </div>
+
+  <!-- Floating Crew Menu button (bottom-left, matches reference screenshot) -->
+  <div class="crewmenu">
+    <button type="button" class="crewmenu__btn" id="crewMenuBtn" aria-label="Open crew menu">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      Crew Menu
+    </button>
+  </div>
+
+  <!-- Drawer (opens from right; same behavior as Crew Menu button) -->
+  <div class="drawer-backdrop" id="drawerBackdrop" aria-hidden="true"></div>
+  <aside class="drawer" id="drawer" aria-hidden="true" aria-label="Crew menu">
+    <div class="drawer__header">
+      <div class="drawer__title">Crew Menu</div>
+      <button type="button" class="drawer__close" id="drawerClose" aria-label="Close crew menu">&times;</button>
+    </div>
+
+    <ul>
+      <li>
+        <a href="crew.html" aria-current="page">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+          Dashboard
+        </a>
+      </li>
+      <li>
+        <a href="pirep.html" id="drawerFilePirep">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3h7v7"/><path d="M10 14 21 3"/><path d="M21 14v7H3V3h7"/></svg>
+          File PIREP
+        </a>
+      </li>
+      <li>
+        <button type="button" id="drawerFindRoutes">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          Find Routes
+        </button>
+      </li>
+      <li>
+        <a href="hubs.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s7-7.5 7-13a7 7 0 0 0-14 0c0 5.5 7 13 7 13z"/><circle cx="12" cy="9" r="2.5"/></svg>
+          Hubs
+        </a>
+      </li>
+      <li>
+        <a href="fleet.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 17v2h20v-2"/><path d="M6 17 2 7l4-1 4 4h6l4-4 4 1-4 10H6z"/></svg>
+          Fleet
+        </a>
+      </li>
+      <li>
+        <a href="routes.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="6" r="2.5"/><circle cx="19" cy="6" r="2.5"/><path d="M7.5 6h9M5 8.5c0 3 3.5 4 7 4s7-1 7-4"/><path d="M12 12.5v3M8 19h8l-2-3.5h-4L8 19z"/></svg>
+          Routes
+        </a>
+      </li>
+      <li>
+        <a href="about.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v5h1"/></svg>
+          About MFVA
+        </a>
+      </li>
+    </ul>
+
+    <div class="drawer__divider"></div>
+
+    <ul>
+      <li>
+        <button type="button" id="signOutBtn" class="drawer__signout">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="m10 17 5-5-5-5"/><path d="M15 12H3"/></svg>
+          Sign out
+        </button>
+      </li>
+    </ul>
+
+    <div class="drawer__footer">
+      &copy; <span id="year"></span> MFVA &middot; Xiamen Virtual Airlines
+    </div>
+  </aside>
+
+  <script src="auth.js?v=20260823-pirepfix"></script>
+  <script>
+    (function () {
+      "use strict";
+
+      // ---------- Auth gate using MFVAauth ----------
+      var auth = window.MFVAauth;
+      if (!auth) {
+        document.body.innerHTML =
+          '<div style="padding:40px;font-family:sans-serif;color:#b91c1c;">' +
+          'Authentication module failed to load. Return to <a href="index.html">Home</a>.' +
+          '</div>';
+        return;
+      }
+
+      (function authGate() {
+        if (!auth.isSignedIn()) {
+          try { sessionStorage.setItem("mfva_redirect_after_login", "crew.html"); } catch (e) {}
+          window.location.replace("login.html");
+        }
+      })();
+
+      var grants = auth.grantsFor();
+      var me = auth.currentUser();
+      var isAdmin = auth.isAdmin();
+
+      // ---------- Year ----------
+      var y = document.getElementById("year");
+      if (y) y.textContent = new Date().getFullYear();
+
+      // ---------- Render profile with SAFE placeholders when data is empty ----------
+      var displayName = (grants && grants.displayName) || "Pilot Name";
+      var callsign = (grants && grants.callsign) || "MFVA 0000";
+      var email = (grants && grants.email) || "pilot@example.com";
+      var role = (grants && grants.role) || "pilot";
+      var maxRankId = (grants && grants.maxRankId) || 1;
+      var memberSince = (me && me.memberSince) || "";
+
+      // ---------- PIREP Stats + Recent Flights (rendered from true storage) ----------
+      function escHtml(s) {
+        if (s == null) return "";
+        return String(s)
+          .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+      }
+      function pirepStatusClass(st) {
+        switch (String(st)) {
+          case "approved": return "mm-active";
+          case "rejected": return "mm-rejected";
+          default:         return "mm-pending";
+        }
+      }
+      function pirepStatusLabel(st) {
+        switch (String(st)) {
+          case "approved": return "Approved";
+          case "rejected": return "Rejected";
+          default:         return "Pending";
+        }
+      }
+      function renderPIREPStatsAndRecent() {
+        try {
+          var pilotEmail = email || null;
+          var useAllForView = isAdmin ? false : true; // admin 仪表盘的自己数字部分（个人）也看自己的
+          var stats = auth.pirepStats(pilotEmail);
+          var recent = auth.listPireps(isAdmin ? null : { pilotEmail: pilotEmail });
+
+          // ---- 4 stat cards ----
+          // Flight Time card  (Approved HH:MM)
+          var flightTimeVal = null;
+          var allCards = document.querySelectorAll(".card");
+          for (var ci = 0; ci < allCards.length; ci++) {
+            var card = allCards[ci];
+            var h = card.querySelector("h2");
+            if (!h) continue;
+            var t = h.textContent;
+            var val = card.querySelector(".stat__value");
+            if (!val) continue;
+            if (t.indexOf("Flight Time") !== -1) {
+              val.textContent = stats.approvedHHMM || "00:00";
+              flightTimeVal = val;
+            } else if (t.indexOf("Approved PIREPs") !== -1) {
+              val.textContent = String(stats.approvedCount);
+            } else if (t.indexOf("Pending PIREPs") !== -1) {
+              // Pending card: pilot sees own pending; admin sees total pending in queue
+              var penCount = isAdmin ? (auth.pirepStats().pendingCount) : stats.pendingCount;
+              val.textContent = String(penCount);
+            }
+          }
+
+          // ---- Rank progress 重算 ----
+          var ranks = auth.rankLadder();
+          var curRank = auth.rankById(maxRankId) || ranks[0];
+          var nextRank = null;
+          for (var rri = 0; rri < ranks.length; rri++) {
+            if (ranks[rri].id === maxRankId) { nextRank = ranks[rri + 1] || null; break; }
+          }
+          // 每个等级所需小时数：按简单递增（TSO→SO 10h，逐级增加）
+          var HOURS_PER_STEP = [ 600, 1200, 2100, 3600, 5400, 8400 ]; // min: 10h / 20h / 35h / 60h / 90h / 140h
+          var stepIndex = Math.max(0, Math.min(HOURS_PER_STEP.length - 1, (maxRankId || 1) - 1));
+          var requiredMin = nextRank ? HOURS_PER_STEP[stepIndex] : 0;
+          var elapsedMin = stats.approvedMinutes || 0;
+          var remainMin = Math.max(0, requiredMin - elapsedMin);
+          var pct = 0;
+          if (!nextRank) {
+            pct = 100;
+          } else if (requiredMin > 0) {
+            pct = Math.min(100, Math.floor((elapsedMin / requiredMin) * 100));
+          }
+          var progLabel = document.querySelector(".rank__until");
+          var progPct   = document.querySelector(".rank__pct");
+          var progBar   = document.querySelector(".rank__bar");
+          var fromLabel = document.querySelector(".rank__labels span:first-child");
+          var toLabel   = document.querySelector(".rank__labels span:last-child");
+          if (progLabel) {
+            if (!nextRank) progLabel.textContent = "You have reached the highest rank.";
+            else {
+              var hr = Math.floor(remainMin / 60), mn = remainMin % 60;
+              progLabel.textContent =
+                (hr < 10 ? "0" + hr : "" + hr) + ":" + (mn < 10 ? "0" + mn : "" + mn) +
+                " until " + nextRank.name;
+            }
+          }
+          if (fromLabel) fromLabel.textContent = curRank.name;
+          if (toLabel)   toLabel.textContent = nextRank ? nextRank.name : "Max rank";
+          if (progBar) {
+            progBar.setAttribute("aria-valuenow", pct);
+            progBar.innerHTML =
+              '<div style="width:' + pct + '%; height:100%; background: linear-gradient(90deg, var(--brand) 0%, #3b82f6 100%); border-radius: inherit;"></div>';
+          }
+          if (progPct) progPct.textContent = pct + "% complete";
+
+          // ---- Recent Flights table ----
+          var tbodies = document.querySelectorAll(".card.flights tbody");
+          for (var ti = 0; ti < tbodies.length; ti++) {
+            var tbody = tbodies[ti];
+            var rows = recent.slice(0, 10);
+            if (!rows || rows.length === 0) {
+              tbody.innerHTML =
+                '<tr class="empty-row"><td colspan="5">No PIREPs filed yet. Go fly and submit one ✈️</td></tr>';
+            } else {
+              var html = "";
+              for (var ri = 0; ri < rows.length; ri++) {
+                var r = rows[ri];
+                html += "<tr>";
+                html += '<td style="font-weight:600;">' + escHtml(r.flightNumber) +
+                        '<div style="font-weight:500;color:#64748b;font-size:12px;line-height:1.45;">' +
+                        (isAdmin ? (escHtml(r.displayName || r.pilotEmail) + ' · ') : '') +
+                        (r.flightDate || "") +
+                        '</div></td>';
+                html += '<td><span style="font-weight:600;">' + escHtml(r.depIcao) + '</span> <span style="color:#94a3b8;margin:0 6px;">→</span> <span style="font-weight:600;">' + escHtml(r.arrIcao) + '</span>' +
+                        ((r.gateDep || r.gateArr) ?
+                          ('<div style="font-size:12px;color:#64748b;margin-top:2px;">' +
+                           (r.gateDep ? 'Gate ' + escHtml(r.gateDep) : '') +
+                           (r.gateDep && r.gateArr ? ' → ' : '') +
+                           (r.gateArr ? 'Gate ' + escHtml(r.gateArr) : '') +
+                           '</div>') : '') +
+                        '</td>';
+                html += '<td>' + escHtml(r.aircraft) +
+                        '<div style="font-size:12px;color:#64748b;margin-top:2px;">Fuel ' + escHtml(String(r.fuelKg)) + ' kg</div>' +
+                        '</td>';
+                html += '<td style="font-variant-numeric: tabular-nums; font-weight:600;">' + escHtml(r.flightTime) + '</td>';
+                html += '<td><span class="mm-rank-tag ' + pirepStatusClass(r.status) + '">' +
+                        pirepStatusLabel(r.status) + '</span></td>';
+                html += "</tr>";
+              }
+              tbody.innerHTML = html;
+            }
+          }
+        } catch (e) {
+          // 任何 PIREP 统计 UI 失败不能让其他 UI 崩掉
+          try {
+            var tbodies = document.querySelectorAll(".card.flights tbody");
+            for (var ii = 0; ii < tbodies.length; ii++) {
+              tbodies[ii].innerHTML = '<tr class="empty-row"><td colspan="5">Error loading PIREPs: ' +
+                escHtml((e && e.message) || String(e)) + '</td></tr>';
+            }
+          } catch (e2) {}
+        }
+      }
+      renderPIREPStatsAndRecent();
+
+      // Keep the neutral placeholder feel: never render raw credentials in a loud way.
+      // If somehow the values are empty string, fall back again.
+      var nameEl = document.querySelector(".profile__name");
+      if (nameEl) nameEl.textContent = displayName || "Pilot Name";
+      var csEl = document.querySelector(".profile__callsign");
+      if (csEl) csEl.textContent = callsign || "MFVA 0000";
+      var emailEl = document.querySelector(".profile__email");
+      if (emailEl) {
+        emailEl.lastChild
+          ? (emailEl.lastChild.nodeType === 3 ? (emailEl.lastChild.textContent = " " + (email || "pilot@example.com")) : null)
+          : null;
+        if (emailEl && !emailEl.dataset.patched) {
+          emailEl.dataset.patched = "1";
+          // Safe: rebuild last text node only
+          var parts = emailEl.childNodes;
+          for (var i = parts.length - 1; i >= 0; i--) {
+            if (parts[i].nodeType === 3) { parts[i].nodeValue = " " + (email || "pilot@example.com"); break; }
+          }
+        }
+      }
+
+      // Update badge: if admin, show Admin badge; else Active/disabled based on status
+      var badgeEl = document.querySelector(".badge");
+      if (badgeEl) {
+        if (role === "admin") {
+          badgeEl.textContent = "Admin";
+          badgeEl.title = "Administrator";
+        } else if ((grants && grants.status) === "disabled") {
+          badgeEl.classList.remove("badge--active");
+          badgeEl.style.background = "#fef2f2";
+          badgeEl.style.color = "#991b1b";
+          badgeEl.style.borderColor = "#fecaca";
+          badgeEl.textContent = "Disabled";
+        }
+      }
+
+      // Avatar letter
+      var avEl = document.querySelector(".avatar");
+      if (avEl) {
+        var ch = (displayName || "P").trim().charAt(0).toUpperCase();
+        avEl.textContent = ch;
+      }
+
+      // Rank rendering
+      var ranks = auth.rankLadder();
+      var curRank = auth.rankById(maxRankId) || ranks[0];
+      var nextRank = null;
+      for (var ri = 0; ri < ranks.length; ri++) {
+        if (ranks[ri].id === maxRankId) { nextRank = ranks[ri + 1] || null; break; }
+      }
+      var progLabel = document.querySelector(".rank__until");
+      var fromLabel = document.querySelector(".rank__labels span:first-child");
+      var toLabel = document.querySelector(".rank__labels span:last-child");
+      var progPct = document.querySelector(".rank__pct");
+      var progBar = document.querySelector(".rank__bar");
+      if (fromLabel) fromLabel.textContent = curRank.name;
+      if (toLabel) toLabel.textContent = nextRank ? nextRank.name : "Max rank";
+      if (progLabel) progLabel.textContent = nextRank ? "21:00 until " + nextRank.name : "You have reached the highest rank.";
+      var pct = nextRank ? 0 : 100;
+      if (progBar) progBar.style.setProperty("--p", pct + "%");
+      if (progBar) {
+        var after = progBar.querySelector("::after");
+        progBar.setAttribute("aria-valuenow", pct);
+        // Inline width to override default 0% when at max
+        progBar.innerHTML =
+          '<div style="width:' + pct + '%; height:100%; background: linear-gradient(90deg, var(--brand) 0%, #3b82f6 100%); border-radius: inherit;"></div>';
+      }
+      if (progPct) progPct.textContent = pct + "% complete";
+
+      // Member since card
+      var msEl = document.querySelectorAll(".stat__value");
+      // The 4th stat (index 3 in DOM order after rank card col-left: 3 cards, col-right: starts after)
+      // Safer: find by sibling h2 text
+      var allH2s = document.querySelectorAll(".card h2");
+      allH2s.forEach(function (h) {
+        if (h.textContent.indexOf("Member Since") !== -1) {
+          var parentCard = h.closest(".card");
+          var valEl = parentCard && parentCard.querySelector(".stat__value");
+          if (valEl) valEl.textContent = memberSince || "—";
+          var noteEl = parentCard && parentCard.querySelector(".stat__note");
+          if (noteEl) noteEl.textContent = "Current rank: " + curRank.name;
+        }
+      });
+
+      // Disable buttons based on grants (non-admin pilots)
+      var pirepBtn = document.getElementById("btnFilePirep");
+      var drawerPirep = document.getElementById("drawerFilePirep");
+      if (grants && grants.canFilePirep === false) {
+        if (pirepBtn) { pirepBtn.style.opacity = ".55"; pirepBtn.style.pointerEvents = "none"; pirepBtn.title = "You do not have permission to file PIREPs."; }
+        if (drawerPirep) { drawerPirep.style.opacity = ".55"; drawerPirep.style.pointerEvents = "none"; }
+      }
+
+      // ---------- Drawer open/close ----------
+      var drawer = document.getElementById("drawer");
+      var backdrop = document.getElementById("drawerBackdrop");
+      function openDrawer() {
+        drawer.classList.add("is-open");
+        drawer.setAttribute("aria-hidden", "false");
+        backdrop.classList.add("is-open");
+        backdrop.setAttribute("aria-hidden", "false");
+      }
+      function closeDrawer() {
+        drawer.classList.remove("is-open");
+        drawer.setAttribute("aria-hidden", "true");
+        backdrop.classList.remove("is-open");
+        backdrop.setAttribute("aria-hidden", "true");
+      }
+      var openers = [document.getElementById("crewMenuBtn"), document.getElementById("openDrawer")];
+      openers.forEach(function (el) { if (el) el.addEventListener("click", openDrawer); });
+      document.getElementById("drawerClose").addEventListener("click", closeDrawer);
+      backdrop.addEventListener("click", closeDrawer);
+      document.addEventListener("keydown", function (e) { if (e.key === "Escape") closeDrawer(); });
+
+      // ---------- Find Routes: navigate to findroutes.html (no alert) ----------
+      (function wireFindRoutes() {
+        function go() { window.location.href = "findroutes.html"; }
+        ["btnFindRoutes","drawerFindRoutes"].forEach(function (id) {
+          var b = document.getElementById(id);
+          if (!b) return;
+          b.addEventListener("click", function () { closeDrawer(); go(); });
+        });
+      })();
+
+      // ---------- Sign out (uses MFVAauth) ----------
+      var so = document.getElementById("signOutBtn");
+      if (so) {
+        so.addEventListener("click", function () {
+          try { auth.signOut(); } catch (e) {}
+          window.location.replace("index.html");
+        });
+      }
+
+      // ============================================================
+      // ADMIN ONLY: Member Management UI
+      // ============================================================
+      var mmSection = document.getElementById("memberMgmt");
+      var mmBody = document.getElementById("mmBody");
+      if (!isAdmin) {
+        // Don't silently hide — show the panel with a clear diagnostic so
+        // the admin knows *why* members are not rendering.
+        if (mmSection) mmSection.style.display = "";
+        if (mmBody) {
+          var meInfo = me || {};
+          mmBody.innerHTML =
+            '<div class="mm-empty" style="padding:24px 20px; text-align:left; border:1px solid #fecaca; background:#fff1f2; color:#991b1b;">' +
+              '<div style="font-size:15px; font-weight:700; margin-bottom:6px;">🔒 Member Management is hidden because this account is not an Admin.</div>' +
+              '<div style="font-size:13px; line-height:1.6; opacity:.92;">' +
+                '当前登录账号：<b style="color:#7f1d1d;">' +
+                  ((meInfo && meInfo.email) ? String(meInfo.email).replace(/[&<>]/g, "") : "(未识别)") +
+                '</b><br>' +
+                '当前角色 (role)：<b>' + ((meInfo && meInfo.role) ? String(meInfo.role).replace(/[&<>]/g, "") : "(空)") + '</b>　（需要值为 <code>admin</code>）<br>' +
+                '解决方法：<br>' +
+                '　1) 退出当前账号，使用管理员邮箱登录：<b>3689442439@qq.com</b> 或 <b>G6082@outlook.com</b>（任意密码即可）<br>' +
+                '　2) 如果当前邮箱本应是管理员，请在 localStorage 的 <code>mfva_members</code> 中确认该账号的 <code>role</code> 字段等于 <code>"admin"</code> 且 <code>status</code> 等于 <code>"active"</code>。' +
+              '</div>' +
+            '</div>';
+        }
+        return;
+      }
+
+      if (mmSection) mmSection.style.display = "";
+
+      var btnAdd = document.getElementById("btnAddMember");
+
+      // ---------- Modal controls ----------
+      var modal = document.getElementById("mmModal");
+      var mClose = document.getElementById("mmModalClose");
+      var mCancel = document.getElementById("mmCancelBtn");
+      var mSave = document.getElementById("mmSaveBtn");
+      var mTitle = document.getElementById("mmModalTitle");
+      var mSub = document.getElementById("mmModalSubtitle");
+      var mFlash = document.getElementById("mmFlash");
+      var rankSelect = document.getElementById("mmRank");
+
+      // Populate rank dropdown
+      (function populateRanks() {
+        if (!rankSelect) return;
+        rankSelect.innerHTML = "";
+        auth.rankLadder().forEach(function (r) {
+          var o = document.createElement("option");
+          o.value = r.id;
+          o.textContent = r.id + " — " + r.name + " (" + r.label + ")";
+          rankSelect.appendChild(o);
+        });
+      })();
+
+      function showModalFlash(msg, isErr) {
+        if (!mFlash) return;
+        mFlash.textContent = msg || "";
+        mFlash.className = "modal-flash " + (isErr ? "modal-flash--error" : "modal-flash--success") + " is-visible";
+      }
+      function hideModalFlash() { if (mFlash) mFlash.className = "modal-flash"; }
+
+      function openModal(mode, member) {
+        hideModalFlash();
+        // Reset form
+        document.getElementById("mmOriginalEmail").value = (member && member.email) || "";
+        document.getElementById("mmEmail").value = (member && member.email) || "";
+        document.getElementById("mmEmail").disabled = mode === "edit" && !!(member && member.email === "3689442439@qq.com");
+        document.getElementById("mmDisplayName").value = (member && member.displayName) || "";
+        document.getElementById("mmCallsign").value = (member && member.callsign) || "";
+        document.getElementById("mmPassword").value = "";
+        document.getElementById("mmPasswordHelp").textContent =
+          mode === "edit" ? "Leave blank to keep the current password." : "Set a password for this member.";
+        document.getElementById("mmMemberSince").value = (member && member.memberSince) || new Date().toISOString().slice(0, 10);
+        document.getElementById("mmRole").value = (member && member.role) || "pilot";
+        document.getElementById("mmStatus").value = (member && member.status) || "active";
+        rankSelect.value = String((member && member.maxRankId) || 1);
+        document.getElementById("mmCanFilePirep").checked = member ? !!member.canFilePirep : true;
+        document.getElementById("mmCanUseRoutesDB").checked = member ? !!member.canUseRoutesDB : true;
+        document.getElementById("mmAllowAnyPassword").checked = !!(member && member.allowAnyPassword);
+
+        if (mode === "add") {
+          mTitle.textContent = "Add Member";
+          mSub.textContent = "Create a new pilot account and grant permissions.";
+        } else {
+          mTitle.textContent = "Edit Member";
+          mSub.textContent = "Update profile, permissions, and status for this member.";
+        }
+        modal.classList.add("is-open");
+        modal.setAttribute("aria-hidden", "false");
+      }
+      function hideDiagnostic() {
+        var d = document.getElementById("mmSaveDiagnostic");
+        if (d) {
+          d.style.display = "none"; d.innerHTML = "";
+          d.style.borderColor = "#c7e4d6"; d.style.background = "#f1fbf5"; d.style.color = "#14532d";
+        }
+      }
+      function showDiagnostic(html, isError) {
+        var d = document.getElementById("mmSaveDiagnostic");
+        if (!d) return;
+        d.innerHTML = html;
+        if (isError) {
+          d.style.borderColor = "#fecaca"; d.style.background = "#fef2f2"; d.style.color = "#7f1d1d";
+        } else {
+          d.style.borderColor = "#c7e4d6"; d.style.background = "#f1fbf5"; d.style.color = "#14532d";
+        }
+        d.style.display = "block";
+      }
+
+      function closeModal() {
+        modal.classList.remove("is-open");
+        modal.setAttribute("aria-hidden", "true");
+        hideDiagnostic();
+      }
+      function handleClose(e) { if (e.target === modal) closeModal(); }
+      modal.addEventListener("click", handleClose);
+      mClose.addEventListener("click", closeModal);
+      mCancel.addEventListener("click", closeModal);
+      document.addEventListener("keydown", function (e) { if (e.key === "Escape") closeModal(); });
+
+      btnAdd.addEventListener("click", function () { hideDiagnostic(); openModal("add", null); });
+
+      function escHtml(s) {
+        s = String(s == null ? "" : s);
+        return s.replace(/[&<>"']/g, function (c) {
+          return ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" })[c];
+        });
+      }
+      function escapeHtml(s) { return escHtml(s); }   // alias used inside diagnostic builder
+
+      function renderMembers() {
+        if (!mmBody) return;
+        var members;
+        try { members = auth.listMembers(); }
+        catch (e) { mmBody.innerHTML = '<div class="mm-empty">Error: ' + escHtml(e.message || String(e)) + '</div>'; return; }
+        if (!members.length) {
+          mmBody.innerHTML = '<div class="mm-empty">No members yet. Click "Add Member" to create the first one.</div>';
+          return;
+        }
+
+        var rankMap = {};
+        auth.rankLadder().forEach(function (r) { rankMap[r.id] = r; });
+
+        var isSeed = function (email) {
+          var e = String(email || "").toLowerCase();
+          return e === "3689442439@qq.com" || e === "g6082@outlook.com";
+        };
+
+        // ---- pending count badge ----
+        var pendingCount = 0;
+        for (var cp = 0; cp < members.length; cp++) {
+          if (String(members[cp].status || "") === "pending" && !isSeed(members[cp].email)) {
+            pendingCount += 1;
+          }
+        }
+        var badge = document.getElementById("pendingBadge");
+        if (badge) {
+          if (pendingCount > 0) {
+            badge.style.display = "inline-flex";
+            badge.textContent = pendingCount;
+            badge.title = pendingCount + " application" + (pendingCount === 1 ? "" : "s") + " pending review";
+          } else {
+            badge.style.display = "none";
+            badge.textContent = "0";
+          }
+        }
+
+        function fmtDate(iso) {
+          if (!iso) return "";
+          try {
+            var d = new Date(iso);
+            if (isNaN(d.getTime())) return iso.slice(0, 10);
+            return d.getFullYear() + "-" +
+              String(d.getMonth() + 1).padStart(2, "0") + "-" +
+              String(d.getDate()).padStart(2, "0") + " " +
+              String(d.getHours()).padStart(2, "0") + ":" +
+              String(d.getMinutes()).padStart(2, "0");
+          } catch (e) { return iso.slice(0, 16); }
+        }
+
+        var rowsHtml = members.map(function (m) {
+          var r = rankMap[m.maxRankId] || { name: "-", label: "-" };
+          var seed = isSeed(m.email);
+          var canEdit = true;
+          var canRemove = !seed;
+          var st = String(m.status || "active");
+          var canReview = (!seed && st === "pending");
+
+          // Row highlight: pending → amber; rejected → pink/red
+          var rowAttrs = "";
+          if (st === "pending") {
+            rowAttrs = ' style="background:linear-gradient(180deg,#fffbeb 0%, #fff6df 100%);" ';
+          } else if (st === "rejected") {
+            rowAttrs = ' style="background:#fef2f2;" ';
+          } else if (st === "disabled") {
+            rowAttrs = ' style="background:#f8fafc; opacity:.9;" ';
+          }
+
+          // Status pill with 4 variants
+          var disableBadge = "";
+          if (st === "pending") {
+            disableBadge = (
+              '<div class="mm-pill" style="display:inline-flex; align-items:center; gap:6px; background:#fff7d6; color:#92400e; border:1px solid #fde68a;">' +
+                '<span style="display:inline-block; width:7px; height:7px; border-radius:999px; background:#f59e0b; animation: mmPulse 1.2s ease-in-out infinite;"></span>' +
+                'Pending' +
+              '</div>'
+            );
+          } else if (st === "rejected") {
+            disableBadge = (
+              '<div class="mm-pill" style="background:#fee2e2; color:#991b1b; border:1px solid #fecaca;">Rejected</div>'
+            );
+          } else if (st === "disabled") {
+            disableBadge = (
+              '<div class="mm-pill mm-pill--disabled">Disabled</div>'
+            );
+          } else {
+            disableBadge = (
+              '<div class="mm-pill mm-pill--active">Active</div>'
+            );
+          }
+          if (seed) {
+            disableBadge += (
+              '<div class="mm-pill mm-pill--admin" style="margin-left:6px;">Seeded</div>'
+            );
+          }
+          // Review note (if rejected + reviewNote exists → show small tooltip)
+          var reviewNote = "";
+          if (st === "rejected" && m.reviewNote) {
+            reviewNote = (
+              '<div style="margin-top:5px; font-size:11.5px; color:#991b1b; opacity:.92;" title="Review reason: ' + escHtml(m.reviewNote) + '">🗒 ' + escHtml(m.reviewNote.length > 80 ? m.reviewNote.slice(0, 77) + "…" : m.reviewNote) + '</div>'
+            );
+          }
+
+          // Status column cell (replaces the old <td data-label="Status"> below)
+          var statusCell =
+            '<td data-label="Status">' +
+              disableBadge +
+              (m.applyRequestedAt ? '<div style="margin-top:5px; font-size:11px; color:#475569;">Applied: ' + escHtml(fmtDate(m.applyRequestedAt)) + '</div>' : "") +
+              (m.reviewedAt ?
+                '<div style="margin-top:3px; font-size:11px; color:#64748b;">Reviewed: ' + escHtml(fmtDate(m.reviewedAt)) +
+                  (m.reviewedBy ? ' · ' + escHtml(String(m.reviewedBy || "").split("@")[0]) : "") +
+                '</div>' : "") +
+              reviewNote +
+            '</td>';
+
+          // IFC profile preview link / username
+          var ifcLine = "";
+          if (m.ifc && (m.ifc.username || m.ifc.url)) {
+            var uName = m.ifc && m.ifc.username ? m.ifc.username : "";
+            var uUrl = m.ifc && m.ifc.url ? m.ifc.url : "";
+            ifcLine = '<div style="margin-top:3px; font-size:11.5px; color:#64748b;">';
+            if (uName) ifcLine += 'IFC: <b style="color:#334155;">' + escHtml(uName) + '</b>';
+            if (uUrl)  ifcLine += (uName ? ' · ' : '') + '<a href="' + escHtml(uUrl) + '" target="_blank" rel="noopener" style="color:#2563eb; text-decoration:none;">Open profile ↗</a>';
+            ifcLine += '</div>';
+          }
+
+          var subInfo = "";
+          if (m.displayName) {
+            subInfo += escHtml(m.displayName);
+            if (m.callsign) subInfo += ' · <span style="font-weight:600;">' + escHtml(m.callsign) + '</span>';
+          } else if (m.callsign) {
+            subInfo += '<span style="font-weight:600;">' + escHtml(m.callsign) + '</span>';
+          }
+          if (m.memberSince) {
+            subInfo += (subInfo ? ' · ' : '') + '<span style="color:#64748b;">since ' + escHtml(m.memberSince) + '</span>';
+          }
+
+          return (
+            '<tr ' + rowAttrs + '>' +
+              '<td data-label="Member">' +
+                '<div class="mm-email-cell">' + escHtml(m.email) + '</div>' +
+                (subInfo ? '<div style="margin-top:3px;font-size:12px;color:#4b5563;">' + subInfo + '</div>' : '') +
+                ifcLine +
+              '</td>' +
+              '<td data-label="Role">' +
+                '<div class="mm-pill ' + (m.role === "admin" ? "mm-pill--admin" : "mm-pill--pilot") + '">' +
+                  (m.role === "admin" ? "Admin" : "Pilot") +
+                '</div>' +
+              '</td>' +
+              '<td data-label="Rank">' +
+                '<div class="mm-rank-tag">' + escHtml(r.label) + ' · L' + (m.maxRankId || 1) + '</div>' +
+                '<div style="margin-top:3px;font-size:11px;color:#4b5563;">' + escHtml(r.name) + '</div>' +
+              '</td>' +
+              statusCell +
+              '<td data-label="Perms">' +
+                '<div style="display:flex;flex-wrap:wrap;gap:4px;">' +
+                  (m.canFilePirep ? '<span class="mm-rank-tag" style="background:#f0fdf4;color:#166534;border-color:#bbf7d0;">PIREP</span>' : '') +
+                  (m.canUseRoutesDB ? '<span class="mm-rank-tag" style="background:#eff6ff;color:#1e40af;border-color:#bfdbfe;">Routes</span>' : '') +
+                  (m.allowAnyPassword ? '<span class="mm-rank-tag" style="background:#fffbeb;color:#92400e;border-color:#fde68a;">Any Pwd</span>' : '') +
+                '</div>' +
+              '</td>' +
+              '<td data-label="Actions" class="mm-actions-cell">' +
+                (canReview ? (
+                  '<button type="button" class="mm-icon-btn" data-act="approve" data-email="' + escHtml(m.email) + '" title="Approve application" style="color:#065f46; background:#d1fae5;">' +
+                    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' +
+                  '</button>' +
+                  '<button type="button" class="mm-icon-btn mm-icon-btn--danger" data-act="reject" data-email="' + escHtml(m.email) + '" title="Reject application" style="margin-left:4px;">' +
+                    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>' +
+                  '</button>'
+                ) : "") +
+                (canEdit ? (
+                  '<button type="button" class="mm-icon-btn" data-act="edit" data-email="' + escHtml(m.email) + '" title="Edit member">' +
+                    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>' +
+                  '</button>'
+                ) : '') +
+                (canRemove ? (
+                  '<button type="button" class="mm-icon-btn mm-icon-btn--danger" data-act="remove" data-email="' + escHtml(m.email) + '" title="Remove member">' +
+                    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>' +
+                  '</button>'
+                ) : '') +
+              '</td>' +
+            '</tr>'
+          );
+        }).join("");
+
+        mmBody.innerHTML = (
+          '<div class="mm-table-wrap">' +
+            '<table class="mm-table" aria-label="Members list">' +
+              '<thead>' +
+                '<tr>' +
+                  '<th style="min-width:230px;">Member</th>' +
+                  '<th>Role</th>' +
+                  '<th>Max Rank</th>' +
+                  '<th>Status</th>' +
+                  '<th>Permissions</th>' +
+                  '<th style="width:96px;">Actions</th>' +
+                '</tr>' +
+              '</thead>' +
+              '<tbody>' + rowsHtml + '</tbody>' +
+            '</table>' +
+          '</div>'
+        );
+
+        // Bind actions
+        mmBody.querySelectorAll("button[data-act]").forEach(function (btn) {
+          btn.addEventListener("click", function () {
+            var act = btn.getAttribute("data-act");
+            var em = btn.getAttribute("data-email");
+            if (act === "edit") {
+              var found = null;
+              try {
+                var all = auth.listMembers();
+                for (var i = 0; i < all.length; i++) {
+                  if (String(all[i].email || "").toLowerCase() === String(em || "").toLowerCase()) {
+                    found = all[i]; break;
+                  }
+                }
+              } catch (e) {}
+              if (found) { hideDiagnostic(); openModal("edit", found); }
+            } else if (act === "remove") {
+              if (!confirm("Remove member " + (em || "") + " from MFVA? This cannot be undone. Use 'Disable' if you want to keep the record.")) return;
+              try {
+                auth.removeMember(em);
+                renderMembers();
+              } catch (e) {
+                alert("Failed to remove: " + (e.message || String(e)));
+              }
+            } else if (act === "approve") {
+              if (!confirm("Approve application for " + (em || "") + "? They'll be able to sign in immediately.")) return;
+              try {
+                var rA = auth.approveMember(em);
+                if (!rA || !rA.ok) {
+                  alert((rA && rA.message) || "Failed to approve member.");
+                }
+                renderMembers();
+              } catch (eA) {
+                alert("Failed to approve: " + (eA.message || String(eA)));
+              }
+            } else if (act === "reject") {
+              var reason = prompt(
+                "Reject application for " + (em || "") + "?\\n\\nEnter an optional reason (it will be shown to this user next time they try to sign in):"
+              );
+              if (reason === null) return;  // cancel
+              try {
+                var rR = auth.rejectMember(em, reason);
+                if (!rR || !rR.ok) {
+                  alert((rR && rR.message) || "Failed to reject member.");
+                }
+                renderMembers();
+              } catch (eR) {
+                alert("Failed to reject: " + (eR.message || String(eR)));
+              }
+            }
+          });
+        });
+      }
+
+      // ---------- Save form ----------
+      mSave.addEventListener("click", function () {
+        hideModalFlash();
+        var originalEmail = document.getElementById("mmOriginalEmail").value || "";
+        var email = (document.getElementById("mmEmail").value || "").trim();
+        if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+          showModalFlash("Please enter a valid email address.", true); return;
+        }
+        var displayName = (document.getElementById("mmDisplayName").value || "").trim();
+        var callsign = (document.getElementById("mmCallsign").value || "").trim();
+        var password = document.getElementById("mmPassword").value;  // empty means keep
+        var memberSince = document.getElementById("mmMemberSince").value || "";
+        var role = document.getElementById("mmRole").value;
+        var status = document.getElementById("mmStatus").value;
+        var rankId = parseInt(rankSelect.value, 10);
+        var canFilePirep = document.getElementById("mmCanFilePirep").checked;
+        var canUseRoutesDB = document.getElementById("mmCanUseRoutesDB").checked;
+        var allowAnyPassword = document.getElementById("mmAllowAnyPassword").checked;
+
+        var patch = {
+          email: email,
+          displayName: displayName,
+          callsign: callsign,
+          role: role,
+          status: status,
+          maxRankId: isNaN(rankId) ? 1 : rankId,
+          canFilePirep: !!canFilePirep,
+          canUseRoutesDB: !!canUseRoutesDB,
+          allowAnyPassword: !!allowAnyPassword
+        };
+        if (memberSince) patch.memberSince = memberSince;
+        // Only send password if explicitly entered
+        if (typeof password === "string" && password !== "") patch.password = password;
+
+        try {
+          auth.upsertMember(patch, (me && me.email) || "admin");
+          renderMembers();
+
+          // ---------- 保存成功 → 把 storage 里实际存的值 dump 出来给用户看 ----------
+          var diagHtml = '';
+          var pwChanged = false;   // declared here so setTimeout closeDelay can read it
+          try {
+            // Re-read DIRECTLY from localStorage (not via helpers) to show
+            // the user the exact bytes being used on future sign-ins.
+            var rawStore = localStorage.getItem("mfva_members") || "[]";
+            var allStored;
+            try { allStored = JSON.parse(rawStore); } catch (ee) { allStored = []; }
+            var saved = null;
+            for (var di = 0; di < allStored.length; di++) {
+              if (String((allStored[di] || {}).email || "").toLowerCase() === email.toLowerCase()) {
+                saved = allStored[di]; break;
+              }
+            }
+            if (saved) {
+              var plaintextLen = (typeof password === "string" && password !== "") ? password.length : null;
+              var pwChanged = (plaintextLen !== null);
+              diagHtml =
+                '<div style="font-weight:600;margin-bottom:6px;">✅ 保存成功。已写入 localStorage 的真实内容：</div>' +
+                '<div style="margin:2px 0;"><span style="opacity:.7;">email:</span> <b style="color:#065f46;">' + escapeHtml(saved.email) + '</b></div>' +
+                '<div style="margin:2px 0;"><span style="opacity:.7;">role:</span> <b>' + escapeHtml(saved.role || "") + '</b> &nbsp;·&nbsp; <span style="opacity:.7;">status:</span> <b>' + escapeHtml(saved.status || "") + '</b> &nbsp;·&nbsp; <span style="opacity:.7;">maxRankId:</span> <b>' + saved.maxRankId + '</b></div>' +
+                '<div style="margin:2px 0;"><span style="opacity:.7;">updatedBy（谁改的）:</span> <b style="color:#065f46;">' + escapeHtml(saved.updatedBy || "") + '</b> &nbsp;·&nbsp; <span style="opacity:.7;">updatedAt:</span> ' + escapeHtml(saved.updatedAt || "") + '</div>' +
+                (pwChanged ?
+                  ('<div style="margin:4px 0 2px;padding:8px 10px;background:#ecfdf5;border:1px solid #a7f3d0;border-radius:8px;">' +
+                    '<div style="margin-bottom:3px;"><span style="opacity:.85;">🔐 密码已保存。明文长度 <b>' + plaintextLen + '</b> 字符。存储的密码哈希值（DJB2,不可逆）：</span></div>' +
+                    '<div style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12.5px;letter-spacing:.03em;word-break:break-all;color:#083344;">' + escapeHtml(saved.password || "(EMPTY)") + '</div>' +
+                    '<div style="margin-top:4px;opacity:.85;">📒 下次登出后，只能用这个 <b>新密码</b> 登录；源代码里的默认 ashy********. 会自动锁死（直到你把密码改回那个值）。</div>' +
+                  '</div>')
+                  :
+                  ('<div style="margin-top:2px;opacity:.86;">Password 字段这次是空白，所以 <b>保持原来的密码哈希不变</b>（上面 updatedBy 仍然标记是谁最后一次修改了这个成员的任意字段）。</div>')
+                );
+            } else {
+              diagHtml = '<div style="color:#b91c1c;">⚠ 保存成功但在 localStorage 中找不到 ' + escapeHtml(email) + ' 行，请刷新页面再试。</div>';
+            }
+          } catch (de) {
+            diagHtml = '<div>保存成功，但读取 storage 诊断时出错：' + escapeHtml((de && de.message) || String(de)) + '</div>';
+          }
+          showModalFlash("Member saved successfully.", false);
+          showDiagnostic(diagHtml, false);
+          // Keep open longer so you can read the evidence, then auto-close.
+          var diagPwChanged = (typeof pwChanged === "boolean") ? pwChanged : false;
+          setTimeout(closeModal, diagPwChanged ? 1900 : 800);
+        } catch (e) {
+          var msg = (e && e.message) || "Failed to save member.";
+          if (msg === "ADMIN_REQUIRED") msg = "You must be an admin to make this change.";
+          else if (msg === "MEMBER_EMAIL_REQUIRED") msg = "Email is required.";
+          else if (msg === "CANNOT_REMOVE_ADMIN") msg = "The seeded admin account cannot be removed or disabled while it's the only admin.";
+          showModalFlash(msg, true);
+          showDiagnostic('<div style="font-weight:600;margin-bottom:4px;">❌ 保存失败</div><div style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12.5px;">' + escapeHtml(msg) + '</div><div style="margin-top:4px;opacity:.85;">（密码未写入 localStorage）</div>', true);
+        }
+      });
+
+      renderMembers();
+
+    /* ==============================================================
+       ADMIN : Submitted PIREPs review panel
+       - Placed BELOW Member Management; shown ONLY for admins
+       - Features: list (all PIREPs), filter tabs (Pending/Approved/Rejected/All),
+                   View detail modal, Approve / Reject w/ note, Delete
+       ============================================================== */
+    (function () {
+      if (!isAdmin) return;
+      var mmSection = document.getElementById("memberMgmt");
+      if (!mmSection) return;
+
+      // ---- 1) Inject HTML for panel after memberMgmt ----
+      var panelHTML =
+        '<section class="card mm-section" id="pirepMgmt" aria-label="Submitted PIREP review" style="display:none; grid-column: 1 / -1;">' +
+        '  <div class="mm-head">' +
+        '    <h2 style="text-transform:none; font-size:22px; letter-spacing:-.01em; color:var(--ink);">' +
+        '      <span style="display:inline-flex; align-items:center; gap:10px;">' +
+        '        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="color:#4b5563;"><path d="M7 3h10l4 4v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M14 3v4h4"/><path d="M8 13h8M8 17h5"/><path d="M12 13v7"/></svg>' +
+        '        Submitted PIREPs' +
+        '        <span id="pirepPendingBadge" title="Pending PIREPs awaiting your review" style="display:inline-block; margin-left:4px; padding:2px 10px; border-radius:999px; background:#f59e0b; color:#111827; font-size:12px; font-weight:700; letter-spacing:.01em; line-height:1.4; box-shadow:0 6px 14px rgba(245,158,11,.35);">0</span>' +
+        '      </span>' +
+        '    </h2>' +
+        '    <div style="display:flex;gap:8px;flex-wrap:wrap;">' +
+        '      <button class="pirep-tab mm-btn mm-btn--active" data-tab="pending">Pending</button>' +
+        '      <button class="pirep-tab mm-btn" data-tab="approved">Approved</button>' +
+        '      <button class="pirep-tab mm-btn" data-tab="rejected">Rejected</button>' +
+        '      <button class="pirep-tab mm-btn" data-tab="all">All</button>' +
+        '    </div>' +
+        '  </div>' +
+        '  <div id="pirepList" style="margin-top:16px;">' +
+        '    <div class="mm-empty">Loading PIREPs…</div>' +
+        '  </div>' +
+        '</section>';
+
+      var holder = document.createElement("div");
+      holder.innerHTML = panelHTML;
+      mmSection.parentNode.insertBefore(holder.firstElementChild, mmSection.nextSibling);
+
+      // Inject pirep-tab CSS (reuses .mm-btn from member Mgmt)
+      var css = document.createElement("style");
+      css.textContent =
+        ".pirep-tab { border-radius: 999px !important; padding: 6px 14px !important; font-size: 13px; }" +
+        ".pirep-tab.mm-btn--active { background: var(--brand); color: #fff; border-color: var(--brand); }" +
+        ".pirep-row { border:1px solid #e5e7eb; border-radius: 14px; padding: 14px 16px; margin-bottom: 10px; background:#fff; }" +
+        ".pirep-row__head { display:flex; justify-content:space-between; gap:12px; align-items:center; flex-wrap:wrap; margin-bottom:10px; }" +
+        ".pirep-row__title { font-weight:700; font-size: 15px; color:#111827; }" +
+        ".pirep-row__sub { font-size: 12.5px; color:#6b7280; margin-top:3px; line-height:1.6; }" +
+        ".pirep-row__grid { display:grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 10px 0 12px; }" +
+        "@media (max-width:780px){ .pirep-row__grid { grid-template-columns: repeat(2, 1fr); } }" +
+        "@media (max-width:420px){ .pirep-row__grid { grid-template-columns: 1fr; } }" +
+        ".pirep-row__cell { font-size: 12.5px; }" +
+        ".pirep-row__cell b { display:block; color:#6b7280; font-weight:600; font-size:11px; text-transform:uppercase; letter-spacing:.03em; margin-bottom:3px; }" +
+        ".pirep-row__actions { display:flex; gap:8px; flex-wrap:wrap; }" +
+        ".pirep-row__remarks { background:#f9fafb; border:1px dashed #e5e7eb; border-radius: 10px; padding: 8px 12px; margin-top: 6px; color:#374151; font-size: 13px; }" +
+        ".pirep-empty-notice { padding: 24px 18px; text-align:center; color:#6b7280; background:#f9fafb; border:1px dashed #e5e7eb; border-radius: 14px; font-size: 14px; }";
+      document.head.appendChild(css);
+
+      mmSection.style.display = ""; // memberMgmt 显示了我们也要显示
+      var panel = document.getElementById("pirepMgmt");
+      var tabBtn = "pending";
+      var listEl = document.getElementById("pirepList");
+
+      function esc(s) {
+        if (s == null) return "";
+        return String(s)
+          .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+      }
+      function statusCls(st) {
+        switch (String(st)) {
+          case "approved": return "mm-active";
+          case "rejected": return "mm-rejected";
+          default:         return "mm-pending";
+        }
+      }
+      function statusLabel(st) {
+        switch (String(st)) {
+          case "approved": return "Approved";
+          case "rejected": return "Rejected";
+          default:         return "Pending";
+        }
+      }
+
+      function renderPIREPs() {
+        if (!panel) return;
+        try {
+          var all = auth.listPireps();
+          // Pending badge
+          var totalPending = 0;
+          for (var i = 0; i < all.length; i++) if (all[i].status === "pending") totalPending++;
+          var pb = document.getElementById("pirepPendingBadge");
+          if (pb) {
+            pb.textContent = String(totalPending);
+            pb.style.display = totalPending > 0 ? "inline-block" : "none";
+          }
+          // Filter by active tab
+          var rows = all;
+          if (tabBtn !== "all") rows = rows.filter(function (r) { return r.status === tabBtn; });
+          if (!rows || rows.length === 0) {
+            listEl.innerHTML = '<div class="pirep-empty-notice">No ' + (tabBtn === "all" ? "" : tabBtn) +
+              ' PIREPs found. When pilots submit new PIREPs they will appear here for your review.</div>';
+            return;
+          }
+          var html = "";
+          for (var j = 0; j < rows.length; j++) {
+            var r = rows[j];
+            html += '<div class="pirep-row" data-id="' + esc(r.id) + '">';
+            html += '<div class="pirep-row__head">';
+            html +=   '<div>' +
+                      '<div class="pirep-row__title">' + esc(r.flightNumber) +
+                        ' <span style="font-weight:600;color:#6b7280;">·</span> ' +
+                        '<span style="color:#4b5563;">' + esc(r.depIcao) + ' → ' + esc(r.arrIcao) + '</span>' +
+                        ' <span class="mm-rank-tag ' + statusCls(r.status) + '" style="margin-left:8px;">' + statusLabel(r.status) + '</span>' +
+                      '</div>' +
+                      '<div class="pirep-row__sub">' +
+                        'Pilot: <b style="color:#111827;">' + esc(r.displayName || r.pilotEmail) + '</b>' +
+                        (r.callsign ? (' (' + esc(r.callsign) + ')') : '') + ' · ' +
+                        'Filed: ' + esc((r.createdAt || "").slice(0,19).replace("T"," ")) +
+                        (r.reviewedAt ? (' · Reviewed: ' + esc(String(r.reviewedAt).slice(0,19).replace("T"," ")) +
+                          (r.reviewedBy ? (' by ' + esc(r.reviewedBy)) : '')) : '') +
+                      '</div>' +
+                    '</div>';
+            html +=   '<div class="pirep-row__actions">' +
+                        (r.status !== "approved" ? '<button class="mm-btn" data-act="approve" data-id="'+esc(r.id)+'">✔ Approve</button>' : '') +
+                        (r.status !== "rejected" ? '<button class="mm-btn" data-act="reject" data-id="'+esc(r.id)+'">✘ Reject</button>' : '') +
+                        '<button class="mm-btn mm-btn--view" data-act="view" data-id="'+esc(r.id)+'">View</button>' +
+                        '<button class="mm-btn mm-btn--danger" data-act="delete" data-id="'+esc(r.id)+'">🗑 Delete</button>' +
+                      '</div>';
+            html += '</div>'; // head
+            html += '<div class="pirep-row__grid">' +
+                      '<div class="pirep-row__cell"><b>Date</b>' + esc(r.flightDate || "—") + '</div>' +
+                      '<div class="pirep-row__cell"><b>Aircraft</b>' + esc(r.aircraft || "—") + '</div>' +
+                      '<div class="pirep-row__cell"><b>Flight time</b>' + esc(r.flightTime || "—") + '</div>' +
+                      '<div class="pirep-row__cell"><b>Fuel (kg)</b>' + esc(String(r.fuelKg == null ? "—" : r.fuelKg)) + '</div>' +
+                      '<div class="pirep-row__cell"><b>Dep Gate</b>' + esc(r.gateDep || "—") + '</div>' +
+                      '<div class="pirep-row__cell"><b>Arr Gate</b>' + esc(r.gateArr || "—") + '</div>' +
+                      '<div class="pirep-row__cell"><b>Multiplier</b>' + esc(String(r.multiplier == null ? "1.00" : r.multiplier)) + '</div>' +
+                      '<div class="pirep-row__cell"><b>Pilot Email</b>' + esc(r.pilotEmail || "—") + '</div>' +
+                    '</div>';
+            if (r.remarks) {
+              html += '<div class="pirep-row__remarks"><b style="color:#374151;">Remarks: </b>' + esc(r.remarks) + '</div>';
+            }
+            if (r.reviewNote) {
+              html += '<div class="pirep-row__remarks" style="background:#fff7ed;border-color:#fdba74;"><b style="color:#9a3412;">Review note: </b>' + esc(r.reviewNote) + '</div>';
+            }
+            html += '</div>';
+          }
+          listEl.innerHTML = html;
+        } catch (e) {
+          listEl.innerHTML = '<div class="pirep-empty-notice" style="background:#fef2f2;border-color:#fecaca;color:#991b1b;">' +
+            'Error loading PIREPs: ' + esc((e && e.message) || String(e)) + '</div>';
+        }
+      }
+
+      // Tab switching
+      panel.addEventListener("click", function (e) {
+        var tab = e.target.closest(".pirep-tab");
+        if (tab) {
+          panel.querySelectorAll(".pirep-tab").forEach(function (t) { t.classList.remove("mm-btn--active"); });
+          tab.classList.add("mm-btn--active");
+          tabBtn = tab.getAttribute("data-tab") || "pending";
+          renderPIREPs();
+          return;
+        }
+        var btn = e.target.closest("button[data-act]");
+        if (!btn) return;
+        var id = btn.getAttribute("data-id");
+        var act = btn.getAttribute("data-act");
+        if (!id) return;
+        try {
+          if (act === "approve") {
+            auth.updatePirepStatus(id, "approved");
+            alert("PIREP approved. Approved time is now counted toward rank.");
+          } else if (act === "reject") {
+            var note = prompt("Rejection reason (optional). Shown to the pilot:", "");
+            if (note == null) return; // cancel
+            auth.updatePirepStatus(id, "rejected", null, note);
+            alert("PIREP rejected.");
+          } else if (act === "delete") {
+            if (!confirm("Delete this PIREP? This cannot be undone.")) return;
+            auth.deletePirep(id);
+          } else if (act === "view") {
+            var row = auth.getPirep(id);
+            if (!row) { alert("PIREP not found."); return; }
+            var lines = [];
+            lines.push("Flight " + row.flightNumber + " · " + row.depIcao + " → " + row.arrIcao);
+            lines.push("Status: " + statusLabel(row.status));
+            lines.push("Pilot: " + (row.displayName || "") + " (" + row.pilotEmail + ") " + (row.callsign || ""));
+            lines.push("Date: " + (row.flightDate || "—"));
+            lines.push("Aircraft: " + (row.aircraft || "—") + "   Flight time: " + (row.flightTime || "—"));
+            lines.push("Fuel: " + (row.fuelKg == null ? "—" : row.fuelKg) + " kg    Multiplier: " + (row.multiplier || 1));
+            lines.push("Dep Gate: " + (row.gateDep || "—") + "   Arr Gate: " + (row.gateArr || "—"));
+            if (row.remarks) lines.push("\nRemarks:\n" + row.remarks);
+            if (row.reviewedAt) {
+              lines.push("\nReviewed at " + String(row.reviewedAt).slice(0,19).replace("T"," ") +
+                         (row.reviewedBy ? (" by " + row.reviewedBy) : ""));
+            }
+            if (row.reviewNote) lines.push("Review note: " + row.reviewNote);
+            alert(lines.join("\n"));
+            return;
+          }
+          renderPIREPs();
+          // 同步刷新仪表盘 & member list 的 Pending 徽章
+          if (typeof renderPIREPStatsAndRecent === "function") try { renderPIREPStatsAndRecent(); } catch (e) {}
+          if (typeof renderMembers === "function") try { renderMembers(); } catch (e) {}
+        } catch (err) {
+          var msg = (err && err.message) || String(err);
+          if (msg === "ADMIN_REQUIRED") msg = "You must be an admin to review PIREPs.";
+          alert("Failed to update PIREP. Error: " + msg);
+        }
+      });
+
+      // 初始显示和 member management 的 display 设置同步（用户不切换时也要能看到）
+      panel.style.display = "";
+      renderPIREPs();
+    })();
+    })();
+  </script>
+</body>
+</html>

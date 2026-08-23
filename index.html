@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, shrink-to-fit=no" />
+  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#0b1f3a" media="(prefers-color-scheme: dark)" />
+  <meta name="format-detection" content="telephone=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <title>Xiamen Virtual Airlines — Crew Center</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <script>
+    /* Boot-time login flag: set body[data-mfva-logged] before the page
+       paints so "Join US" items are hidden immediately (no FOUC),
+       and the hero button text is swapped before render. */
+    (function(){
+      try {
+        var logged = localStorage.getItem("mfva_logged_in") === "1";
+        document.documentElement.setAttribute("data-mfva-logged", logged ? "1" : "0");
+      } catch (e) {
+        document.documentElement.setAttribute("data-mfva-logged", "0");
+      }
+    })();
+  </script>
+</head>
+<body>
+  <!-- ============ TOP NAVIGATION (WHITE BAR) ============ -->
+  <header class="topbar">
+    <div class="topbar__inner">
+      <!-- LEFT : Logo + Virtual -->
+      <a href="#home" class="brand" aria-label="Home">
+        <span class="brand__placeholder" aria-hidden="true"></span>
+      </a>
+
+      <!-- CENTER (desktop links, hidden on small screens) -->
+      <nav class="primary-nav" aria-label="Primary">
+        <a href="#home">Home</a>
+        <a href="about.html">About Us</a>
+        <a href="crew.html">Crew Center</a>
+        <a href="hubs.html">Hubs</a>
+        <a href="fleet.html">Fleet</a>
+        <a href="ranks.html">Ranks</a>
+        <a href="routes.html">Routes</a>
+      </nav>
+
+      <!-- RIGHT : Hamburger menu (always visible, as requested) -->
+      <button
+        id="menuToggle"
+        class="hamburger"
+        type="button"
+        aria-label="Open menu"
+        aria-controls="sideMenu"
+        aria-expanded="false"
+      >
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ============ SIDE MENU (triggered by hamburger) ============ -->
+  <aside id="sideMenu" class="sidemenu" aria-hidden="true" aria-label="Main menu">
+    <button id="menuClose" class="sidemenu__close" type="button" aria-label="Close menu">&times;</button>
+    <div class="sidemenu__header">
+      <span class="visually-hidden">Main menu</span>
+    </div>
+    <ul class="sidemenu__list">
+      <li><a href="#home" data-nav>Home</a></li>
+      <li><a href="about.html" data-nav>About us</a></li>
+      <li><a href="crew.html" data-nav>Crew Center</a></li>
+      <li><a href="hubs.html" data-nav>Hubs</a></li>
+      <li><a href="fleet.html" data-nav>Fleet</a></li>
+      <li><a href="ranks.html" data-nav>Ranks</a></li>
+      <li><a href="routes.html" data-nav>Routes</a></li>
+    </ul>
+    <div class="sidemenu__footer">
+      &copy; <span id="year"></span> Xiamen Virtual Airlines. All rights reserved.
+    </div>
+  </aside>
+  <div id="menuBackdrop" class="backdrop" aria-hidden="true"></div>
+
+  <!-- ============ HERO (full-screen background image) ============ -->
+  <section id="home" class="hero">
+    <div class="hero__bg" aria-hidden="true"></div>
+    <div class="hero__overlay" aria-hidden="true"></div>
+
+    <div class="hero__content">
+      <p class="hero__eyebrow">IFVARB Approved Virtual Airline</p>
+      <h1 class="hero__title">
+        Where the sky<br/>becomes your office.
+      </h1>
+      <p class="hero__subtitle">
+        Join a professional virtual airline built for realism, community, and endless routes across the globe.
+      </p>
+
+      <div class="hero__actions">
+        <a href="register.html" class="btn btn--apply" id="mainActionBtn">APPLY NEW</a>
+      </div>
+    </div>
+
+    <a href="#home" class="hero__scroll" aria-label="Back to top">
+      <span></span>
+    </a>
+  </section>
+
+  <script src="script.js?v=20260823-pirepfix"></script>
+</body>
+</html>

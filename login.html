@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, shrink-to-fit=no" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <meta name="theme-color" content="#eef2ff" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#0b1f3a" media="(prefers-color-scheme: dark)" />
+  <meta name="format-detection" content="telephone=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <title>MFVA Crew Center — Sign In</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --nav-h: 72px;
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+      --ease: cubic-bezier(.22,.61,.36,1);
+      --brand: #2463ff;
+      --brand-dark: #1d4fd1;
+      --ink: #0b1220;
+      --ink-soft: #4b5563;
+      --bg-1: #e7edff;
+      --bg-2: #f3f5ff;
+      --field-bg: #eaf1ff;
+      --field-border: #d7e4ff;
+      --radius-card: 24px;
+      --radius-field: 14px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      -webkit-text-size-adjust: 100%;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+      min-height: 100%;
+    }
+
+    body {
+      font-family: "Barlow", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(1200px 700px at 85% -10%, #dce4ff 0%, transparent 60%),
+        radial-gradient(900px 600px at -10% 110%, #e3ecff 0%, transparent 55%),
+        linear-gradient(180deg, var(--bg-1) 0%, var(--bg-2) 100%);
+      min-height: 100vh;
+      min-height: 100dvh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: calc(24px + var(--safe-top)) 20px calc(24px + var(--safe-bottom));
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    a, button, input {
+      touch-action: manipulation;
+      -webkit-user-drag: none;
+    }
+
+    a { color: inherit; text-decoration: none; }
+    button { font-family: inherit; cursor: pointer; border: none; background: none; }
+
+    /* ----- Back to Home link ----- */
+    .back-home {
+      position: absolute;
+      top: calc(18px + var(--safe-top));
+      left: 20px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #27304a;
+      font-size: 14px;
+      font-weight: 500;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.55);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      transition: background .2s var(--ease);
+    }
+    .back-home:hover { background: rgba(255,255,255,.8); }
+    .back-home svg { width: 16px; height: 16px; }
+
+    /* ----- Brand header (above card, logo + name) ----- */
+    .auth-brand {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin: 0 auto 22px;
+      max-width: 520px;
+      width: 100%;
+    }
+    .auth-brand__logo {
+      height: 40px;
+      width: auto;
+      max-width: 55vw;
+      object-fit: contain;
+      display: block;
+      filter: drop-shadow(0 2px 4px rgba(11,31,58,.12));
+    }
+    .auth-brand__name {
+      font-size: 15px;
+      font-weight: 600;
+      font-style: italic;
+      letter-spacing: .10em;
+      text-transform: uppercase;
+      color: #18223f;
+      white-space: nowrap;
+    }
+
+    /* ----- Card ----- */
+    .auth-card {
+      width: 100%;
+      max-width: 520px;
+      background: #ffffff;
+      border-radius: var(--radius-card);
+      box-shadow:
+        0 18px 50px -20px rgba(30, 45, 95, .25),
+        0 2px 10px -4px rgba(30, 45, 95, .08);
+      padding: 44px clamp(24px, 5vw, 52px) 40px;
+      position: relative;
+    }
+
+    .auth-card__eyebrow {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: .28em;
+      text-transform: uppercase;
+      color: var(--brand);
+      margin-bottom: 10px;
+    }
+
+    .auth-card__title {
+      font-size: clamp(30px, 5.2vw, 44px);
+      font-weight: 800;
+      line-height: 1.08;
+      letter-spacing: -.01em;
+      color: #0b1220;
+      margin-bottom: 12px;
+    }
+
+    .auth-card__subtitle {
+      font-size: clamp(16px, 2vw, 20px);
+      color: var(--ink-soft);
+      font-weight: 400;
+      line-height: 1.5;
+      margin-bottom: 32px;
+    }
+
+    /* ----- Fields ----- */
+    .field {
+      margin-bottom: 24px;
+    }
+    .field__label-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .field label {
+      display: block;
+      font-size: 16px;
+      font-weight: 500;
+      color: #1f2740;
+    }
+    .field__link {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--brand);
+      transition: color .15s var(--ease);
+      white-space: nowrap;
+    }
+    .field__link:hover { color: var(--brand-dark); }
+
+    .field__control {
+      position: relative;
+    }
+    .field input[type="email"],
+    .field input[type="password"],
+    .field input[type="text"] {
+      width: 100%;
+      display: block;
+      padding: 18px 18px 18px 18px;
+      font-size: clamp(17px, 2.2vw, 20px);
+      font-family: inherit;
+      color: #0b1220;
+      background: var(--field-bg);
+      border: 2px solid var(--field-border);
+      border-radius: var(--radius-field);
+      outline: none;
+      transition: border-color .2s var(--ease), box-shadow .2s var(--ease), background .2s var(--ease);
+      letter-spacing: .01em;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+    .field input::placeholder {
+      color: #99a3bd;
+    }
+    .field input:focus {
+      border-color: var(--brand);
+      background: #ffffff;
+      box-shadow: 0 0 0 5px rgba(36, 99, 255, .15);
+    }
+
+    .field__toggle {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: #5b6586;
+      transition: background .15s var(--ease), color .15s var(--ease);
+    }
+    .field__toggle:hover { background: rgba(36,99,255,.08); color: var(--brand); }
+    .field__toggle svg { width: 20px; height: 20px; }
+
+    /* ----- Button ----- */
+    .btn-primary {
+      width: 100%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 17px 22px;
+      margin-top: 8px;
+      background: var(--brand);
+      color: #ffffff;
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: .03em;
+      border-radius: 14px;
+      box-shadow: 0 10px 24px -14px rgba(36,99,255,.85);
+      transition: transform .12s var(--ease), background .2s var(--ease), box-shadow .2s var(--ease);
+    }
+    .btn-primary:hover {
+      background: var(--brand-dark);
+      box-shadow: 0 14px 30px -14px rgba(29,79,209,.9);
+    }
+    .btn-primary:active { transform: translateY(1px); }
+
+    /* ----- Divider ----- */
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin: 28px 0 16px;
+      color: #98a2bd;
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: .28em;
+      text-transform: uppercase;
+    }
+    .divider::before, .divider::after {
+      content: "";
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, #dce3f5, transparent);
+    }
+
+    /* ----- Social buttons (placeholder for future) ----- */
+    .social-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .social-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 13px 14px;
+      border-radius: 12px;
+      border: 1.5px solid #e3e8f5;
+      background: #ffffff;
+      color: #1f2740;
+      font-size: 14px;
+      font-weight: 500;
+      transition: border-color .15s var(--ease), background .15s var(--ease);
+    }
+    .social-btn:hover { border-color: #c2cdee; background: #f8faff; }
+    .social-btn svg { width: 18px; height: 18px; }
+    @media (max-width: 440px) { .social-row { grid-template-columns: 1fr; } }
+
+    /* ----- Footer / Sign up line ----- */
+    .auth-card__footer {
+      text-align: center;
+      font-size: clamp(16px, 2vw, 18px);
+      color: #4b5563;
+      padding-top: 6px;
+      line-height: 1.6;
+    }
+    .auth-card__footer a {
+      color: var(--brand);
+      font-weight: 700;
+      transition: color .15s var(--ease);
+    }
+    .auth-card__footer a:hover { color: var(--brand-dark); }
+
+    /* ----- Small note under card ----- */
+    .auth-sub-note {
+      text-align: center;
+      max-width: 520px;
+      margin: 18px auto 0;
+      font-size: 12.5px;
+      color: #7c86a3;
+      line-height: 1.6;
+    }
+    .auth-sub-note strong { color: #4b5676; font-weight: 600; }
+
+    /* ----- Success/error flash ----- */
+    .flash {
+      display: none;
+      padding: 12px 14px;
+      margin-bottom: 22px;
+      border-radius: 12px;
+      font-size: 14px;
+      line-height: 1.45;
+    }
+    .flash.is-visible { display: block; }
+    .flash--error   { background: #fff1f1; color: #8b1f1f; border: 1px solid #ffd0d0; }
+    .flash--success { background: #ecf9ee; color: #1f6b2b; border: 1px solid #bfe8c5; }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { transition: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <a href="index.html" class="back-home" aria-label="Back to home">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M19 12H5"></path>
+      <path d="M12 19l-7-7 7-7"></path>
+    </svg>
+    <span>Back to Home</span>
+  </a>
+
+  <main style="width:100%;">
+    <section class="auth-card" aria-labelledby="sign-in-title">
+      <div class="flash flash--error" id="flash" role="alert"></div>
+
+      <p class="auth-card__eyebrow">MFVA Crew Center</p>
+      <h1 id="sign-in-title" class="auth-card__title">Welcome Back</h1>
+      <p class="auth-card__subtitle">Sign in with any email and any password — no invite needed.</p>
+
+      <form id="signInForm" novalidate>
+        <div class="field">
+          <label for="email" class="field__label">Email Address</label>
+          <div class="field__control">
+            <input
+              id="email"
+              name="email"
+              type="email"
+              inputmode="email"
+              autocomplete="email"
+              placeholder="you@example.com"
+              required
+            />
+          </div>
+          <div class="ff-help" id="emailHelp">Your email must already be registered (Apply on the home page first). If this is your first time, click <b>Sign Up</b> below.</div>
+        </div>
+
+        <div class="field" style="margin-top:6px;">
+          <div class="field__label-row">
+            <label for="password">Password</label>
+          </div>
+          <div class="field__control">
+            <input
+              id="password"
+              name="password"
+              type="password"
+              autocomplete="current-password"
+              placeholder="Your password"
+              required
+              style="padding-right:58px;"
+            />
+            <button type="button" class="field__toggle" id="togglePw" aria-label="Show password">
+              <svg id="eyeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+            </button>
+          </div>
+          <div class="ff-help" id="pwHelp">Type any password you used during Apply — or anything, really.</div>
+        </div>
+
+        <button type="submit" class="btn-primary">Sign In</button>
+      </form>
+
+      <p class="auth-card__footer">
+        Apply today to be a part of <strong>MFVA</strong>! <a href="register.html">Sign Up</a>
+      </p>
+    </section>
+
+    <p class="auth-sub-note">
+      By signing in, you agree to the <strong>MFVA</strong> Operating Guidelines, VATSIM/IVAO policies,
+      and our privacy standards. Need help? Contact the Hub Staff.
+    </p>
+  </main>
+
+  <script src="auth.js?v=20260823-pirepfix"></script>
+  <script>
+    (function () {
+      "use strict";
+
+      // ---------- helpers ----------
+      var $ = function (id) { return document.getElementById(id); };
+      var flash = $("flash");
+      var form  = $("signInForm");
+      var emailInput = $("email");
+      var pwInput    = $("password");
+      var togglePw   = $("togglePw");
+      var eyeIcon    = $("eyeIcon");
+
+      function showFlash(msg, isError) {
+        if (!flash) return;
+        flash.textContent = msg || "";
+        flash.className = "flash " + (isError ? "flash--error" : "flash--success") + " is-visible";
+      }
+      function hideFlash() {
+        if (!flash) return;
+        flash.className = "flash flash--error";
+        flash.textContent = "";
+      }
+      function normEmail(s) { return String(s || "").trim().toLowerCase(); }
+      function validEmail(e) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e); }
+
+      function gotoCrewOrSaved() {
+        var dest = "crew.html";
+        try {
+          var saved = sessionStorage.getItem("mfva_redirect_after_login");
+          if (saved && /^\s*[a-zA-Z0-9/_.-]+\.html?(\?[^#]*)?(#.*)?\s*$/.test(saved)) {
+            dest = saved;
+            sessionStorage.removeItem("mfva_redirect_after_login");
+          }
+        } catch (e) {}
+        window.location.replace(dest);
+      }
+
+      // ---------- If already signed in, skip straight to crew center ----------
+      try {
+        if (window.MFVAauth && MFVAauth.isSignedIn()) {
+          window.location.replace("crew.html");
+          return;
+        }
+      } catch (e) {}
+
+      // ---------- If user just came from register.html → pre-fill their email ----------
+      (function prefillFromRegister() {
+        if (!emailInput || !emailInput.value) {
+          try {
+            var lastEmail = sessionStorage.getItem("mfva_last_registered_email");
+            if (lastEmail && validEmail(lastEmail)) {
+              emailInput.value = lastEmail;
+              sessionStorage.removeItem("mfva_last_registered_email");
+              if (pwInput) pwInput.focus();
+            }
+          } catch (e) {}
+        }
+      })();
+
+      // ---------- Show/hide password toggle ----------
+      if (togglePw && pwInput) {
+        togglePw.addEventListener("click", function () {
+          var show = pwInput.type === "password";
+          pwInput.type = show ? "text" : "password";
+          togglePw.setAttribute("aria-label", show ? "Hide password" : "Show password");
+          if (eyeIcon) {
+            if (show) {
+              eyeIcon.innerHTML =
+                '<path d="M17.9 17.9A10.6 10.6 0 0 1 12 19c-6.5 0-10-7-10-7a18.3 18.3 0 0 1 5.1-5.6"/>' +
+                '<path d="M9.9 5.1A9.8 9.8 0 0 1 12 5c6.5 0 10 7 10 7a18.1 18.1 0 0 1-2.9 3.7"/>' +
+                '<path d="M9.9 9.9A3 3 0 0 0 14 14"/>' +
+                '<line x1="2" y1="2" x2="22" y2="22"/>';
+            } else {
+              eyeIcon.innerHTML =
+                '<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/>' +
+                '<circle cx="12" cy="12" r="3"/>';
+            }
+          }
+        });
+      }
+
+      // ---------- Submit → MFVAauth.signIn (relaxed: any email + any non-empty pw) ----------
+      if (form) {
+        form.addEventListener("submit", function (e) {
+          e.preventDefault();
+          hideFlash();
+
+          var email = normEmail(emailInput.value);
+          var pw    = String(pwInput ? pwInput.value : "");
+
+          if (!validEmail(email)) { showFlash("Please enter a valid email address.", true); emailInput.focus(); return; }
+          if (pw === "") { showFlash("Please enter any password (it doesn't have to match anything).", true); pwInput.focus(); return; }
+
+          if (!window.MFVAauth) {
+            showFlash("Authentication module failed to load. Please refresh the page.", true);
+            return;
+          }
+
+          showFlash("Signing you in…", false);
+          var result;
+          try {
+            result = MFVAauth.signIn(email, pw);
+          } catch (err) {
+            result = { ok: false, message: (err && err.message) || "Sign in failed." };
+          }
+
+          if (!result || !result.ok) {
+            var msg = (result && result.message) || "Sign in failed.";
+            switch ((result && result.code) || "") {
+              case "EMAIL_REQUIRED":  msg = "Please enter your email."; break;
+              case "EMAIL_INVALID":   msg = "That email doesn't look right — please double-check it."; break;
+              case "PASSWORD_REQUIRED": msg = "Password can't be empty."; break;
+              case "DISABLED":          msg = "This account has been disabled. Contact staff."; break;
+              case "PENDING_REVIEW":    msg = "⏳ Your application is still under admin review. Please wait — the Crew Center team approves applications regularly."; break;
+              case "APPLICATION_REJECTED": msg = (result && result.message) || "Your application was declined by an admin. Contact staff for details."; break;
+              case "NOT_AUTHORIZED":    msg = "This email isn't registered yet. Apply first (Sign Up below) using your IFC profile."; break;
+            }
+            showFlash(msg, true);
+            return;
+          }
+
+          var name = (result && result.user && (result.user.displayName || result.user.callsign)) || "Pilot";
+          showFlash("Welcome back, " + name + "!", false);
+          setTimeout(gotoCrewOrSaved, 350);
+        });
+      }
+    })();
+  </script>
+</body>
+</html>

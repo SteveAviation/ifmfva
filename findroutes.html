@@ -1,0 +1,1415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, shrink-to-fit=no" />
+  <meta name="theme-color" content="#eef2ff" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#0b1f3a" media="(prefers-color-scheme: dark)" />
+  <meta name="format-detection" content="telephone=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <title>MFVA — Find Routes</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --nav-h: 68px;
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+      --ease: cubic-bezier(.22,.61,.36,1);
+      --brand: #0057b8;
+      --brand-dark: #00418c;
+      --brand-2: #2463ff;
+      --ink: #0b1220;
+      --ink-2: #1f2937;
+      --ink-soft: #6b7280;
+      --line: #e5e7eb;
+      --line-2: #dce3f5;
+      --bg-1: #e7edff;
+      --bg-2: #f3f5ff;
+      --card: #ffffff;
+      --radius-card: 22px;
+      --radius-field: 14px;
+      --shadow-card: 0 1px 2px rgba(17,24,39,.04), 0 6px 22px -10px rgba(17,24,39,.12);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      -webkit-text-size-adjust: 100%;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+      min-height: 100%;
+    }
+    body {
+      font-family: "Barlow", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(1200px 700px at 85% -10%, #dce4ff 0%, transparent 60%),
+        radial-gradient(900px 600px at -10% 110%, #e3ecff 0%, transparent 55%),
+        linear-gradient(180deg, var(--bg-1) 0%, var(--bg-2) 100%);
+      min-height: 100vh;
+      min-height: 100dvh;
+      padding: calc(16px + var(--safe-top)) 16px calc(120px + var(--safe-bottom));
+      overflow-x: hidden;
+      position: relative;
+    }
+    a { color: inherit; text-decoration: none; }
+    button { font-family: inherit; cursor: pointer; border: none; background: none; }
+
+    /* ---------- Top bar ---------- */
+    .fr-topbar {
+      max-width: 1120px;
+      margin: 0 auto 20px;
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    }
+    .fr-topbar__crumb {
+      display: inline-flex; align-items: center; gap: 6px;
+      color: #4b5563; font-weight: 500; font-size: 13px;
+      padding: 6px 10px; border-radius: 8px; background: transparent;
+      transition: background .2s var(--ease), color .2s var(--ease);
+    }
+    .fr-topbar__crumb:hover { background: rgba(255,255,255,.55); color: #111827; }
+    .fr-topbar__crumb svg { width: 15px; height: 15px; }
+    .fr-topbar__brand { color: #374151; font-weight: 600; }
+    .icon-btn {
+      width: 42px; height: 42px;
+      border-radius: 12px; background: rgba(255,255,255,.7);
+      display: inline-flex; align-items: center; justify-content: center;
+      color: #1f2937;
+      transition: transform .15s var(--ease), background .2s var(--ease);
+    }
+    .icon-btn:hover { background: #fff; }
+    .icon-btn:active { transform: scale(.96); }
+    .icon-btn svg { width: 18px; height: 18px; }
+
+    /* ---------- Layout ---------- */
+    .fr-wrap {
+      max-width: 1120px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 18px;
+    }
+
+    /* ---------- Page header ---------- */
+    .fr-header h1 {
+      font-size: clamp(30px, 4.2vw, 44px);
+      font-weight: 800;
+      letter-spacing: -.02em;
+      line-height: 1.08;
+      color: var(--ink);
+    }
+    .fr-header p {
+      margin-top: 8px;
+      color: var(--ink-soft);
+      font-size: 17px;
+      font-weight: 500;
+      line-height: 1.5;
+    }
+
+    /* ---------- Generic card ---------- */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-card);
+      box-shadow: var(--shadow-card);
+      padding: clamp(18px, 2vw, 26px);
+    }
+
+    /* ---------- Save Filter button ---------- */
+    .save-filter-bar {
+      display: flex; gap: 10px; flex-wrap: wrap;
+    }
+    .btn-save-filter {
+      width: 100%;
+      display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+      padding: 14px 18px; min-height: 52px;
+      border: 1.5px solid var(--line-2);
+      border-radius: 14px;
+      background: #fff;
+      color: var(--ink-2);
+      font-weight: 600; font-size: 15px; letter-spacing: .01em;
+      transition: background .2s var(--ease), border-color .2s var(--ease), transform .12s var(--ease);
+    }
+    .btn-save-filter:hover { background: #f8faff; border-color: #c6d4f2; }
+    .btn-save-filter:active { transform: scale(.995); }
+    .btn-save-filter svg { width: 18px; height: 18px; color: #374151; }
+
+    /* ---------- Filters card ---------- */
+    .filters h2 {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -.01em;
+      color: var(--ink);
+      margin-bottom: 18px;
+    }
+    .filter-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px 18px;
+    }
+    @media (min-width: 640px) { .filter-grid { grid-template-columns: 1fr 1fr; } }
+    .filter-grid .full { grid-column: 1 / -1; }
+
+    .ff label {
+      display: block;
+      font-size: 15px; font-weight: 600;
+      color: #1f2740;
+      margin-bottom: 8px;
+    }
+    .ff input, .ff select {
+      width: 100%;
+      padding: 15px 16px;
+      font-size: 16px; font-family: inherit;
+      color: var(--ink);
+      background: #f8faff;
+      border: 1.5px solid var(--line-2);
+      border-radius: var(--radius-field);
+      outline: none;
+      transition: border-color .18s var(--ease), box-shadow .18s var(--ease), background .18s var(--ease);
+    }
+    .ff input::placeholder { color: #99a3bd; letter-spacing: .01em; }
+    .ff input:focus, .ff select:focus {
+      border-color: var(--brand);
+      background: #fff;
+      box-shadow: 0 0 0 5px rgba(36,99,255,.14);
+    }
+    .ff input[type="text"]:has(+ .search-icon) { padding-left: 44px; }
+    .ff.with-icon { position: relative; }
+    .search-icon {
+      position: absolute;
+      left: 14px; top: 50%;
+      transform: translateY(-50%);
+      color: #99a3bd;
+      pointer-events: none;
+    }
+    .search-icon svg { width: 18px; height: 18px; }
+
+    .filter-footer {
+      display: flex; flex-wrap: wrap; align-items: center;
+      justify-content: space-between; gap: 12px 18px;
+      margin-top: 20px;
+      padding-top: 14px;
+      border-top: 1px dashed #e5e7eb;
+    }
+    .chk-row {
+      display: inline-flex; align-items: center; gap: 10px;
+      font-size: 15px; font-weight: 600; color: #1f2740;
+    }
+    .chk-row input[type="checkbox"] {
+      width: 18px; height: 18px; accent-color: var(--brand);
+    }
+    .btn-clear {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 9px 14px; min-height: 40px;
+      border-radius: 10px;
+      background: transparent;
+      color: #4b5563;
+      font-weight: 600; font-size: 14px;
+      transition: background .15s var(--ease), color .15s var(--ease);
+    }
+    .btn-clear:hover { background: #f3f4f6; color: #0b1220; }
+    .btn-clear svg { width: 14px; height: 14px; }
+
+    /* ---------- Saved filters ---------- */
+    .saved h2 {
+      font-size: 18px; font-weight: 700; letter-spacing: -.01em;
+      color: var(--ink); margin-bottom: 14px;
+    }
+    .saved-chips {
+      display: flex; flex-wrap: wrap; gap: 10px;
+    }
+    .chip {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 9px 14px;
+      border-radius: 999px;
+      border: 1.5px solid var(--line-2);
+      background: #fff;
+      font-size: 14px; font-weight: 600; color: var(--ink-2);
+      transition: border-color .15s var(--ease), background .15s var(--ease), color .15s var(--ease);
+    }
+    .chip:hover { background: #f8faff; border-color: #c6d4f2; }
+    .chip.is-active {
+      background: #eef2ff;
+      border-color: #c7d2fe;
+      color: #3730a3;
+    }
+    .chip__remove {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 18px; height: 18px; border-radius: 50%;
+      background: transparent; color: #6b7280;
+      font-size: 16px; line-height: 1;
+    }
+    .chip__remove:hover { background: rgba(17,24,39,.08); color: #0b1220; }
+
+    /* ---------- Results table ---------- */
+    .results-head {
+      display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between;
+      gap: 10px 16px; margin-bottom: 16px;
+    }
+    .results-head h2 {
+      font-size: 13px; font-weight: 600;
+      letter-spacing: .06em; text-transform: uppercase;
+      color: var(--ink-soft);
+    }
+    .results-count {
+      color: var(--ink-2);
+      font-weight: 700;
+      font-size: 15px;
+    }
+    .results-count strong { color: var(--brand); }
+
+    .routes-table-wrap {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      overflow: hidden;
+      background: #fff;
+    }
+    .routes-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      font-size: 15px;
+    }
+    .routes-table thead th {
+      text-align: left;
+      padding: 14px 16px;
+      background: #f8faff;
+      color: var(--ink-soft);
+      font-weight: 600;
+      letter-spacing: .02em;
+      font-size: 13px;
+      text-transform: uppercase;
+      border-bottom: 1px solid var(--line);
+      white-space: nowrap;
+    }
+    .routes-table thead th:last-child { text-align: right; }
+    .routes-table tbody td {
+      padding: 14px 16px;
+      border-bottom: 1px solid #f0f2f7;
+      vertical-align: middle;
+      color: var(--ink-2);
+      font-weight: 500;
+    }
+    .routes-table tbody tr:last-child td { border-bottom: 0; }
+    .routes-table tbody tr:hover { background: #fafbff; }
+    .routes-table tbody td:last-child {
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    .r-flight {
+      font-weight: 700; color: var(--ink);
+      letter-spacing: .02em;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 14px;
+    }
+    .r-route {
+      font-weight: 700; color: var(--ink); letter-spacing: .02em;
+      display: inline-flex; align-items: center; gap: 10px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 14px;
+    }
+    .r-route svg { width: 14px; height: 14px; color: #99a3bd; flex-shrink: 0; }
+    .r-duration {
+      font-variant-numeric: tabular-nums;
+      font-weight: 600; color: #374151;
+    }
+    .r-ac {
+      display: inline-flex; align-items: center;
+      padding: 5px 12px;
+      border-radius: 10px;
+      background: #f0f3ff;
+      border: 1px solid #dce3f5;
+      color: #1f2a55;
+      font-size: 13px; font-weight: 600; letter-spacing: .01em;
+    }
+    .r-ac--ineligible {
+      background: #fff;
+      border: 1px dashed #e5e7eb;
+      color: var(--ink-soft);
+      font-weight: 500;
+    }
+
+    .actions-cell { display: inline-flex; gap: 8px; align-items: center; justify-content: flex-end; }
+    .btn-view {
+      padding: 9px 18px;
+      border-radius: 11px;
+      background: #fff;
+      border: 1.5px solid var(--line-2);
+      color: var(--ink-2);
+      font-weight: 600; font-size: 14px;
+      transition: background .15s var(--ease), border-color .15s var(--ease);
+    }
+    .btn-view:hover { background: #f8faff; border-color: #c6d4f2; }
+    .btn-file {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 9px 16px;
+      border-radius: 11px;
+      background: var(--brand);
+      color: #fff;
+      font-weight: 600; font-size: 14px;
+      letter-spacing: .01em;
+      transition: background .15s var(--ease), transform .12s var(--ease), box-shadow .15s var(--ease);
+      box-shadow: 0 8px 18px -8px rgba(0,87,184,.5);
+    }
+    .btn-file:hover { background: var(--brand-dark); }
+    .btn-file:active { transform: translateY(1px); }
+    .btn-file svg { width: 16px; height: 16px; }
+
+    .no-results {
+      padding: 38px 20px;
+      text-align: center;
+      color: var(--ink-soft);
+      font-weight: 500;
+      font-size: 15px;
+      line-height: 1.6;
+      border: 1px dashed #d6dbe9;
+      border-radius: 16px;
+    }
+    .no-results strong { color: var(--ink-2); font-weight: 600; }
+
+    @media (max-width: 760px) {
+      .routes-table thead { display: none; }
+      .routes-table, .routes-table tbody, .routes-table tr, .routes-table td { display: block; width: 100%; }
+      .routes-table tr {
+        border-bottom: 1px solid var(--line);
+        padding: 4px 0;
+      }
+      .routes-table tr:last-child { border-bottom: 0; }
+      .routes-table tbody td {
+        border-bottom: 0;
+        padding: 8px 16px;
+        display: flex; align-items: center; justify-content: space-between;
+        gap: 10px;
+        text-align: right;
+      }
+      .routes-table tbody td::before {
+        content: attr(data-label);
+        font-size: 11px; text-transform: uppercase; letter-spacing: .04em;
+        color: var(--ink-soft); font-weight: 600;
+        flex-shrink: 0; margin-right: 10px;
+        text-align: left;
+      }
+      .routes-table tbody td:last-child { text-align: right; }
+      .actions-cell { justify-content: flex-end; }
+    }
+
+    /* ---------- Route Detail Modal ---------- */
+    .modal-backdrop {
+      position: fixed; inset: 0;
+      background: rgba(11,18,32,.55);
+      opacity: 0; pointer-events: none;
+      transition: opacity .22s var(--ease);
+      z-index: 80;
+      display: flex; align-items: center; justify-content: center;
+      padding: 20px;
+    }
+    .modal-backdrop.is-open { opacity: 1; pointer-events: auto; }
+    .modal {
+      width: 100%; max-width: 560px;
+      max-height: calc(100vh - 40px);
+      max-height: calc(100dvh - 40px);
+      background: #fff;
+      border-radius: 22px;
+      box-shadow: 0 30px 60px -20px rgba(17,24,39,.4);
+      transform: translateY(12px) scale(.98);
+      transition: transform .22s var(--ease);
+      display: flex; flex-direction: column;
+      overflow: hidden;
+    }
+    .modal-backdrop.is-open .modal { transform: translateY(0) scale(1); }
+    .modal__header {
+      padding: 22px 26px 16px;
+      display: flex; align-items: flex-start; justify-content: space-between;
+      gap: 12px;
+      border-bottom: 1px solid var(--line);
+    }
+    .modal__title {
+      font-size: 22px; font-weight: 800; letter-spacing: -.01em; color: var(--ink);
+    }
+    .modal__subtitle { margin-top: 4px; font-size: 13px; color: var(--ink-soft); font-weight: 500; }
+    .modal__close {
+      width: 38px; height: 38px; border-radius: 10px;
+      background: #f3f4f6; color: var(--ink-2);
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: 22px; line-height: 1; flex-shrink: 0;
+    }
+    .modal__body { padding: 20px 26px; overflow-y: auto; flex: 1; }
+    .kv { display: grid; grid-template-columns: 130px minmax(0,1fr); gap: 12px 18px; }
+    @media (max-width: 500px) { .kv { grid-template-columns: 1fr; } }
+    .kv dt { font-size: 12px; text-transform: uppercase; letter-spacing: .05em; color: var(--ink-soft); font-weight: 600; padding-top: 4px; }
+    .kv dd { font-size: 15px; font-weight: 600; color: var(--ink-2); }
+    .kv dd.flight-no { font-family: ui-monospace, monospace; font-size: 17px; color: var(--ink); font-weight: 700; }
+    .route-line {
+      display: flex; align-items: center; gap: 14px;
+      padding: 16px 20px;
+      background: linear-gradient(90deg, #eef2ff 0%, #f8faff 100%);
+      border-radius: 14px;
+      border: 1px solid #dce3f5;
+      margin: 16px 0 22px;
+    }
+    .port { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+    .port__icao { font-weight: 800; font-size: 20px; letter-spacing: .05em; font-family: ui-monospace, monospace; color: var(--ink); }
+    .port__name { font-size: 12px; color: var(--ink-soft); font-weight: 500; }
+    .route-arrow {
+      flex: 1;
+      height: 2px;
+      background: linear-gradient(90deg, #a5b4fc 0%, var(--brand) 50%, #a5b4fc 100%);
+      position: relative;
+    }
+    .route-arrow svg {
+      position: absolute; right: -6px; top: 50%; transform: translateY(-50%);
+      width: 16px; height: 16px; color: var(--brand); background: #fff; border-radius: 50%;
+    }
+    .modal__footer {
+      padding: 16px 26px 22px;
+      border-top: 1px solid var(--line);
+      display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-end;
+      background: #fafbff;
+    }
+    .btn-ghost {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 12px 18px; border-radius: 12px;
+      background: #fff; color: var(--ink-2);
+      border: 1.5px solid var(--line-2);
+      font-weight: 600; font-size: 14px;
+    }
+    .btn-ghost:hover { background: #f8faff; }
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 12px 18px; border-radius: 12px;
+      background: var(--brand); color: #fff;
+      font-weight: 600; font-size: 14px;
+      box-shadow: 0 8px 18px -8px rgba(0,87,184,.55);
+    }
+    .btn-primary:hover { background: var(--brand-dark); }
+    .btn-primary svg { width: 16px; height: 16px; }
+
+    /* ---------- Crew menu (bottom-right floating) ---------- */
+    .crewmenu {
+      position: fixed;
+      right: max(16px, calc(16px + var(--safe-bottom)));
+      bottom: calc(20px + var(--safe-bottom));
+      z-index: 50;
+    }
+    .crewmenu__btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 10px 16px;
+      min-height: 42px;
+      border-radius: 999px;
+      background: #ffffff; color: #1f2937;
+      font-size: 14px; font-weight: 600; letter-spacing: .03em;
+      box-shadow: 0 8px 22px -12px rgba(17,24,39,.25), 0 1px 2px rgba(17,24,39,.06);
+      border: 1px solid var(--line);
+      transition: transform .15s var(--ease), box-shadow .2s var(--ease), background .2s var(--ease);
+    }
+    .crewmenu__btn:hover { background: #f8faff; }
+    .crewmenu__btn:active { transform: translateY(1px) scale(.99); }
+    .crewmenu__btn svg { width: 17px; height: 17px; color: #374151; }
+
+    /* ---------- Drawer ---------- */
+    .drawer {
+      position: fixed; top: 0; right: 0; bottom: 0;
+      width: min(340px, 86vw);
+      background: #fff;
+      transform: translateX(102%);
+      transition: transform .28s var(--ease);
+      z-index: 70;
+      box-shadow: -20px 0 40px -20px rgba(17,24,39,.25);
+      display: flex; flex-direction: column;
+      padding: calc(18px + var(--safe-top)) 20px calc(20px + var(--safe-bottom));
+    }
+    .drawer.is-open { transform: translateX(0); }
+    .drawer__header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 18px;
+    }
+    .drawer__title {
+      font-weight: 800; font-size: 18px;
+      letter-spacing: .04em; text-transform: uppercase;
+      color: var(--ink);
+    }
+    .drawer__close {
+      width: 38px; height: 38px; border-radius: 10px;
+      background: #f3f4f6;
+      display: inline-flex; align-items: center; justify-content: center;
+      color: var(--ink-2); font-size: 22px; line-height: 1;
+    }
+    .drawer ul { list-style: none; display: flex; flex-direction: column; gap: 2px; }
+    .drawer li a, .drawer li button {
+      width: 100%; text-align: left;
+      display: inline-flex; align-items: center; gap: 12px;
+      padding: 14px 14px;
+      border-radius: 12px;
+      color: var(--ink-2);
+      font-weight: 600; font-size: 15px; letter-spacing: .02em;
+    }
+    .drawer li a:hover, .drawer li button:hover { background: #f4f6ff; color: var(--ink); }
+    .drawer li a[aria-current="page"] {
+      background: #eef2ff; color: var(--ink);
+      border: 1px solid #d9e3ff;
+    }
+    .drawer li a svg, .drawer li button svg { width: 18px; height: 18px; color: #6b7280; flex-shrink: 0; }
+    .drawer__divider { height: 1px; background: #eef0f5; margin: 14px 2px; }
+    .drawer__footer {
+      margin-top: auto; padding-top: 12px;
+      color: var(--ink-soft); font-size: 13px; text-align: center;
+    }
+    .drawer__signout { color: #b91c1c !important; }
+    .drawer__signout svg { color: #ef4444 !important; }
+    .drawer-backdrop {
+      position: fixed; inset: 0;
+      background: rgba(11,18,32,.45);
+      opacity: 0; pointer-events: none;
+      transition: opacity .25s var(--ease);
+      z-index: 60;
+    }
+    .drawer-backdrop.is-open { opacity: 1; pointer-events: auto; }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { transition: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="fr-topbar" role="navigation" aria-label="Find routes top bar">
+    <a href="crew.html" class="fr-topbar__crumb" title="Back to crew center">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+      <span>Crew Center</span>
+      <span aria-hidden="true">/</span>
+      <span class="fr-topbar__brand">Find Routes</span>
+    </a>
+    <div class="fr-topbar__actions" style="display:flex;align-items:center;gap:10px;">
+      <button type="button" class="icon-btn" id="openDrawer" aria-label="Open crew menu" title="Crew Menu">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <main class="fr-wrap">
+    <!-- Header -->
+    <section class="fr-header">
+      <h1>Find Routes</h1>
+      <p>Search updates automatically. Save filters for this browser.</p>
+    </section>
+
+    <!-- Save Filter button bar -->
+    <section class="save-filter-bar" aria-label="Filter actions">
+      <button type="button" class="btn-save-filter" id="btnSaveFilter" title="Save current filters to this browser">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        Save Filter
+      </button>
+    </section>
+
+    <!-- Filters Card -->
+    <section class="card filters" aria-label="Route filters">
+      <h2>Filters</h2>
+      <div class="filter-grid">
+        <div class="ff full">
+          <label for="fDep">Departure</label>
+          <input id="fDep" type="text" maxlength="6" placeholder="ICAO" autocomplete="off" />
+        </div>
+        <div class="ff full">
+          <label for="fArr">Arrival</label>
+          <input id="fArr" type="text" maxlength="6" placeholder="ICAO" autocomplete="off" />
+        </div>
+        <div class="ff full">
+          <label for="fAc">Aircraft</label>
+          <select id="fAc">
+            <option value="">Any aircraft</option>
+          </select>
+        </div>
+        <div class="ff full">
+          <label for="fDur">Duration</label>
+          <select id="fDur">
+            <option value="">Any duration</option>
+            <option value="short">Short — under 1:30</option>
+            <option value="mid">Medium — 1:30 to 4:00</option>
+            <option value="long">Long — over 4:00</option>
+          </select>
+        </div>
+        <div class="ff full with-icon">
+          <label for="fNum">Flight Number</label>
+          <span class="search-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          </span>
+          <input id="fNum" type="text" placeholder="CZ123" autocomplete="off" />
+        </div>
+      </div>
+
+      <div class="filter-footer">
+        <label class="chk-row">
+          <input type="checkbox" id="fEligible" />
+          <span>Eligible aircraft only</span>
+        </label>
+        <button type="button" class="btn-clear" id="btnClear">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          Clear
+        </button>
+      </div>
+    </section>
+
+    <!-- Saved Filters -->
+    <section class="card saved" aria-label="Saved filters">
+      <h2>Saved Filters</h2>
+      <div class="saved-chips" id="savedChips">
+        <!-- Chips rendered dynamically -->
+      </div>
+    </section>
+
+    <!-- Results -->
+    <section class="card results" aria-label="Route results">
+      <div class="results-head">
+        <h2>Route Results</h2>
+        <div class="results-count"><strong id="countNum">0</strong> <span id="countNoun">routes</span> found</div>
+      </div>
+
+      <div id="resultsArea">
+        <div class="no-results">Loading route data…</div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Crew menu button -->
+  <div class="crewmenu">
+    <button type="button" class="crewmenu__btn" id="crewMenuBtn" aria-label="Open crew menu">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      Crew Menu
+    </button>
+  </div>
+
+  <!-- Drawer -->
+  <div class="drawer-backdrop" id="drawerBackdrop" aria-hidden="true"></div>
+  <aside class="drawer" id="drawer" aria-hidden="true" aria-label="Crew menu">
+    <div class="drawer__header">
+      <div class="drawer__title">Crew Menu</div>
+      <button type="button" class="drawer__close" id="drawerClose" aria-label="Close crew menu">&times;</button>
+    </div>
+
+    <ul>
+      <li>
+        <a href="crew.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+          Dashboard
+        </a>
+      </li>
+      <li>
+        <a href="pirep.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3h7v7"/><path d="M10 14 21 3"/><path d="M21 14v7H3V3h7"/></svg>
+          File PIREP
+        </a>
+      </li>
+      <li>
+        <a href="findroutes.html" aria-current="page">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="6" r="2.5"/><circle cx="19" cy="6" r="2.5"/><path d="M7.5 6h9M5 8.5c0 3 3.5 4 7 4s7-1 7-4"/><path d="M12 12.5v3M8 19h8l-2-3.5h-4L8 19z"/></svg>
+          Find Routes
+        </a>
+      </li>
+      <li>
+        <a href="hubs.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s7-7.5 7-13a7 7 0 0 0-14 0c0 5.5 7 13 7 13z"/><circle cx="12" cy="9" r="2.5"/></svg>
+          Hubs
+        </a>
+      </li>
+      <li>
+        <a href="fleet.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 17v2h20v-2"/><path d="M6 17 2 7l4-1 4 4h6l4-4 4 1-4 10H6z"/></svg>
+          Fleet
+        </a>
+      </li>
+      <li>
+        <a href="routes.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 17 9 11 13 15 21 7"/><polyline points="14 7 21 7 21 14"/></svg>
+          Route Network
+        </a>
+      </li>
+      <li>
+        <a href="ranks.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
+          Ranks
+        </a>
+      </li>
+      <li>
+        <a href="about.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v5h1"/></svg>
+          About MFVA
+        </a>
+      </li>
+    </ul>
+
+    <div class="drawer__divider"></div>
+
+    <ul>
+      <li>
+        <button type="button" id="signOutBtn" class="drawer__signout">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="m10 17 5-5-5-5"/><path d="M15 12H3"/></svg>
+          Sign out
+        </button>
+      </li>
+    </ul>
+
+    <div class="drawer__footer">
+      &copy; <span id="year"></span> MFVA &middot; Xiamen Virtual Airlines
+    </div>
+  </aside>
+
+  <!-- Route Detail Modal -->
+  <div class="modal-backdrop" id="detailModal" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="detailTitle">
+      <div class="modal__header">
+        <div style="min-width:0;">
+          <div class="modal__title" id="detailTitle">Route Details</div>
+          <div class="modal__subtitle" id="detailSub">Flight information</div>
+        </div>
+        <button type="button" class="modal__close" id="detailClose" aria-label="Close">&times;</button>
+      </div>
+      <div class="modal__body" id="detailBody">
+        <!-- filled by JS -->
+      </div>
+      <div class="modal__footer">
+        <button type="button" class="btn-ghost" id="detailCancel">Close</button>
+        <button type="button" class="btn-primary" id="detailFile">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3h7v7"/><path d="M10 14 21 3"/><path d="M21 14v7H3V3h7"/></svg>
+          File this Route
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="auth.js?v=20260823-pirepfix"></script>
+  <script>
+    (function () {
+      "use strict";
+
+      // ---------- Auth gate ----------
+      var auth = window.MFVAauth;
+      if (!auth) {
+        document.body.innerHTML =
+          '<div style="padding:40px;font-family:sans-serif;color:#b91c1c;">' +
+          'Authentication module failed to load. Return to <a href="index.html">Home</a>.' +
+          '</div>';
+        return;
+      }
+      (function authGate() {
+        if (!auth.isSignedIn()) {
+          try { sessionStorage.setItem("mfva_redirect_after_login", "findroutes.html"); } catch (e) {}
+          window.location.replace("login.html");
+          return;
+        }
+        var g = auth.grantsFor();
+        if (!g || g.canUseRoutesDB === false) {
+          var main = document.querySelector("main") || document.body;
+          if (main) {
+            main.innerHTML =
+              '<div style="max-width:560px;margin:0 auto;text-align:center;padding:60px 20px;">' +
+              '<div style="font-size:52px;margin-bottom:14px;">🔒</div>' +
+              '<h1 style="font-size:26px;font-weight:800;margin-bottom:10px;color:#0b1220;">Permission Required</h1>' +
+              '<p style="color:#4b5563;font-size:16px;line-height:1.6;margin-bottom:24px;">' +
+              'Your account does not currently have permission to access the Routes Database. ' +
+              'Please ask an admin to enable the "Routes Database Access" permission for your account.' +
+              '</p>' +
+              '<a href="crew.html" style="display:inline-flex;align-items:center;gap:8px;padding:14px 22px;background:#0057b8;color:#fff;border-radius:12px;font-weight:600;text-decoration:none;">Back to Crew Center</a>' +
+              '</div>';
+          }
+          // Continue showing sign out etc.
+        }
+      })();
+
+      var grants = auth.grantsFor();
+      var me = auth.currentUser();
+      var isAdmin = auth.isAdmin();
+
+      // ---------- Year ----------
+      var y = document.getElementById("year");
+      if (y) y.textContent = new Date().getFullYear();
+
+      // ---------- Drawer open/close ----------
+      var drawer = document.getElementById("drawer");
+      var backdrop = document.getElementById("drawerBackdrop");
+      function openDrawer() {
+        drawer.classList.add("is-open");
+        drawer.setAttribute("aria-hidden", "false");
+        backdrop.classList.add("is-open");
+        backdrop.setAttribute("aria-hidden", "false");
+      }
+      function closeDrawer() {
+        drawer.classList.remove("is-open");
+        drawer.setAttribute("aria-hidden", "true");
+        backdrop.classList.remove("is-open");
+        backdrop.setAttribute("aria-hidden", "true");
+      }
+      var openers = [document.getElementById("crewMenuBtn"), document.getElementById("openDrawer")];
+      openers.forEach(function (el) { if (el) el.addEventListener("click", openDrawer); });
+      document.getElementById("drawerClose").addEventListener("click", closeDrawer);
+      backdrop.addEventListener("click", closeDrawer);
+      document.addEventListener("keydown", function (e) { if (e.key === "Escape") closeDrawer(); });
+
+      // ---------- Sign out ----------
+      var so = document.getElementById("signOutBtn");
+      if (so) {
+        so.addEventListener("click", function () {
+          try { auth.signOut(); } catch (e) {}
+          window.location.replace("index.html");
+        });
+      }
+
+      // ============================================================
+      // Fleet / Rank / Hub / Route data
+      // ============================================================
+      var AIRCRAFT = [
+        { key: "B737-700",     label: "Boeing 737-700",   minRank: 1 },
+        { key: "B737-800",     label: "Boeing 737-800",   minRank: 2 },
+        { key: "B757-200",     label: "Boeing 757-200",   minRank: 3 },
+        { key: "B737-MAX8",    label: "Boeing 737 MAX 8", minRank: 2 },
+        { key: "A320neo",      label: "Airbus A320neo",   minRank: 4 },
+        { key: "A321neo",      label: "Airbus A321neo",   minRank: 4 },
+        { key: "B787-8",       label: "Boeing 787-8",     minRank: 5 },
+        { key: "B787-9",       label: "Boeing 787-9",     minRank: 6 }
+      ];
+
+      var HUBS = [
+        { icao: "ZSAM", name: "Xiamen Gaoqi",           city: "Xiamen" },
+        { icao: "ZSFZ", name: "Fuzhou Changle",         city: "Fuzhou" },
+        { icao: "ZSHC", name: "Hangzhou Xiaoshan",      city: "Hangzhou" },
+        { icao: "ZBAD", name: "Beijing Daxing",         city: "Beijing" },
+        { icao: "ZSSS", name: "Shanghai Hongqiao",      city: "Shanghai" },
+        { icao: "ZGGG", name: "Guangzhou Baiyun",       city: "Guangzhou" },
+        { icao: "ZUTF", name: "Chengdu Tianfu",         city: "Chengdu" },
+        { icao: "ZGSZ", name: "Shenzhen Bao'an",        city: "Shenzhen" }
+      ];
+      var HUBS_BY_ICAO = {};
+      HUBS.forEach(function (h) { HUBS_BY_ICAO[h.icao] = h; });
+
+      // Additional international destinations referenced in hubs copy
+      // (for international legs)
+      var EXTRA = {
+        RJBB: { icao: "RJBB", name: "Osaka Kansai",         city: "Osaka" },
+        RJAA: { icao: "RJAA", name: "Tokyo Narita",         city: "Tokyo" },
+        RKSI: { icao: "RKSI", name: "Seoul Incheon",        city: "Seoul" },
+        WIII: { icao: "WIII", name: "Jakarta Soekarno-Hatta", city: "Jakarta" },
+        WSSS: { icao: "WSSS", name: "Singapore Changi",     city: "Singapore" },
+        VTBD: { icao: "VTBD", name: "Bangkok Suvarnabhumi", city: "Bangkok" },
+        WMKK: { icao: "WMKK", name: "Kuala Lumpur KLIA",    city: "Kuala Lumpur" },
+        OMDB: { icao: "OMDB", name: "Dubai International", city: "Dubai" },
+        VVTS: { icao: "VVTS", name: "Ho Chi Minh Tan Son Nhat", city: "Ho Chi Minh" },
+        RPLL: { icao: "RPLL", name: "Manila Ninoy Aquino",  city: "Manila" },
+        YMML: { icao: "YMML", name: "Melbourne Tullamarine", city: "Melbourne" },
+        YSSY: { icao: "YSSY", name: "Sydney Kingsford Smith", city: "Sydney" },
+        EGLL: { icao: "EGLL", name: "London Heathrow",      city: "London" },
+        EDDF: { icao: "EDDF", name: "Frankfurt am Main",    city: "Frankfurt" },
+        EHAM: { icao: "EHAM", name: "Amsterdam Schiphol",   city: "Amsterdam" },
+        YVR:  { icao: "CYVR", name: "Vancouver International", city: "Vancouver" },
+        KLAX: { icao: "KLAX", name: "Los Angeles Intl",     city: "Los Angeles" },
+        KSEA: { icao: "KSEA", name: "Seattle Tacoma",       city: "Seattle" },
+        RCTP: { icao: "RCTP", name: "Taipei Taoyuan",       city: "Taipei" },
+        ZLXN: { icao: "ZLXN", name: "Lhasa Gonggar",        city: "Lhasa" },
+        ZWWW: { icao: "ZWWW", name: "Urumqi Diwopu",        city: "Urumqi" },
+        VNLK: { icao: "VNLK", name: "Kathmandu Tribhuvan",  city: "Kathmandu" },
+        FAOR: { icao: "FAOR", name: "Johannesburg OR Tambo", city: "Johannesburg" }
+      };
+      function airportByIcao(icao) {
+        return HUBS_BY_ICAO[icao] || EXTRA[icao] || { icao: icao, name: icao, city: icao };
+      }
+
+      // Generate ~40 realistic MFVA routes. Flight number range MF 8000–8999 following XiamenAir convention.
+      // Durations formatted as HH:MM. Routes = hub-to-hub + hub-to-intl, paired where it makes sense.
+      function minsToHM(total) {
+        total = Math.max(0, Math.round(total));
+        var h = Math.floor(total / 60), m = total % 60;
+        return String(h).padStart(2,"0") + ":" + String(m).padStart(2,"0");
+      }
+
+      function mkRoute(flightNo, dep, arr, acKey, durationMins) {
+        return {
+          flightNo: flightNo,
+          dep: dep,
+          arr: arr,
+          aircraft: acKey,
+          duration: durationMins
+        };
+      }
+
+      // Build routes. We use narrowbody for short/med domestic; widebody for intl/long.
+      var ROUTES = [
+        // ZSAM (Xiamen) <-> domestic hubs
+        mkRoute("MF8101", "ZSAM", "ZBAD", "B757-200",  165),
+        mkRoute("MF8102", "ZBAD", "ZSAM", "B757-200",  165),
+        mkRoute("MF8115", "ZSAM", "ZSSS", "B737-800",  90),
+        mkRoute("MF8116", "ZSSS", "ZSAM", "B737-800",  90),
+        mkRoute("MF8127", "ZSAM", "ZGGG", "B737-MAX8", 85),
+        mkRoute("MF8128", "ZGGG", "ZSAM", "B737-MAX8", 85),
+        mkRoute("MF8145", "ZSAM", "ZGSZ", "B737-800",  75),
+        mkRoute("MF8146", "ZGSZ", "ZSAM", "B737-800",  75),
+        mkRoute("MF8151", "ZSAM", "ZSFZ", "B737-700",  45),
+        mkRoute("MF8152", "ZSFZ", "ZSAM", "B737-700",  45),
+        mkRoute("MF8163", "ZSAM", "ZSHC", "B737-800",  70),
+        mkRoute("MF8164", "ZSHC", "ZSAM", "B737-800",  70),
+        mkRoute("MF8185", "ZSAM", "ZUTF", "B757-200",  150),
+        mkRoute("MF8186", "ZUTF", "ZSAM", "B757-200",  150),
+
+        // ZSAM <-> international (NEA / SEA)
+        mkRoute("MF839",  "ZSAM", "RJBB", "B787-8",    185),
+        mkRoute("MF840",  "RJBB", "ZSAM", "B787-8",    185),
+        mkRoute("MF871",  "ZSAM", "RJAA", "B787-8",    205),
+        mkRoute("MF872",  "RJAA", "ZSAM", "B787-8",    205),
+        mkRoute("MF828",  "ZSAM", "RKSI", "A321neo",   155),
+        mkRoute("MF829",  "RKSI", "ZSAM", "A321neo",   155),
+        mkRoute("MF867",  "ZSAM", "WSSS", "B787-9",    255),
+        mkRoute("MF868",  "WSSS", "ZSAM", "B787-9",    255),
+        mkRoute("MF885",  "ZSAM", "WIII", "A320neo",   260),
+        mkRoute("MF886",  "WIII", "ZSAM", "A320neo",   260),
+        mkRoute("MF865",  "ZSAM", "VTBD", "B737-MAX8", 195),
+        mkRoute("MF866",  "VTBD", "ZSAM", "B737-MAX8", 195),
+        mkRoute("MF893",  "ZSAM", "RCTP", "B737-800",  95),
+        mkRoute("MF894",  "RCTP", "ZSAM", "B737-800",  95),
+
+        // ZGGG (Guangzhou) long-haul / regional
+        mkRoute("MF8301", "ZGGG", "EGLL", "B787-9",    735),
+        mkRoute("MF8302", "EGLL", "ZGGG", "B787-9",    735),
+        mkRoute("MF8315", "ZGGG", "YMML", "B787-9",    540),
+        mkRoute("MF8316", "YMML", "ZGGG", "B787-9",    540),
+        mkRoute("MF8321", "ZGGG", "VVTS", "B737-800",  155),
+        mkRoute("MF8322", "VVTS", "ZGGG", "B737-800",  155),
+        mkRoute("MF8333", "ZGGG", "RPLL", "A320neo",   140),
+        mkRoute("MF8334", "RPLL", "ZGGG", "A320neo",   140),
+
+        // ZBAD (Beijing) long-haul
+        mkRoute("MF8191", "ZBAD", "EDDF", "B787-9",    610),
+        mkRoute("MF8192", "EDDF", "ZBAD", "B787-9",    610),
+        mkRoute("MF8197", "ZBAD", "EHAM", "B787-9",    620),
+        mkRoute("MF8198", "EHAM", "ZBAD", "B787-9",    620),
+        mkRoute("MF8201", "ZBAD", "YSSY", "B787-9",    660),
+        mkRoute("MF8202", "YSSY", "ZBAD", "B787-9",    660),
+        mkRoute("MF8211", "ZBAD", "CYVR", "B787-9",    615),
+        mkRoute("MF8212", "CYVR", "ZBAD", "B787-9",    615),
+        mkRoute("MF8217", "ZBAD", "KLAX", "B787-9",    700),
+        mkRoute("MF8218", "KLAX", "ZBAD", "B787-9",    700),
+
+        // ZSHC (Hangzhou)
+        mkRoute("MF8403", "ZSHC", "WMKK", "A321neo",   240),
+        mkRoute("MF8404", "WMKK", "ZSHC", "A321neo",   240),
+        mkRoute("MF8411", "ZSHC", "OMDB", "B787-8",    540),
+        mkRoute("MF8412", "OMDB", "ZSHC", "B787-8",    540),
+        mkRoute("MF8421", "ZSHC", "VTBD", "B737-MAX8", 250),
+        mkRoute("MF8422", "VTBD", "ZSHC", "B737-MAX8", 250),
+
+        // ZUTF (Chengdu)
+        mkRoute("MF8511", "ZUTF", "ZLXN", "B737-700",  110),
+        mkRoute("MF8512", "ZLXN", "ZUTF", "B737-700",  110),
+        mkRoute("MF8521", "ZUTF", "ZWWW", "B737-800",  190),
+        mkRoute("MF8522", "ZWWW", "ZUTF", "B737-800",  190),
+        mkRoute("MF8531", "ZUTF", "VNLK", "B737-700",  120),
+        mkRoute("MF8532", "VNLK", "ZUTF", "B737-700",  120),
+        mkRoute("MF8541", "ZUTF", "EDDF", "B787-8",    600),
+        mkRoute("MF8542", "EDDF", "ZUTF", "B787-8",    600),
+        mkRoute("MF8543", "ZUTF", "WSSS", "B787-8",    330),
+        mkRoute("MF8544", "WSSS", "ZUTF", "B787-8",    330),
+
+        // ZGSZ (Shenzhen)
+        mkRoute("MF8601", "ZGSZ", "RPLL", "A320neo",   130),
+        mkRoute("MF8602", "RPLL", "ZGSZ", "A320neo",   130),
+        mkRoute("MF8611", "ZGSZ", "RCTP", "B737-800",  105),
+        mkRoute("MF8612", "RCTP", "ZGSZ", "B737-800",  105),
+        mkRoute("MF8621", "ZGSZ", "RJBB", "B787-8",    200),
+        mkRoute("MF8622", "RJBB", "ZGSZ", "B787-8",    200),
+        mkRoute("MF8631", "ZGSZ", "KSEA", "B787-9",    720),
+        mkRoute("MF8632", "KSEA", "ZGSZ", "B787-9",    720),
+        mkRoute("MF8641", "ZGSZ", "FAOR", "B787-9",    810),
+        mkRoute("MF8642", "FAOR", "ZGSZ", "B787-9",    810),
+
+        // ZSFZ (Fuzhou) regional
+        mkRoute("MF8701", "ZSFZ", "RJBB", "B737-MAX8", 175),
+        mkRoute("MF8702", "RJBB", "ZSFZ", "B737-MAX8", 175),
+        mkRoute("MF8711", "ZSFZ", "RJAA", "B737-MAX8", 195),
+        mkRoute("MF8712", "RJAA", "ZSFZ", "B737-MAX8", 195),
+        mkRoute("MF8721", "ZSFZ", "RKSI", "B737-800",  145),
+        mkRoute("MF8722", "RKSI", "ZSFZ", "B737-800",  145),
+        mkRoute("MF8731", "ZSFZ", "WSSS", "A321neo",   250),
+        mkRoute("MF8732", "WSSS", "ZSFZ", "A321neo",   250),
+        mkRoute("MF8741", "ZSFZ", "WIII", "A320neo",   250),
+        mkRoute("MF8742", "WIII", "ZSFZ", "A320neo",   250),
+
+        // Premium shuttle: ZSSS <-> ZBAD / ZGGG high-frequency shuttle
+        mkRoute("MF8001", "ZSSS", "ZBAD", "B757-200",  135),
+        mkRoute("MF8002", "ZBAD", "ZSSS", "B757-200",  135),
+        mkRoute("MF8005", "ZSSS", "ZGGG", "B757-200",  150),
+        mkRoute("MF8006", "ZGGG", "ZSSS", "B757-200",  150),
+        mkRoute("MF8009", "ZSSS", "ZGSZ", "A321neo",   165),
+        mkRoute("MF8010", "ZGSZ", "ZSSS", "A321neo",   165),
+        mkRoute("MF8021", "ZSSS", "ZUTF", "B757-200",  170),
+        mkRoute("MF8022", "ZUTF", "ZSSS", "B757-200",  170)
+      ];
+
+      // Map aircraft key to {label, eligible} based on user's max rank
+      var userMaxRank = grants && grants.maxRankId ? grants.maxRankId : 0;
+      function acMeta(acKey) {
+        for (var i = 0; i < AIRCRAFT.length; i++) if (AIRCRAFT[i].key === acKey) return AIRCRAFT[i];
+        return { key: acKey, label: acKey, minRank: 99 };
+      }
+      function isAcEligible(acKey) {
+        if (!userMaxRank) return false;
+        return acMeta(acKey).minRank <= userMaxRank;
+      }
+
+      // Populate aircraft filter dropdown
+      (function populateAcFilter() {
+        var sel = document.getElementById("fAc");
+        if (!sel) return;
+        AIRCRAFT.forEach(function (a) {
+          var o = document.createElement("option");
+          o.value = a.key;
+          o.textContent = a.label;
+          sel.appendChild(o);
+        });
+      })();
+
+      // ============================================================
+      // Filter state + rendering
+      // ============================================================
+      var LS_SAVED = "mfva_saved_filters";
+      var state = {
+        dep: "",
+        arr: "",
+        ac: "",
+        dur: "",
+        num: "",
+        eligible: false
+      };
+      var savedFilters = loadSaved();
+
+      function getSavedStore() {
+        try {
+          var raw = localStorage.getItem(LS_SAVED);
+          if (!raw) return [];
+          var v = JSON.parse(raw);
+          return Array.isArray(v) ? v : [];
+        } catch (e) { return []; }
+      }
+      function setSavedStore(list) {
+        try { localStorage.setItem(LS_SAVED, JSON.stringify(list)); } catch (e) {}
+      }
+      function loadSaved() {
+        var list = getSavedStore();
+        // Always include the "All routes" built-in
+        var hasAll = list.some(function (s) { return s.name === "All routes"; });
+        if (!hasAll) {
+          list.unshift({ name: "All routes", builtin: true, f: { dep:"", arr:"", ac:"", dur:"", num:"", eligible:false } });
+          setSavedStore(list);
+        }
+        return list;
+      }
+
+      function applyFiltersFromState() {
+        document.getElementById("fDep").value = state.dep;
+        document.getElementById("fArr").value = state.arr;
+        document.getElementById("fAc").value = state.ac;
+        document.getElementById("fDur").value = state.dur;
+        document.getElementById("fNum").value = state.num;
+        document.getElementById("fEligible").checked = !!state.eligible;
+      }
+      function readStateFromDom() {
+        state.dep = (document.getElementById("fDep").value || "").trim().toUpperCase();
+        state.arr = (document.getElementById("fArr").value || "").trim().toUpperCase();
+        state.ac  = document.getElementById("fAc").value || "";
+        state.dur = document.getElementById("fDur").value || "";
+        state.num = (document.getElementById("fNum").value || "").trim().toUpperCase();
+        state.eligible = !!document.getElementById("fEligible").checked;
+      }
+
+      function routeMatches(r) {
+        if (state.dep && r.dep.indexOf(state.dep) !== 0) return false;
+        if (state.arr && r.arr.indexOf(state.arr) !== 0) return false;
+        if (state.ac && r.aircraft !== state.ac) return false;
+        if (state.num && r.flightNo.toUpperCase().indexOf(state.num) === -1) return false;
+        if (state.eligible && !isAcEligible(r.aircraft)) return false;
+        if (state.dur) {
+          var d = r.duration;
+          if (state.dur === "short" && d >= 90) return false;
+          if (state.dur === "mid"   && (d < 90  || d > 240)) return false;
+          if (state.dur === "long"  && d <= 240) return false;
+        }
+        return true;
+      }
+
+      function renderSavedChips() {
+        var root = document.getElementById("savedChips");
+        if (!root) return;
+        root.innerHTML = "";
+        savedFilters.forEach(function (sf, idx) {
+          var chip = document.createElement("span");
+          chip.className = "chip";
+          chip.setAttribute("role", "button");
+          chip.tabIndex = 0;
+          chip.setAttribute("data-idx", idx);
+          var isActive =
+            state.dep === (sf.f.dep || "") &&
+            state.arr === (sf.f.arr || "") &&
+            state.ac  === (sf.f.ac  || "") &&
+            state.dur === (sf.f.dur || "") &&
+            state.num === (sf.f.num || "") &&
+            !!state.eligible === !!(sf.f.eligible || false);
+          if (isActive) chip.classList.add("is-active");
+
+          var label = document.createElement("span");
+          label.textContent = sf.name;
+          chip.appendChild(label);
+
+          if (!sf.builtin) {
+            var x = document.createElement("button");
+            x.type = "button";
+            x.className = "chip__remove";
+            x.setAttribute("aria-label", "Remove saved filter " + sf.name);
+            x.textContent = "×";
+            x.addEventListener("click", function (e) {
+              e.stopPropagation();
+              savedFilters.splice(idx, 1);
+              setSavedStore(savedFilters);
+              renderSavedChips();
+            });
+            chip.appendChild(x);
+          }
+
+          function activate() {
+            state.dep = sf.f.dep || "";
+            state.arr = sf.f.arr || "";
+            state.ac  = sf.f.ac  || "";
+            state.dur = sf.f.dur || "";
+            state.num = sf.f.num || "";
+            state.eligible = !!sf.f.eligible;
+            applyFiltersFromState();
+            renderSavedChips();
+            renderResults();
+          }
+          chip.addEventListener("click", activate);
+          chip.addEventListener("keydown", function (e) {
+            if (e.key === "Enter" || e.key === " ") { e.preventDefault(); activate(); }
+          });
+          root.appendChild(chip);
+        });
+      }
+
+      function esc(s) {
+        s = String(s == null ? "" : s);
+        return s.replace(/[&<>"']/g, function (c) {
+          return ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" })[c];
+        });
+      }
+
+      var currentDetailRoute = null;
+      function renderResults() {
+        readStateFromDom();
+        var area = document.getElementById("resultsArea");
+        if (!area) return;
+        var list = ROUTES.filter(routeMatches);
+
+        document.getElementById("countNum").textContent = list.length;
+        document.getElementById("countNoun").textContent = list.length === 1 ? "route" : "routes";
+
+        if (!list.length) {
+          area.innerHTML =
+            '<div class="no-results">' +
+              '<strong>No routes match your filters.</strong><br/>' +
+              'Try clearing filters, or expand the duration / aircraft selection.' +
+            '</div>';
+          return;
+        }
+
+        var arrowSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>';
+        var fileSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3h7v7"/><path d="M10 14 21 3"/><path d="M21 14v7H3V3h7"/></svg>';
+
+        var rows = list.map(function (r, i) {
+          var acEligible = isAcEligible(r.aircraft);
+          var acClass = acEligible ? "r-ac" : "r-ac r-ac--ineligible";
+          var acLabel = acEligible ? acMeta(r.aircraft).label : "No eligible aircraft";
+          return (
+            '<tr data-idx="' + i + '" data-flight="' + esc(r.flightNo) + '">' +
+              '<td data-label="Flight"><span class="r-flight">' + esc(r.flightNo) + '</span></td>' +
+              '<td data-label="Route"><span class="r-route">' + esc(r.dep) + ' ' + arrowSvg + ' ' + esc(r.arr) + '</span></td>' +
+              '<td data-label="Duration"><span class="r-duration">' + minsToHM(r.duration) + '</span></td>' +
+              '<td data-label="Aircraft"><span class="' + acClass + '">' + esc(acLabel) + '</span></td>' +
+              '<td data-label="Actions">' +
+                '<span class="actions-cell">' +
+                  '<button type="button" class="btn-view"  data-act="view"  data-flight="' + esc(r.flightNo) + '">View</button>' +
+                  '<button type="button" class="btn-file"  data-act="file"  data-flight="' + esc(r.flightNo) + '">' + fileSvg + ' File</button>' +
+                '</span>' +
+              '</td>' +
+            '</tr>'
+          );
+        }).join("");
+
+        area.innerHTML =
+          '<div class="routes-table-wrap">' +
+            '<table class="routes-table" aria-label="Route results table">' +
+              '<thead>' +
+                '<tr>' +
+                  '<th>Flight</th>' +
+                  '<th>Route</th>' +
+                  '<th>Duration</th>' +
+                  '<th>Aircraft</th>' +
+                  '<th style="text-align:right;">Actions</th>' +
+                '</tr>' +
+              '</thead>' +
+              '<tbody>' + rows + '</tbody>' +
+            '</table>' +
+          '</div>';
+
+        // Bind actions
+        area.querySelectorAll("button[data-act]").forEach(function (b) {
+          b.addEventListener("click", function () {
+            var act = b.getAttribute("data-act");
+            var fn = b.getAttribute("data-flight");
+            var r = null;
+            for (var i = 0; i < list.length; i++) { if (list[i].flightNo === fn) { r = list[i]; break; } }
+            if (!r) return;
+            if (act === "view") openDetail(r);
+            else if (act === "file") goFile(r);
+          });
+        });
+
+        renderSavedChips();
+      }
+
+      // ---------- Detail modal ----------
+      var detailModal = document.getElementById("detailModal");
+      function openDetail(r) {
+        currentDetailRoute = r;
+        var dep = airportByIcao(r.dep);
+        var arr = airportByIcao(r.arr);
+        var ac = acMeta(r.aircraft);
+        var acLabel = isAcEligible(r.aircraft) ? ac.label : ac.label + " (not eligible for your rank)";
+
+        document.getElementById("detailTitle").textContent = r.flightNo;
+        document.getElementById("detailSub").textContent = dep.city + " → " + arr.city;
+
+        var body = document.getElementById("detailBody");
+        body.innerHTML = (
+          '<div class="route-line" aria-label="Route">' +
+            '<div class="port">' +
+              '<div class="port__icao">' + esc(r.dep) + '</div>' +
+              '<div class="port__name">' + esc(dep.name) + '</div>' +
+            '</div>' +
+            '<div class="route-arrow" aria-hidden="true">' +
+              '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>' +
+            '</div>' +
+            '<div class="port" style="text-align:right;">' +
+              '<div class="port__icao">' + esc(r.arr) + '</div>' +
+              '<div class="port__name">' + esc(arr.name) + '</div>' +
+            '</div>' +
+          '</div>' +
+          '<dl class="kv">' +
+            '<dt>Flight Number</dt><dd class="flight-no">' + esc(r.flightNo) + '</dd>' +
+            '<dt>Aircraft</dt><dd>' + esc(acLabel) + '</dd>' +
+            '<dt>Duration</dt><dd>' + minsToHM(r.duration) + ' (block)</dd>' +
+            '<dt>Required Rank</dt><dd>' +
+              (ac.minRank === 99 ? "Unknown" :
+                "Rank " + ac.minRank + " — " + (auth.rankById ? (auth.rankById(ac.minRank) || {}).name : "")) +
+            '</dd>' +
+            '<dt>Your Max Rank</dt><dd>' +
+              (userMaxRank ? "Rank " + userMaxRank + " — " + (auth.rankById ? (auth.rankById(userMaxRank) || {}).name : "") : "None") +
+            '</dd>' +
+          '</dl>'
+        );
+
+        detailModal.classList.add("is-open");
+        detailModal.setAttribute("aria-hidden", "false");
+      }
+      function closeDetail() {
+        currentDetailRoute = null;
+        detailModal.classList.remove("is-open");
+        detailModal.setAttribute("aria-hidden", "true");
+      }
+      document.getElementById("detailClose").addEventListener("click", closeDetail);
+      document.getElementById("detailCancel").addEventListener("click", closeDetail);
+      detailModal.addEventListener("click", function (e) { if (e.target === detailModal) closeDetail(); });
+      document.getElementById("detailFile").addEventListener("click", function () {
+        if (!currentDetailRoute) return;
+        closeDetail();
+        goFile(currentDetailRoute);
+      });
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape" && detailModal.classList.contains("is-open")) closeDetail();
+      });
+
+      // ---------- File PIREP with prefill ----------
+      function goFile(r) {
+        if (!grants || grants.canFilePirep === false) {
+          alert("Your account does not have permission to file PIREPs. Ask an admin to enable this permission.");
+          return;
+        }
+        var params = new URLSearchParams();
+        params.set("fn",   r.flightNo);
+        params.set("dep",  r.dep);
+        params.set("arr",  r.arr);
+        params.set("ac",   r.aircraft);
+        params.set("dur",  String(r.duration));
+        // If rank allows for aircraft, recommend it; otherwise just carry info
+        window.location.href = "pirep.html?" + params.toString();
+      }
+
+      // ============================================================
+      // Wire UI inputs + save/clear
+      // ============================================================
+      ["fDep","fArr","fAc","fDur","fNum"].forEach(function (id) {
+        var el = document.getElementById(id);
+        if (!el) return;
+        var ev = id === "fAc" || id === "fDur" ? "change" : "input";
+        el.addEventListener(ev, function () { renderResults(); });
+      });
+      document.getElementById("fEligible").addEventListener("change", renderResults);
+
+      document.getElementById("btnClear").addEventListener("click", function () {
+        state = { dep: "", arr: "", ac: "", dur: "", num: "", eligible: false };
+        applyFiltersFromState();
+        renderResults();
+      });
+
+      document.getElementById("btnSaveFilter").addEventListener("click", function () {
+        readStateFromStateSafe();
+        // Skip saving the all-routes-empty case if already built-in exists
+        var empty = !state.dep && !state.arr && !state.ac && !state.dur && !state.num && !state.eligible;
+        var defaultName = buildFilterName(state);
+        var name = prompt("Save filter as:", defaultName);
+        if (name == null) return;
+        name = name.trim();
+        if (!name) { alert("Please enter a name."); return; }
+        // Remove any existing (non-builtin) with same name
+        savedFilters = savedFilters.filter(function (s) { return !(s.name === name && !s.builtin); });
+        savedFilters.push({
+          name: name,
+          builtin: false,
+          f: JSON.parse(JSON.stringify(state))
+        });
+        setSavedStore(savedFilters);
+        renderSavedChips();
+      });
+
+      function readStateFromStateSafe() { readStateFromDom(); }
+      function buildFilterName(s) {
+        var parts = [];
+        if (s.dep) parts.push("Dep " + s.dep);
+        if (s.arr) parts.push("Arr " + s.arr);
+        if (s.ac)  parts.push(acMeta(s.ac).label);
+        if (s.dur) {
+          if (s.dur === "short") parts.push("<1:30");
+          else if (s.dur === "mid") parts.push("1:30–4:00");
+          else if (s.dur === "long") parts.push(">4:00");
+        }
+        if (s.num) parts.push("#" + s.num);
+        if (s.eligible) parts.push("Eligible only");
+        return parts.length ? parts.join(" · ") : "All routes";
+      }
+
+      // Initial render
+      applyFiltersFromState();
+      renderSavedChips();
+      renderResults();
+
+      // Prefill pirep query (if user came here via ?... we don't do it; but if pirep loaded with ? we let it consume)
+    })();
+  </script>
+</body>
+</html>

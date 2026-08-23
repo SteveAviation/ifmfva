@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, shrink-to-fit=no" />
+  <meta name="theme-color" content="#eef2ff" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#0b1f3a" media="(prefers-color-scheme: dark)" />
+  <meta name="format-detection" content="telephone=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <title>MFVA — File PIREP</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --nav-h: 68px;
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+      --ease: cubic-bezier(.22,.61,.36,1);
+      --brand: #0057b8;
+      --brand-dark: #00418c;
+      --ink: #0b1220;
+      --ink-2: #1f2937;
+      --ink-soft: #6b7280;
+      --line: #e5e7eb;
+      --bg-1: #e7edff;
+      --bg-2: #f3f5ff;
+      --card: #ffffff;
+      --radius-card: 22px;
+      --radius-input: 14px;
+      --shadow-card: 0 1px 2px rgba(17,24,39,.04), 0 6px 22px -10px rgba(17,24,39,.12);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      -webkit-text-size-adjust: 100%;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+      min-height: 100%;
+    }
+
+    body {
+      font-family: "Barlow", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(1200px 700px at 85% -10%, #dce4ff 0%, transparent 60%),
+        radial-gradient(900px 600px at -10% 110%, #e3ecff 0%, transparent 55%),
+        linear-gradient(180deg, var(--bg-1) 0%, var(--bg-2) 100%);
+      min-height: 100vh;
+      min-height: 100dvh;
+      padding: calc(16px + var(--safe-top)) 16px calc(120px + var(--safe-bottom));
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    a { color: inherit; text-decoration: none; }
+    button { font-family: inherit; cursor: pointer; border: none; background: none; }
+
+    /* ---------- Top bar ---------- */
+    .pirep-topbar {
+      max-width: 880px;
+      margin: 0 auto 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .pirep-topbar__crumb {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: #4b5563;
+      font-weight: 500;
+      font-size: 13px;
+      padding: 6px 10px;
+      border-radius: 8px;
+      background: transparent;
+      transition: background .2s var(--ease), color .2s var(--ease);
+    }
+    .pirep-topbar__crumb:hover { background: rgba(255,255,255,.55); color: #111827; }
+    .pirep-topbar__crumb svg { width: 15px; height: 15px; }
+    .pirep-topbar__brand { color: #374151; font-weight: 600; }
+    .pirep-topbar__actions { display: flex; align-items: center; gap: 10px; }
+    .icon-btn {
+      width: 42px; height: 42px;
+      border-radius: 12px;
+      background: rgba(255,255,255,.7);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: #1f2937;
+      transition: transform .15s var(--ease), background .2s var(--ease);
+    }
+    .icon-btn:hover { background: #fff; }
+    .icon-btn:active { transform: scale(.96); }
+    .icon-btn svg { width: 18px; height: 18px; }
+
+    /* ---------- Card ---------- */
+    .pirep-wrap {
+      max-width: 880px;
+      margin: 0 auto;
+    }
+    .pirep-card {
+      background: var(--card);
+      border-radius: var(--radius-card);
+      box-shadow: var(--shadow-card);
+      padding: 28px 24px 24px;
+    }
+    @media (min-width: 640px) {
+      .pirep-card { padding: 34px 36px 30px; }
+    }
+
+    .pirep-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+    .pirep-title {
+      font-size: clamp(28px, 4vw, 36px);
+      font-weight: 800;
+      letter-spacing: -0.01em;
+      color: var(--ink);
+    }
+    .import-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      min-height: 42px;
+      border-radius: 12px;
+      background: #fff;
+      color: var(--ink-2);
+      border: 1.5px solid var(--line);
+      font-size: 14.5px;
+      font-weight: 600;
+      white-space: nowrap;
+      transition: transform .15s var(--ease), background .2s var(--ease), border-color .2s var(--ease);
+    }
+    .import-btn:hover { background: #f8faff; border-color: #dbe3ff; }
+    .import-btn:active { transform: scale(.98); }
+    .import-btn svg { width: 17px; height: 17px; }
+
+    /* ---------- Form ---------- */
+    .field { display: flex; flex-direction: column; gap: 8px; margin-bottom: 18px; }
+    .field label {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--ink-2);
+    }
+
+    .input, .select, .textarea {
+      width: 100%;
+      min-height: 50px;
+      padding: 13px 16px;
+      border-radius: var(--radius-input);
+      border: 1.5px solid #e5e9f2;
+      background: #fff;
+      color: var(--ink);
+      font-family: inherit;
+      font-size: 16px;
+      font-weight: 500;
+      outline: none;
+      transition: border-color .2s var(--ease), box-shadow .2s var(--ease), background .2s var(--ease);
+      appearance: none;
+      -webkit-appearance: none;
+    }
+    .input::placeholder, .textarea::placeholder { color: #9ca3af; font-weight: 400; }
+    .input:focus, .select:focus, .textarea:focus {
+      border-color: #0b1220;
+      box-shadow: 0 0 0 3px rgba(11,18,32,.08);
+    }
+    select.select {
+      padding-right: 44px;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      background-size: 18px 18px;
+      cursor: pointer;
+    }
+    .textarea { min-height: 110px; resize: vertical; line-height: 1.5; }
+
+    .row { display: grid; grid-template-columns: 1fr; gap: 16px; }
+    @media (min-width: 640px) {
+      .row--2 { grid-template-columns: 1fr 1fr; }
+    }
+
+    .hint {
+      margin-top: -6px;
+      font-size: 12.5px;
+      color: var(--ink-soft);
+      font-weight: 400;
+      line-height: 1.4;
+    }
+
+    /* ---------- Submit sticky bar ---------- */
+    .submit-bar {
+      position: fixed;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: calc(16px + var(--safe-bottom));
+      width: calc(100% - 32px);
+      max-width: 880px;
+      z-index: 40;
+    }
+    .submit-btn {
+      width: 100%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 15px 18px;
+      min-height: 56px;
+      border-radius: 16px;
+      background: var(--brand);
+      color: #fff;
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: .02em;
+      box-shadow: 0 14px 30px -12px rgba(0,87,184,.45), 0 2px 6px rgba(17,24,39,.08);
+      transition: transform .15s var(--ease), background .2s var(--ease), box-shadow .2s var(--ease);
+    }
+    .submit-btn:hover { background: var(--brand-dark); }
+    .submit-btn:active { transform: translateY(1px) scale(.995); }
+    .submit-btn svg { width: 20px; height: 20px; }
+
+    /* Flash */
+    .flash {
+      margin-top: 14px;
+      padding: 12px 14px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      display: none;
+    }
+    .flash.is-visible { display: block; }
+    .flash--error { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+    .flash--success { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+
+    .visually-hidden {
+      position: absolute;
+      width: 1px; height: 1px;
+      padding: 0; margin: -1px;
+      overflow: hidden; clip: rect(0,0,0,0);
+      white-space: nowrap; border: 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="pirep-topbar" role="navigation" aria-label="File PIREP top bar">
+    <a href="crew.html" class="pirep-topbar__crumb" title="Back to dashboard">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+      <span>Crew Center</span>
+      <span aria-hidden="true">/</span>
+      <span class="pirep-topbar__brand">File PIREP</span>
+    </a>
+    <div class="pirep-topbar__actions">
+      <button type="button" class="icon-btn" id="openDrawer" aria-label="Open crew menu" title="Crew Menu">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <main class="pirep-wrap">
+    <section class="pirep-card" aria-label="Submit PIREP form">
+      <div class="pirep-head">
+        <h1 class="pirep-title">Submit PIREP</h1>
+        <button type="button" class="import-btn" id="importAcars" title="Import from ACARS">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 21v-5h5"/></svg>
+          Import ACARS
+        </button>
+      </div>
+
+      <form id="pirepForm" novalidate>
+        <div class="field">
+          <label for="flightNumber">Flight Number <span style="color:#6b7280;font-weight:500">(Not Your Callsign)</span></label>
+          <input id="flightNumber" name="flightNumber" type="text" class="input" placeholder="e.g. MFVA123" autocomplete="off" maxlength="24" />
+        </div>
+
+        <div class="field">
+          <label for="flightDate">Flight Date</label>
+          <input id="flightDate" name="flightDate" type="date" class="input" />
+        </div>
+
+        <div class="row row--2">
+          <div class="field">
+            <label for="depIcao">Departure ICAO</label>
+            <input id="depIcao" name="depIcao" type="text" class="input" placeholder="e.g. ZSAM" maxlength="6" />
+          </div>
+          <div class="field">
+            <label for="arrIcao">Arrival ICAO</label>
+            <input id="arrIcao" name="arrIcao" type="text" class="input" placeholder="e.g. ZSPD" maxlength="6" />
+          </div>
+        </div>
+
+        <div class="row row--2">
+          <div class="field">
+            <label for="depGate">Departure Gate <span style="color:#6b7280;font-weight:500">(Stand)</span></label>
+            <input id="depGate" name="depGate" type="text" class="input" placeholder="e.g. D32" maxlength="16" />
+          </div>
+          <div class="field">
+            <label for="arrGate">Arrival Gate <span style="color:#6b7280;font-weight:500">(Stand)</span></label>
+            <input id="arrGate" name="arrGate" type="text" class="input" placeholder="e.g. 116" maxlength="16" />
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="flightTime">Flight Time</label>
+          <input id="flightTime" name="flightTime" type="text" class="input" placeholder="HH:MM (e.g. 01:30)" />
+          <p class="hint">Format <strong>HH:MM</strong> — hours and minutes of block time.</p>
+        </div>
+
+        <div class="row row--2">
+          <div class="field">
+            <label for="aircraft">Aircraft</label>
+            <select id="aircraft" name="aircraft" class="select">
+              <option value="">Select aircraft…</option>
+              <option>B737-800</option>
+              <option>B737 MAX 8</option>
+              <option>B787-8</option>
+              <option>B787-9</option>
+              <option>A320-200</option>
+              <option>A320neo</option>
+              <option>A321neo</option>
+              <option>A330-300</option>
+              <option>A350-900</option>
+              <option>A350-1000</option>
+              <option>B777-300ER</option>
+              <option>B777F</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="acSearch" class="visually-hidden">Search aircraft</label>
+            <input id="acSearch" name="acSearch" type="text" class="input" placeholder="Search aircraft…" />
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="fuelKg">Fuel Used <span style="color:#6b7280;font-weight:500">(KG)</span></label>
+          <input id="fuelKg" name="fuelKg" type="number" step="0.1" min="0" class="input" placeholder="e.g. 1200.5" />
+        </div>
+
+        <div class="field">
+          <label for="multiplier">Multiplier Code <span style="color:#6b7280;font-weight:500">(if available)</span></label>
+          <input id="multiplier" name="multiplier" type="text" class="input" placeholder="Leave blank if none" maxlength="32" />
+        </div>
+
+        <div class="field">
+          <label for="remarks">Remarks / Notes</label>
+          <textarea id="remarks" name="remarks" class="textarea" placeholder="Any comments, issues, or notable events during the flight…"></textarea>
+        </div>
+
+        <div id="flash" class="flash" role="status" aria-live="polite"></div>
+      </form>
+    </section>
+  </main>
+
+  <!-- Sticky submit -->
+  <div class="submit-bar">
+    <button type="submit" form="pirepForm" class="submit-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.8 19.2 16 11l3.5-3.5a2.12 2.12 0 0 0-3-3L13 8 4.8 6.2a1.5 1.5 0 0 0-1.7 1.7L4.9 15 8 18l9-2z"/><path d="M14.5 7.5l2 2"/></svg>
+      Submit PIREP
+    </button>
+  </div>
+
+  <!-- ---------- Drawer (shared with crew dashboard) ---------- -->
+  <style>
+    .crewmenu {
+      position: fixed;
+      right: max(16px, calc(16px + var(--safe-bottom)));
+      bottom: calc(100px + var(--safe-bottom));
+      z-index: 50;
+    }
+    .crewmenu__btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      min-height: 42px;
+      border-radius: 999px;
+      background: #ffffff;
+      color: #1f2937;
+      font-size: 14px;
+      font-weight: 600;
+      box-shadow: 0 8px 22px -12px rgba(17,24,39,.25), 0 1px 2px rgba(17,24,39,.06);
+      border: 1px solid var(--line);
+      transition: transform .15s var(--ease), box-shadow .2s var(--ease), background .2s var(--ease);
+    }
+    .crewmenu__btn:hover { background: #f8faff; }
+    .crewmenu__btn:active { transform: translateY(1px) scale(.99); }
+    .crewmenu__btn svg { width: 17px; height: 17px; color: #374151; }
+
+    .drawer {
+      position: fixed;
+      top: 0; right: 0; bottom: 0;
+      width: min(340px, 86vw);
+      background: #fff;
+      transform: translateX(102%);
+      transition: transform .28s var(--ease);
+      z-index: 70;
+      box-shadow: -20px 0 40px -20px rgba(17,24,39,.25);
+      display: flex;
+      flex-direction: column;
+      padding: calc(18px + var(--safe-top)) 20px calc(20px + var(--safe-bottom));
+    }
+    .drawer.is-open { transform: translateX(0); }
+    .drawer__header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 18px;
+    }
+    .drawer__title {
+      font-weight: 800;
+      font-size: 18px;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      color: var(--ink);
+    }
+    .drawer__close {
+      width: 38px; height: 38px;
+      border-radius: 10px;
+      background: #f3f4f6;
+      display: inline-flex; align-items: center; justify-content: center;
+      color: var(--ink-2); font-size: 22px; line-height: 1;
+    }
+    .drawer ul { list-style: none; display: flex; flex-direction: column; gap: 2px; }
+    .drawer li a, .drawer li button {
+      width: 100%;
+      text-align: left;
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 14px;
+      border-radius: 12px;
+      color: var(--ink-2);
+      font-weight: 600;
+      font-size: 15px;
+      letter-spacing: .02em;
+    }
+    .drawer li a:hover, .drawer li button:hover { background: #f4f6ff; color: var(--ink); }
+    .drawer li a svg, .drawer li button svg { width: 18px; height: 18px; color: #6b7280; flex-shrink: 0; }
+    .drawer__divider { height: 1px; background: #eef0f5; margin: 14px 2px; }
+    .drawer__footer {
+      margin-top: auto;
+      padding-top: 12px;
+      color: var(--ink-soft);
+      font-size: 13px;
+      text-align: center;
+    }
+    .drawer__signout { color: #b91c1c !important; }
+    .drawer__signout svg { color: #ef4444 !important; }
+
+    .drawer-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(11,18,32,.45);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .25s var(--ease);
+      z-index: 60;
+    }
+    .drawer-backdrop.is-open { opacity: 1; pointer-events: auto; }
+  </style>
+
+  <div class="crewmenu">
+    <button type="button" class="crewmenu__btn" id="crewMenuBtn" aria-label="Open crew menu">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      Crew Menu
+    </button>
+  </div>
+
+  <div class="drawer-backdrop" id="drawerBackdrop" aria-hidden="true"></div>
+  <aside class="drawer" id="drawer" aria-hidden="true" aria-label="Crew menu">
+    <div class="drawer__header">
+      <div class="drawer__title">Crew Menu</div>
+      <button type="button" class="drawer__close" id="drawerClose" aria-label="Close crew menu">&times;</button>
+    </div>
+    <ul>
+      <li>
+        <a href="crew.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+          Dashboard
+        </a>
+      </li>
+      <li>
+        <a href="pirep.html" aria-current="page">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3h7v7"/><path d="M10 14 21 3"/><path d="M21 14v7H3V3h7"/></svg>
+          File PIREP
+        </a>
+      </li>
+      <li>
+        <button type="button" id="drawerFindRoutes">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          Find Routes
+        </button>
+      </li>
+      <li>
+        <a href="hubs.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s7-7.5 7-13a7 7 0 0 0-14 0c0 5.5 7 13 7 13z"/><circle cx="12" cy="9" r="2.5"/></svg>
+          Hubs
+        </a>
+      </li>
+      <li>
+        <a href="fleet.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 17v2h20v-2"/><path d="M6 17 2 7l4-1 4 4h6l4-4 4 1-4 10H6z"/></svg>
+          Fleet
+        </a>
+      </li>
+      <li>
+        <a href="routes.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="6" r="2.5"/><circle cx="19" cy="6" r="2.5"/><path d="M7.5 6h9M5 8.5c0 3 3.5 4 7 4s7-1 7-4"/><path d="M12 12.5v3M8 19h8l-2-3.5h-4L8 19z"/></svg>
+          Routes
+        </a>
+      </li>
+      <li>
+        <a href="about.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v5h1"/></svg>
+          About MFVA
+        </a>
+      </li>
+    </ul>
+    <div class="drawer__divider"></div>
+    <ul>
+      <li>
+        <button type="button" id="signOutBtn" class="drawer__signout">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="m10 17 5-5-5-5"/><path d="M15 12H3"/></svg>
+          Sign out
+        </button>
+      </li>
+    </ul>
+    <div class="drawer__footer">
+      &copy; <span id="year"></span> MFVA &middot; Xiamen Virtual Airlines
+    </div>
+  </aside>
+
+  <script src="auth.js?v=20260823-pirepfix"></script>
+  <script>
+    (function () {
+      // ---- Auth gate using MFVAauth ----
+      var auth = window.MFVAauth;
+      if (!auth) {
+        document.body.innerHTML =
+          '<div style="padding:40px;font-family:sans-serif;color:#b91c1c;">' +
+          'Authentication module failed to load. Return to <a href="index.html">Home</a>.' +
+          '</div>';
+        return;
+      }
+      (function authGate() {
+        if (!auth.isSignedIn()) {
+          try { sessionStorage.setItem("mfva_redirect_after_login", "pirep.html"); } catch (e) {}
+          window.location.replace("login.html");
+          return;
+        }
+        // Permission gate: canFilePirep
+        var g = auth.grantsFor();
+        if (!g || g.canFilePirep === false) {
+          // Render a permission-blocked page instead of the form
+          var main = document.querySelector("main") || document.body;
+          if (main) {
+            main.innerHTML =
+              '<div style="max-width:560px;margin:0 auto;text-align:center;padding:60px 20px;">' +
+              '<div style="font-size:52px;margin-bottom:14px;">🔒</div>' +
+              '<h1 style="font-size:26px;font-weight:800;margin-bottom:10px;color:#0b1220;">Permission Required</h1>' +
+              '<p style="color:#4b5563;font-size:16px;line-height:1.6;margin-bottom:24px;">' +
+              'Your account does not currently have permission to file PIREPs. ' +
+              'Please ask an admin to enable the "File PIREP" permission for your account.' +
+              '</p>' +
+              '<a href="crew.html" style="display:inline-flex;align-items:center;gap:8px;padding:14px 22px;background:#0057b8;color:#fff;border-radius:12px;font-weight:600;text-decoration:none;">Back to Crew Center</a>' +
+              '</div>';
+          }
+          return;
+        }
+      })();
+
+      var y = document.getElementById("year");
+      if (y) y.textContent = new Date().getFullYear();
+
+      // Default flight date to today.
+      var dateEl = document.getElementById("flightDate");
+      if (dateEl && !dateEl.value) {
+        var d = new Date();
+        var mm = String(d.getMonth() + 1).padStart(2, "0");
+        var dd = String(d.getDate()).padStart(2, "0");
+        dateEl.value = d.getFullYear() + "-" + mm + "-" + dd;
+      }
+
+      // Prefill form fields when user comes from Find Routes (e.g. pirep.html?fn=MF8101&dep=ZSAM&arr=ZBAD&ac=B757-200&dur=165)
+      (function prefillFromUrl() {
+        try {
+          var sp = new URLSearchParams(window.location.search || "");
+          var fn  = (sp.get("fn")  || "").trim();
+          var dep = (sp.get("dep") || "").trim().toUpperCase();
+          var arr = (sp.get("arr") || "").trim().toUpperCase();
+          var ac  = (sp.get("ac")  || "").trim();
+          var dur = parseInt(sp.get("dur") || "", 10);
+
+          var fnEl = document.getElementById("flightNumber");
+          var depEl = document.getElementById("depIcao");
+          var arrEl = document.getElementById("arrIcao");
+          var acEl  = document.getElementById("aircraft");
+          var acSearchEl = document.getElementById("acSearch");
+          var ftEl  = document.getElementById("flightTime");
+
+          if (fnEl  && fn)  fnEl.value  = fn;
+          if (depEl && dep) depEl.value = dep;
+          if (arrEl && arr) arrEl.value = arr;
+          if (ac && acEl) {
+            // Try exact match on value first
+            var matched = false;
+            var opts = acEl.querySelectorAll("option");
+            for (var i = 0; i < opts.length; i++) {
+              if (opts[i].value === ac) { acEl.value = ac; matched = true; break; }
+            }
+            if (!matched) {
+              // Fallback to substring match in the label
+              var q = ac.toLowerCase();
+              for (var j = 0; j < opts.length; j++) {
+                var txt = (opts[j].textContent || "").toLowerCase();
+                var v = (opts[j].value || "").toLowerCase();
+                if (opts[j].value && (txt.indexOf(q) !== -1 || v.indexOf(q) !== -1)) {
+                  acEl.value = opts[j].value; matched = true; break;
+                }
+              }
+            }
+            if (matched && acSearchEl) {
+              // Also populate the search helper so the row is visible
+              acSearchEl.value = ac;
+              try { acSearchEl.dispatchEvent(new Event("input")); } catch (e) {}
+            }
+          }
+          if (ftEl && !isNaN(dur) && dur > 0) {
+            var h = Math.floor(dur / 60), m = dur % 60;
+            ftEl.value = String(h).padStart(2,"0") + ":" + String(m).padStart(2,"0");
+          }
+        } catch (e) { /* ignore */ }
+      })();
+
+      // --- Drawer open/close ---
+      var drawer = document.getElementById("drawer");
+      var backdrop = document.getElementById("drawerBackdrop");
+      function openDrawer() {
+        drawer.classList.add("is-open");
+        drawer.setAttribute("aria-hidden", "false");
+        backdrop.classList.add("is-open");
+        backdrop.setAttribute("aria-hidden", "false");
+      }
+      function closeDrawer() {
+        drawer.classList.remove("is-open");
+        drawer.setAttribute("aria-hidden", "true");
+        backdrop.classList.remove("is-open");
+        backdrop.setAttribute("aria-hidden", "true");
+      }
+      var openers = [document.getElementById("crewMenuBtn"), document.getElementById("openDrawer")];
+      openers.forEach(function (el) { if (el) el.addEventListener("click", openDrawer); });
+      var closeEl = document.getElementById("drawerClose");
+      if (closeEl) closeEl.addEventListener("click", closeDrawer);
+      if (backdrop) backdrop.addEventListener("click", closeDrawer);
+      document.addEventListener("keydown", function (e) { if (e.key === "Escape") closeDrawer(); });
+
+      // Aircraft search filter (optional helper).
+      var searchEl = document.getElementById("acSearch");
+      var acEl = document.getElementById("aircraft");
+      if (searchEl && acEl) {
+        searchEl.addEventListener("input", function () {
+          var q = (searchEl.value || "").trim().toLowerCase();
+          var options = acEl.querySelectorAll("option");
+          options.forEach(function (opt) {
+            if (!opt.value) return; // keep placeholder option
+            opt.style.display = !q || opt.textContent.toLowerCase().indexOf(q) !== -1 ? "" : "none";
+          });
+        });
+      }
+
+      // Import ACARS placeholder.
+      var importBtn = document.getElementById("importAcars");
+      if (importBtn) {
+        importBtn.addEventListener("click", function () {
+          alert("Import ACARS — coming soon.");
+        });
+      }
+
+      // Find Routes drawer link navigates to the search page.
+      var fr = document.getElementById("drawerFindRoutes");
+      if (fr) fr.addEventListener("click", function () { closeDrawer(); window.location.href = "findroutes.html"; });
+
+      // Sign out (uses MFVAauth).
+      var so = document.getElementById("signOutBtn");
+      if (so) {
+        so.addEventListener("click", function () {
+          try { if (auth) auth.signOut(); } catch (e) {}
+          window.location.replace("index.html");
+        });
+      }
+
+      // --- Form submit (client-side validation + simulated submit) ---
+      var form = document.getElementById("pirepForm");
+      var flash = document.getElementById("flash");
+      function showFlash(cls, msg) {
+        flash.className = "flash " + cls;
+        flash.textContent = msg;
+        flash.classList.add("is-visible");
+        flash.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+      function setSubmitting(on) {
+        var sb = document.querySelector(".submit-btn");
+        if (!sb) return;
+        if (on) {
+          sb.disabled = true;
+          sb.style.opacity = ".75";
+          sb.style.pointerEvents = "none";
+        } else {
+          sb.disabled = false;
+          sb.style.opacity = "";
+          sb.style.pointerEvents = "";
+        }
+      }
+      if (form) {
+        form.addEventListener("submit", function (e) {
+          e.preventDefault();
+          flash.classList.remove("is-visible");
+
+          var fn  = (document.getElementById("flightNumber").value || "").trim();
+          var fd  = document.getElementById("flightDate").value || "";
+          var dep = (document.getElementById("depIcao").value || "").trim().toUpperCase();
+          var arr = (document.getElementById("arrIcao").value || "").trim().toUpperCase();
+          var ft  = (document.getElementById("flightTime").value || "").trim();
+          var ac  = document.getElementById("aircraft").value || "";
+          var fuel= document.getElementById("fuelKg").value || "";
+
+          if (!fn) return showFlash("flash--error", "Please enter a Flight Number (e.g. MFVA123).");
+          if (!fd) return showFlash("flash--error", "Please pick a Flight Date.");
+          if (!/^[A-Z0-9]{3,6}$/.test(dep)) return showFlash("flash--error", "Please enter a valid 3–6 letter Departure ICAO (e.g. ZSAM).");
+          if (!/^[A-Z0-9]{3,6}$/.test(arr)) return showFlash("flash--error", "Please enter a valid 3–6 letter Arrival ICAO (e.g. ZSPD).");
+          if (dep === arr) return showFlash("flash--error", "Departure and arrival ICAOs must be different.");
+          if (!/^\d{1,3}:\d{2}$/.test(ft)) return showFlash("flash--error", "Please enter Flight Time as HH:MM (e.g. 01:30).");
+          if (!ac) return showFlash("flash--error", "Please select an aircraft.");
+          if (fuel === "" || isNaN(Number(fuel)) || Number(fuel) < 0) return showFlash("flash--error", "Please enter a valid Fuel Used in KG (≥ 0).");
+
+          setSubmitting(true);
+          try {
+            var auth = window.MFVAauth;
+            if (!auth) throw new Error("AUTH_NOT_READY");
+            var submitted = auth.addPirep({
+              flightNumber: fn,
+              flightDate:   fd,
+              depIcao:      dep,
+              arrIcao:      arr,
+              aircraft:     ac,
+              flightTime:   ft,
+              fuelKg:       fuel,
+              multiplier:   document.getElementById("multiplier").value,
+              gateDep:      document.getElementById("depGate").value,
+              gateArr:      document.getElementById("arrGate").value,
+              remarks:      document.getElementById("remarks").value
+            });
+            showFlash(
+              "flash--success",
+              "✅ PIREP submitted (Flight " + submitted.flightNumber +
+              " · " + submitted.depIcao + " → " + submitted.arrIcao +
+              "). Status: PENDING staff review."
+            );
+          } catch (err) {
+            var code = (err && err.message) ? err.message : "UNKNOWN";
+            var msg = "⚠️ Failed to submit PIREP. Error: " + code;
+            // Friendly mapping for known codes
+            var friendly = {
+              SIGNIN_REQUIRED: "⚠️ Please log in first before submitting a PIREP.",
+              MEMBER_NOT_FOUND: "⚠️ Member record not found. Please re-login.",
+              ACCOUNT_NOT_ACTIVE: "⚠️ Your account is not active. Contact MFVA staff.",
+              FILE_PIREP_FORBIDDEN: "⚠️ Your account does not have permission to file PIREPs.",
+              FLIGHT_NUMBER_REQUIRED: "Please enter a Flight Number (e.g. MFVA123).",
+              FLIGHT_DATE_REQUIRED: "Please pick a Flight Date.",
+              DEP_ICAO_INVALID: "Please enter a valid 3–6 letter Departure ICAO (e.g. ZSAM).",
+              ARR_ICAO_INVALID: "Please enter a valid 3–6 letter Arrival ICAO (e.g. ZSPD).",
+              SAME_DEP_ARR: "Departure and arrival ICAOs must be different.",
+              AIRCRAFT_REQUIRED: "Please select an aircraft.",
+              FLIGHT_TIME_INVALID: "Please enter Flight Time as HH:MM (e.g. 01:30).",
+              FUEL_INVALID: "Please enter a valid Fuel Used in KG (≥ 0).",
+              AUTH_NOT_READY: "⚠️ Authentication module failed to load. Please refresh the page."
+            };
+            if (friendly[code]) msg = friendly[code];
+            showFlash("flash--error", msg);
+            setSubmitting(false);
+            return;
+          }
+          // Reset everything except date / aircraft after success.
+          setTimeout(function () {
+            setSubmitting(false);
+            document.getElementById("flightNumber").value = "";
+            document.getElementById("depIcao").value = "";
+            document.getElementById("arrIcao").value = "";
+            document.getElementById("flightTime").value = "";
+            document.getElementById("aircraft").value = "";
+            document.getElementById("fuelKg").value = "";
+            document.getElementById("multiplier").value = "";
+            document.getElementById("remarks").value = "";
+            document.getElementById("depGate").value = "";
+            document.getElementById("arrGate").value = ""
+            document.getElementById("acSearch").value = "";
+          }, 1600);
+        });
+      }
+    })();
+  </script>
+</body>
+</html>

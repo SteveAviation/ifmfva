@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, shrink-to-fit=no" />
+  <meta name="theme-color" content="#07101f" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#07101f" media="(prefers-color-scheme: dark)" />
+  <meta name="format-detection" content="telephone=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <title>MFVA — Ranks</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --nav-h: 68px;
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+      --ease: cubic-bezier(.22,.61,.36,1);
+      --brand: #0057b8;
+      --brand-dark: #00418c;
+      --ink: #0b1220;
+      --ink-2: #1f2937;
+      --ink-soft: #6b7280;
+      --line: #e5e7eb;
+
+      /* Reference palette (per reference image): */
+      --navy: #07101f;          /* hero & card background */
+      --navy-2: #0b1a31;
+      --gold: #f5c02c;          /* stripes for senior ranks */
+      --blue-soft: #93c5fd;     /* accent blue for labels */
+      --blue-link: #1e6fff;     /* RANK LADDER blue */
+      --muted: #cbd5e1;         /* hero desc text */
+      --muted-2: #94a3b8;
+      --card-radius: 20px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      -webkit-text-size-adjust: 100%;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+      min-height: 100%;
+    }
+
+    body {
+      font-family: "Barlow", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      color: var(--ink);
+      background: #ffffff;
+      min-height: 100vh;
+      min-height: 100dvh;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    a { color: inherit; text-decoration: none; }
+    button { font-family: inherit; cursor: pointer; border: none; background: none; }
+
+    /* ---------- Breadcrumb top bar ---------- */
+    .ranks-crumbs {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: calc(26px + var(--safe-top)) 22px 0;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: #cbd5e1;
+      font-size: 15px;
+      font-weight: 500;
+      letter-spacing: .01em;
+    }
+    .ranks-crumbs a {
+      color: #cbd5e1;
+      transition: color .2s var(--ease);
+    }
+    .ranks-crumbs a:hover { color: #ffffff; }
+    .ranks-crumbs__sep { opacity: .6; }
+
+    /* ---------- Hero ---------- */
+    .ranks-hero {
+      background: var(--navy);
+      color: #ffffff;
+      padding: 40px 22px 96px;
+      padding-top: calc(40px + var(--safe-top));
+      position: relative;
+      overflow: hidden;
+    }
+    .ranks-hero::before {
+      content: "";
+      position: absolute;
+      inset: auto -10% -60% auto;
+      width: 640px; height: 640px;
+      background: radial-gradient(closest-side, rgba(30,111,255,.20), transparent 70%);
+      pointer-events: none;
+    }
+    .ranks-hero::after {
+      content: "";
+      position: absolute;
+      inset: 40% auto -40% -20%;
+      width: 640px; height: 640px;
+      background: radial-gradient(closest-side, rgba(0,87,184,.22), transparent 70%);
+      pointer-events: none;
+    }
+    .ranks-hero__inner {
+      position: relative;
+      max-width: 1180px;
+      margin: 0 auto;
+      z-index: 1;
+    }
+    .ranks-hero__eyebrow {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: .28em;
+      text-transform: uppercase;
+      color: #93c5fd;
+      margin-bottom: 22px;
+    }
+    .ranks-hero__title {
+      font-size: clamp(40px, 7vw, 84px);
+      line-height: 1.02;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: #ffffff;
+      max-width: 860px;
+      margin-bottom: 28px;
+    }
+    .ranks-hero__desc {
+      color: var(--muted);
+      font-size: clamp(16px, 2.1vw, 22px);
+      line-height: 1.6;
+      max-width: 760px;
+      font-weight: 400;
+    }
+
+    /* ---------- Rank Ladder section ---------- */
+    .ranks-ladder {
+      background: #ffffff;
+      padding: 72px 22px 80px;
+      margin-top: -32px;
+      border-top-left-radius: 32px;
+      border-top-right-radius: 32px;
+      position: relative;
+      z-index: 2;
+    }
+    .ranks-ladder__inner {
+      max-width: 1180px;
+      margin: 0 auto;
+    }
+    .ranks-ladder__eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: .26em;
+      text-transform: uppercase;
+      color: var(--blue-link);
+      margin-bottom: 14px;
+    }
+    .ranks-ladder__eyebrow svg { width: 28px; height: 28px; }
+    .ranks-ladder__title {
+      font-size: clamp(34px, 5vw, 58px);
+      line-height: 1.05;
+      font-weight: 800;
+      letter-spacing: -0.015em;
+      color: var(--navy);
+      margin-bottom: 14px;
+    }
+    .ranks-ladder__desc {
+      font-size: clamp(16px, 2vw, 20px);
+      color: var(--ink-soft);
+      line-height: 1.6;
+      max-width: 820px;
+      margin-bottom: 44px;
+    }
+
+    .rank-list {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* ---------- Rank Card ---------- */
+    .rank {
+      background: var(--navy);
+      border-radius: var(--card-radius);
+      overflow: hidden;
+      color: #ffffff;
+      display: grid;
+      grid-template-columns: auto 1fr;
+      box-shadow: 0 1px 2px rgba(15,23,42,.08), 0 10px 30px -16px rgba(7,16,31,.35);
+      position: relative;
+    }
+
+    /* Left epaulette / stripes panel */
+    .rank__stripes {
+      width: 92px;
+      min-width: 92px;
+      padding: 32px 18px 32px 22px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 10px;
+      background: linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,0));
+    }
+    @media (max-width: 520px) {
+      .rank__stripes { width: 72px; min-width: 72px; padding: 26px 12px 26px 16px; gap: 8px; }
+    }
+    .rank__stripe {
+      height: 12px;
+      border-radius: 999px;
+      background: #000000;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
+    }
+    @media (max-width: 520px) { .rank__stripe { height: 10px; } }
+    .rank__stripe.is-gold {
+      background: var(--gold);
+      box-shadow: 0 1px 0 rgba(255,255,255,.25), 0 4px 14px -6px rgba(245,192,44,.55);
+    }
+
+    /* Right content panel */
+    .rank__body {
+      padding: 32px 28px 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      position: relative;
+    }
+    @media (min-width: 640px) {
+      .rank__body { padding: 38px 36px 32px; }
+    }
+
+    .rank__head {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 16px;
+    }
+    .rank__number {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 56px; height: 56px;
+      border-radius: 14px;
+      background: #ffffff;
+      color: var(--navy);
+      font-weight: 800;
+      font-size: 26px;
+      letter-spacing: .02em;
+    }
+    .rank__hours {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 18px;
+      background: rgba(148,163,184,.16);
+      color: #dbeafe;
+      border-radius: 999px;
+      font-weight: 600;
+      font-size: 15px;
+      letter-spacing: .02em;
+    }
+    .rank__hours svg { width: 17px; height: 17px; opacity: .9; }
+
+    .rank__name {
+      font-size: clamp(30px, 4.4vw, 50px);
+      line-height: 1.05;
+      font-weight: 800;
+      letter-spacing: -0.015em;
+      color: #ffffff;
+    }
+
+    .rank__aircraft-label {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: .26em;
+      text-transform: uppercase;
+      color: var(--blue-soft);
+    }
+    .rank__aircraft-list {
+      font-size: clamp(22px, 3vw, 34px);
+      line-height: 1.2;
+      font-weight: 700;
+      letter-spacing: -0.005em;
+      color: #ffffff;
+      margin-top: 8px;
+    }
+
+    .rank__stars {
+      position: absolute;
+      top: 28px;
+      right: 28px;
+      display: inline-flex;
+      gap: 6px;
+      color: var(--gold);
+    }
+    @media (min-width: 640px) { .rank__stars { top: 34px; right: 34px; } }
+    .rank__stars svg { width: 22px; height: 22px; }
+
+    /* ---------- Drawer & crewmenu (shared look) ---------- */
+    .crewmenu {
+      position: fixed;
+      right: max(16px, calc(16px + var(--safe-bottom)));
+      bottom: calc(20px + var(--safe-bottom));
+      z-index: 50;
+    }
+    .crewmenu__btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      min-height: 42px;
+      border-radius: 999px;
+      background: #ffffff;
+      color: #1f2937;
+      font-size: 14px;
+      font-weight: 600;
+      box-shadow: 0 8px 22px -12px rgba(17,24,39,.25), 0 1px 2px rgba(17,24,39,.06);
+      border: 1px solid var(--line);
+      transition: transform .15s var(--ease), box-shadow .2s var(--ease), background .2s var(--ease);
+    }
+    .crewmenu__btn:hover { background: #f8faff; }
+    .crewmenu__btn:active { transform: translateY(1px) scale(.99); }
+    .crewmenu__btn svg { width: 17px; height: 17px; color: #374151; }
+
+    .drawer {
+      position: fixed;
+      top: 0; right: 0; bottom: 0;
+      width: min(340px, 86vw);
+      background: #fff;
+      transform: translateX(102%);
+      transition: transform .28s var(--ease);
+      z-index: 70;
+      box-shadow: -20px 0 40px -20px rgba(17,24,39,.25);
+      display: flex;
+      flex-direction: column;
+      padding: calc(18px + var(--safe-top)) 20px calc(20px + var(--safe-bottom));
+    }
+    .drawer.is-open { transform: translateX(0); }
+    .drawer__header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 18px;
+    }
+    .drawer__title {
+      font-weight: 800;
+      font-size: 18px;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      color: var(--ink);
+    }
+    .drawer__close {
+      width: 38px; height: 38px;
+      border-radius: 10px;
+      background: #f3f4f6;
+      display: inline-flex; align-items: center; justify-content: center;
+      color: var(--ink-2); font-size: 22px; line-height: 1;
+    }
+    .drawer ul { list-style: none; display: flex; flex-direction: column; gap: 2px; }
+    .drawer li a, .drawer li button {
+      width: 100%;
+      text-align: left;
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 14px;
+      border-radius: 12px;
+      color: var(--ink-2);
+      font-weight: 600;
+      font-size: 15px;
+      letter-spacing: .02em;
+    }
+    .drawer li a:hover, .drawer li button:hover { background: #f4f6ff; color: var(--ink); }
+    .drawer li a svg, .drawer li button svg { width: 18px; height: 18px; color: #6b7280; flex-shrink: 0; }
+    .drawer__divider { height: 1px; background: #eef0f5; margin: 14px 2px; }
+    .drawer__footer {
+      margin-top: auto;
+      padding-top: 12px;
+      color: var(--ink-soft);
+      font-size: 13px;
+      text-align: center;
+    }
+    .drawer__signout { color: #b91c1c !important; }
+    .drawer__signout svg { color: #ef4444 !important; }
+
+    .drawer-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(11,18,32,.45);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .25s var(--ease);
+      z-index: 60;
+    }
+    .drawer-backdrop.is-open { opacity: 1; pointer-events: auto; }
+  </style>
+</head>
+<body>
+  <!-- Hero + breadcrumbs -->
+  <section class="ranks-hero">
+    <div class="ranks-crumbs">
+      <a href="index.html">Home</a>
+      <span class="ranks-crumbs__sep">/</span>
+      <a href="crew.html">Operations</a>
+      <span class="ranks-crumbs__sep">/</span>
+      <span>Ranks</span>
+
+      <span style="margin-left:auto;">
+        <button type="button" class="crewmenu__btn" id="openDrawer" aria-label="Open crew menu" style="padding:8px 12px;min-height:38px;font-size:13px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="width:16px;height:16px;"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+          Menu
+        </button>
+      </span>
+    </div>
+
+    <div class="ranks-hero__inner">
+      <div class="ranks-hero__eyebrow">Pilot Ranks</div>
+      <h1 class="ranks-hero__title">Progress through the fleet as your flight time grows.</h1>
+      <p class="ranks-hero__desc">
+        Use this rank guide to see flight-hour requirements, aircraft unlocks, Fleet Captain status, and CEO rewards.
+      </p>
+    </div>
+  </section>
+
+  <!-- Rank Ladder -->
+  <section class="ranks-ladder">
+    <div class="ranks-ladder__inner">
+      <div class="ranks-ladder__eyebrow">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
+        Rank Ladder
+      </div>
+      <h2 class="ranks-ladder__title">Aircraft unlocks by rank.</h2>
+      <p class="ranks-ladder__desc">
+        Each tier lists the flight-time range and primary aircraft available at that rank. Aircraft assignments follow real MFVA fleet range — shorter-range narrowbodies unlock first, progressing up through our long-haul widebody Dreamliner flagships at senior ranks.
+      </p>
+
+      <div class="rank-list">
+        <!-- Rank 1 -->
+        <article class="rank">
+          <div class="rank__stripes" aria-hidden="true">
+            <div class="rank__stripe"></div>
+          </div>
+          <div class="rank__body">
+            <div class="rank__head">
+              <div class="rank__number">1</div>
+              <div class="rank__hours">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+                00:00–21:00 Flight Time
+              </div>
+            </div>
+            <h3 class="rank__name">Trainee Second Officer</h3>
+            <div>
+              <div class="rank__aircraft-label">Aircraft Unlocked</div>
+              <div class="rank__aircraft-list">B737-700</div>
+            </div>
+          </div>
+        </article>
+
+        <!-- Rank 2 -->
+        <article class="rank">
+          <div class="rank__stripes" aria-hidden="true">
+            <div class="rank__stripe"></div>
+            <div class="rank__stripe"></div>
+          </div>
+          <div class="rank__body">
+            <div class="rank__head">
+              <div class="rank__number">2</div>
+              <div class="rank__hours">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+                21:00–70:00 Flight Time
+              </div>
+            </div>
+            <h3 class="rank__name">Second Officer</h3>
+            <div>
+              <div class="rank__aircraft-label">Aircraft Unlocked</div>
+              <div class="rank__aircraft-list">B737-800, B737 MAX 8</div>
+            </div>
+          </div>
+        </article>
+
+        <!-- Rank 3 -->
+        <article class="rank">
+          <div class="rank__stripes" aria-hidden="true">
+            <div class="rank__stripe is-gold"></div>
+            <div class="rank__stripe"></div>
+            <div class="rank__stripe"></div>
+            <div class="rank__stripe"></div>
+          </div>
+          <div class="rank__body">
+            <div class="rank__head">
+              <div class="rank__number">3</div>
+              <div class="rank__hours">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+                70:00–140:00 Flight Time
+              </div>
+            </div>
+            <h3 class="rank__name">First Officer</h3>
+            <div>
+              <div class="rank__aircraft-label">Aircraft Unlocked</div>
+              <div class="rank__aircraft-list">B757-200</div>
+            </div>
+          </div>
+        </article>
+
+        <!-- Rank 4 -->
+        <article class="rank">
+          <div class="rank__stripes" aria-hidden="true">
+            <div class="rank__stripe is-gold"></div>
+            <div class="rank__stripe is-gold"></div>
+            <div class="rank__stripe"></div>
+            <div class="rank__stripe"></div>
+          </div>
+          <div class="rank__body">
+            <div class="rank__head">
+              <div class="rank__number">4</div>
+              <div class="rank__hours">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+                140:00–230:00 Flight Time
+              </div>
+            </div>
+            <h3 class="rank__name">SR First Officer</h3>
+            <div>
+              <div class="rank__aircraft-label">Aircraft Unlocked</div>
+              <div class="rank__aircraft-list">A320neo, A321neo</div>
+            </div>
+          </div>
+        </article>
+
+        <!-- Rank 5 -->
+        <article class="rank">
+          <div class="rank__stripes" aria-hidden="true">
+            <div class="rank__stripe is-gold"></div>
+            <div class="rank__stripe is-gold"></div>
+            <div class="rank__stripe is-gold"></div>
+            <div class="rank__stripe"></div>
+          </div>
+          <div class="rank__body">
+            <div class="rank__head">
+              <div class="rank__number">5</div>
+              <div class="rank__hours">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+                230:00–400:00 Flight Time
+              </div>
+            </div>
+            <h3 class="rank__name">Captain</h3>
+            <div>
+              <div class="rank__aircraft-label">Aircraft Unlocked</div>
+              <div class="rank__aircraft-list">B787-8</div>
+            </div>
+          </div>
+        </article>
+
+        <!-- Rank 6 -->
+        <article class="rank">
+          <div class="rank__stripes" aria-hidden="true">
+            <div class="rank__stripe is-gold"></div>
+            <div class="rank__stripe is-gold"></div>
+            <div class="rank__stripe is-gold"></div>
+            <div class="rank__stripe is-gold"></div>
+          </div>
+          <div class="rank__body">
+            <div class="rank__stars" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.1 6.6.9-4.8 4.7 1.2 6.6L12 17.7l-5.9 2.6 1.2-6.6L2.5 9l6.6-.9L12 2z"/></svg>
+            </div>
+            <div class="rank__head">
+              <div class="rank__number">6</div>
+              <div class="rank__hours">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+                400:00–800:00 Flight Time
+              </div>
+            </div>
+            <h3 class="rank__name">SR Captain</h3>
+            <div>
+              <div class="rank__aircraft-label">Aircraft Unlocked</div>
+              <div class="rank__aircraft-list">B787-9</div>
+            </div>
+          </div>
+        </article>
+
+        <!-- Rank 7 -->
+        <article class="rank">
+          <div class="rank__stripes" aria-hidden="true">
+            <div class="rank__stripe is-gold"></div>
+            <div class="rank__stripe is-gold"></div>
+            <div class="rank__stripe is-gold"></div>
+            <div class="rank__stripe is-gold"></div>
+          </div>
+          <div class="rank__body">
+            <div class="rank__stars" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.1 6.6.9-4.8 4.7 1.2 6.6L12 17.7l-5.9 2.6 1.2-6.6L2.5 9l6.6-.9L12 2z"/></svg>
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.1 6.6.9-4.8 4.7 1.2 6.6L12 17.7l-5.9 2.6 1.2-6.6L2.5 9l6.6-.9L12 2z"/></svg>
+            </div>
+            <div class="rank__head">
+              <div class="rank__number">7</div>
+              <div class="rank__hours">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+                800:00+ Flight Time
+              </div>
+            </div>
+            <h3 class="rank__name">Fleet Captain</h3>
+            <div>
+              <div class="rank__aircraft-label">Aircraft Unlocked</div>
+              <div class="rank__aircraft-list">Full Fleet &middot; CEO Rewards</div>
+            </div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ---------- Floating crew menu + side drawer ---------- -->
+  <div class="crewmenu">
+    <button type="button" class="crewmenu__btn" id="crewMenuBtn" aria-label="Open crew menu">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      Crew Menu
+    </button>
+  </div>
+
+  <div class="drawer-backdrop" id="drawerBackdrop" aria-hidden="true"></div>
+  <aside class="drawer" id="drawer" aria-hidden="true" aria-label="Crew menu">
+    <div class="drawer__header">
+      <div class="drawer__title">Crew Menu</div>
+      <button type="button" class="drawer__close" id="drawerClose" aria-label="Close crew menu">&times;</button>
+    </div>
+    <ul>
+      <li>
+        <a href="crew.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+          Dashboard
+        </a>
+      </li>
+      <li>
+        <a href="pirep.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3h7v7"/><path d="M10 14 21 3"/><path d="M21 14v7H3V3h7"/></svg>
+          File PIREP
+        </a>
+      </li>
+      <li>
+        <a href="routes.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="6" r="2.5"/><circle cx="19" cy="6" r="2.5"/><path d="M7.5 6h9M5 8.5c0 3 3.5 4 7 4s7-1 7-4"/><path d="M12 12.5v3M8 19h8l-2-3.5h-4L8 19z"/></svg>
+          Routes
+        </a>
+      </li>
+      <li>
+        <a href="hubs.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s7-7.5 7-13a7 7 0 0 0-14 0c0 5.5 7 13 7 13z"/><circle cx="12" cy="9" r="2.5"/></svg>
+          Hubs
+        </a>
+      </li>
+      <li>
+        <a href="fleet.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 17v2h20v-2"/><path d="M6 17 2 7l4-1 4 4h6l4-4 4 1-4 10H6z"/></svg>
+          Fleet
+        </a>
+      </li>
+      <li>
+        <a href="ranks.html" aria-current="page">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
+          Ranks
+        </a>
+      </li>
+      <li>
+        <a href="about.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v5h1"/></svg>
+          About MFVA
+        </a>
+      </li>
+    </ul>
+    <div class="drawer__divider"></div>
+    <ul>
+      <li>
+        <button type="button" id="signOutBtn" class="drawer__signout">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="m10 17 5-5-5-5"/><path d="M15 12H3"/></svg>
+          Sign out
+        </button>
+      </li>
+    </ul>
+    <div class="drawer__footer">
+      &copy; <span id="year"></span> MFVA &middot; Xiamen Virtual Airlines
+    </div>
+  </aside>
+
+  <script>
+    (function () {
+      // ---- Auth gate: signed-out users go back to the login page. ----
+      (function authGate() {
+        var logged = false;
+        try { logged = localStorage.getItem("mfva_logged_in") === "1"; } catch (e) {}
+        if (!logged) {
+          sessionStorage.setItem("mfva_redirect_after_login", "ranks.html");
+          window.location.replace("login.html");
+          return;
+        }
+      })();
+
+      var y = document.getElementById("year");
+      if (y) y.textContent = new Date().getFullYear();
+
+      // --- Drawer open/close ---
+      var drawer = document.getElementById("drawer");
+      var backdrop = document.getElementById("drawerBackdrop");
+      function openDrawer() {
+        drawer.classList.add("is-open");
+        drawer.setAttribute("aria-hidden", "false");
+        backdrop.classList.add("is-open");
+        backdrop.setAttribute("aria-hidden", "false");
+      }
+      function closeDrawer() {
+        drawer.classList.remove("is-open");
+        drawer.setAttribute("aria-hidden", "true");
+        backdrop.classList.remove("is-open");
+        backdrop.setAttribute("aria-hidden", "true");
+      }
+      var openers = [document.getElementById("crewMenuBtn"), document.getElementById("openDrawer")];
+      openers.forEach(function (el) { if (el) el.addEventListener("click", openDrawer); });
+      var closeEl = document.getElementById("drawerClose");
+      if (closeEl) closeEl.addEventListener("click", closeDrawer);
+      if (backdrop) backdrop.addEventListener("click", closeDrawer);
+      document.addEventListener("keydown", function (e) { if (e.key === "Escape") closeDrawer(); });
+
+      // Placeholders
+      var fr = document.getElementById("drawerFindRoutes");
+      if (fr) fr.addEventListener("click", function () { closeDrawer(); alert("Find Routes — coming soon."); });
+
+      // Sign out
+      var so = document.getElementById("signOutBtn");
+      if (so) {
+        so.addEventListener("click", function () {
+          try { localStorage.removeItem("mfva_logged_in"); } catch (e) {}
+          window.location.replace("index.html");
+        });
+      }
+    })();
+  </script>
+</body>
+</html>

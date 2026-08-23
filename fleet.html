@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, shrink-to-fit=no" />
+  <meta name="theme-color" content="#eef2ff" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#0b1f3a" media="(prefers-color-scheme: dark)" />
+  <meta name="format-detection" content="telephone=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <title>MFVA — Fleet</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --nav-h: 68px;
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+      --ease: cubic-bezier(.22,.61,.36,1);
+      --brand: #0057b8;
+      --brand-dark: #00418c;
+      --ink: #0b1220;
+      --ink-2: #1f2937;
+      --ink-soft: #6b7280;
+      --line: #e5e7eb;
+      --bg-1: #e7edff;
+      --bg-2: #f3f5ff;
+      --card: #ffffff;
+      --radius-card: 22px;
+      --shadow-card: 0 1px 2px rgba(17,24,39,.04), 0 6px 22px -10px rgba(17,24,39,.12);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      -webkit-text-size-adjust: 100%;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+      min-height: 100%;
+    }
+
+    body {
+      font-family: "Barlow", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(1200px 700px at 85% -10%, #dce4ff 0%, transparent 60%),
+        radial-gradient(900px 600px at -10% 110%, #e3ecff 0%, transparent 55%),
+        linear-gradient(180deg, var(--bg-1) 0%, var(--bg-2) 100%);
+      min-height: 100vh;
+      min-height: 100dvh;
+      padding: calc(16px + var(--safe-top)) 16px calc(60px + var(--safe-bottom));
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    a { color: inherit; text-decoration: none; }
+    button { font-family: inherit; cursor: pointer; border: none; background: none; }
+
+    /* ---------- Top bar ---------- */
+    .fleet-topbar {
+      max-width: 1080px;
+      margin: 0 auto 22px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .fleet-topbar__crumb {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: #4b5563;
+      font-weight: 500;
+      font-size: 13px;
+      padding: 6px 10px;
+      border-radius: 8px;
+      background: transparent;
+      transition: background .2s var(--ease), color .2s var(--ease);
+    }
+    .fleet-topbar__crumb:hover { background: rgba(255,255,255,.55); color: #111827; }
+    .fleet-topbar__crumb svg { width: 15px; height: 15px; }
+    .fleet-topbar__brand { color: #374151; font-weight: 600; }
+    .fleet-topbar__actions { display: flex; align-items: center; gap: 10px; }
+    .icon-btn {
+      width: 42px; height: 42px;
+      border-radius: 12px;
+      background: rgba(255,255,255,.7);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: #1f2937;
+      transition: transform .15s var(--ease), background .2s var(--ease);
+    }
+    .icon-btn:hover { background: #fff; }
+    .icon-btn:active { transform: scale(.96); }
+    .icon-btn svg { width: 18px; height: 18px; }
+
+    /* ---------- Header ---------- */
+    .fleet-header {
+      max-width: 1080px;
+      margin: 0 auto 28px;
+      padding: 0 2px;
+    }
+    .fleet-header__eyebrow {
+      display: inline-block;
+      padding: 7px 14px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.65);
+      color: #303957;
+      font-size: 11.5px;
+      font-weight: 700;
+      letter-spacing: .24em;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+    .fleet-header__title {
+      font-size: clamp(30px, 5vw, 44px);
+      font-weight: 800;
+      letter-spacing: -0.01em;
+      line-height: 1.1;
+      color: var(--ink);
+      margin-bottom: 10px;
+    }
+    .fleet-header__desc {
+      font-size: 16px;
+      color: var(--ink-soft);
+      line-height: 1.65;
+      max-width: 720px;
+    }
+
+    /* ---------- Fleet grid ---------- */
+    .fleet-wrap {
+      max-width: 1080px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+    @media (min-width: 780px) {
+      .fleet-wrap { grid-template-columns: 1fr 1fr; }
+    }
+
+    .aircraft {
+      background: var(--card);
+      border-radius: var(--radius-card);
+      border: 1px solid #e5e7eb;
+      box-shadow: var(--shadow-card);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: transform .25s var(--ease), box-shadow .25s var(--ease), border-color .25s var(--ease);
+    }
+    @media (hover: hover) and (pointer: fine) {
+      .aircraft:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 2px 4px rgba(17,24,39,.05), 0 16px 32px -14px rgba(17,24,39,.18);
+        border-color: #d7def1;
+      }
+    }
+
+    /* --- Upper: icon + name + airline + description (per reference image) --- */
+    .aircraft__top {
+      padding: 30px 28px 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    @media (min-width: 640px) {
+      .aircraft__top { padding: 34px 32px 24px; }
+    }
+
+    .aircraft__icon {
+      width: 46px;
+      height: 46px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--brand);
+      margin-bottom: 2px;
+    }
+    .aircraft__icon svg { width: 40px; height: 40px; }
+
+    .aircraft__name {
+      font-size: clamp(28px, 3.4vw, 38px);
+      font-weight: 800;
+      letter-spacing: -0.01em;
+      color: var(--ink);
+      line-height: 1.1;
+    }
+
+    .aircraft__airline {
+      font-size: 22px;
+      font-weight: 600;
+      color: var(--brand);
+      letter-spacing: -0.005em;
+    }
+
+    .aircraft__desc {
+      font-size: clamp(16px, 1.8vw, 20px);
+      line-height: 1.55;
+      color: var(--ink-soft);
+      font-weight: 400;
+      margin-top: 4px;
+    }
+
+    /* --- Lower: placeholder image block (dashed, separate from top) --- */
+    .aircraft__image {
+      position: relative;
+      margin: 0 16px 16px;
+      padding: 16px;
+      background: #f8fafc;
+      border-radius: 18px;
+      aspect-ratio: 16 / 10;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--ink-soft);
+      font-weight: 600;
+      font-size: clamp(20px, 2.6vw, 28px);
+      letter-spacing: -0.005em;
+    }
+    @media (min-width: 640px) {
+      .aircraft__image { margin: 0 20px 20px; padding: 20px; border-radius: 22px; }
+    }
+    .aircraft__image::before {
+      content: "";
+      position: absolute;
+      inset: 10px;
+      border: 2px dashed #cbd5e1;
+      border-radius: 14px;
+      pointer-events: none;
+    }
+
+    /* ---------- Drawer & crewmenu (shared look with crew dashboard) ---------- */
+    .crewmenu {
+      position: fixed;
+      right: max(16px, calc(16px + var(--safe-bottom)));
+      bottom: calc(20px + var(--safe-bottom));
+      z-index: 50;
+    }
+    .crewmenu__btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      min-height: 42px;
+      border-radius: 999px;
+      background: #ffffff;
+      color: #1f2937;
+      font-size: 14px;
+      font-weight: 600;
+      box-shadow: 0 8px 22px -12px rgba(17,24,39,.25), 0 1px 2px rgba(17,24,39,.06);
+      border: 1px solid var(--line);
+      transition: transform .15s var(--ease), box-shadow .2s var(--ease), background .2s var(--ease);
+    }
+    .crewmenu__btn:hover { background: #f8faff; }
+    .crewmenu__btn:active { transform: translateY(1px) scale(.99); }
+    .crewmenu__btn svg { width: 17px; height: 17px; color: #374151; }
+
+    .drawer {
+      position: fixed;
+      top: 0; right: 0; bottom: 0;
+      width: min(340px, 86vw);
+      background: #fff;
+      transform: translateX(102%);
+      transition: transform .28s var(--ease);
+      z-index: 70;
+      box-shadow: -20px 0 40px -20px rgba(17,24,39,.25);
+      display: flex;
+      flex-direction: column;
+      padding: calc(18px + var(--safe-top)) 20px calc(20px + var(--safe-bottom));
+    }
+    .drawer.is-open { transform: translateX(0); }
+    .drawer__header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 18px;
+    }
+    .drawer__title {
+      font-weight: 800;
+      font-size: 18px;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      color: var(--ink);
+    }
+    .drawer__close {
+      width: 38px; height: 38px;
+      border-radius: 10px;
+      background: #f3f4f6;
+      display: inline-flex; align-items: center; justify-content: center;
+      color: var(--ink-2); font-size: 22px; line-height: 1;
+    }
+    .drawer ul { list-style: none; display: flex; flex-direction: column; gap: 2px; }
+    .drawer li a, .drawer li button {
+      width: 100%;
+      text-align: left;
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 14px;
+      border-radius: 12px;
+      color: var(--ink-2);
+      font-weight: 600;
+      font-size: 15px;
+      letter-spacing: .02em;
+    }
+    .drawer li a:hover, .drawer li button:hover { background: #f4f6ff; color: var(--ink); }
+    .drawer li a svg, .drawer li button svg { width: 18px; height: 18px; color: #6b7280; flex-shrink: 0; }
+    .drawer__divider { height: 1px; background: #eef0f5; margin: 14px 2px; }
+    .drawer__footer {
+      margin-top: auto;
+      padding-top: 12px;
+      color: var(--ink-soft);
+      font-size: 13px;
+      text-align: center;
+    }
+    .drawer__signout { color: #b91c1c !important; }
+    .drawer__signout svg { color: #ef4444 !important; }
+
+    .drawer-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(11,18,32,.45);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .25s var(--ease);
+      z-index: 60;
+    }
+    .drawer-backdrop.is-open { opacity: 1; pointer-events: auto; }
+  </style>
+</head>
+<body>
+  <div class="fleet-topbar" role="navigation" aria-label="Fleet top bar">
+    <a href="crew.html" class="fleet-topbar__crumb" title="Back to dashboard">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+      <span>Crew Center</span>
+      <span aria-hidden="true">/</span>
+      <span class="fleet-topbar__brand">Fleet</span>
+    </a>
+    <div class="fleet-topbar__actions">
+      <button type="button" class="icon-btn" id="openDrawer" aria-label="Open crew menu" title="Crew Menu">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <header class="fleet-header">
+    <span class="fleet-header__eyebrow">Our Fleet</span>
+    <h1 class="fleet-header__title">MFVA Aircraft Fleet</h1>
+    <p class="fleet-header__desc">
+      Xiamen Virtual Airlines operates a streamlined, realistic fleet matching our real-world namesake — from high-frequency narrowbody domestic workhorses to modern widebody long-range Dreamliners and next-generation Airbus NEO jets.
+    </p>
+  </header>
+
+  <main class="fleet-wrap">
+    <!-- 1. Boeing 737-700 -->
+    <article class="aircraft">
+      <div class="aircraft__top">
+        <div class="aircraft__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg>
+        </div>
+        <h2 class="aircraft__name">Boeing 737-700</h2>
+        <div class="aircraft__airline">Xiamen Airlines</div>
+        <p class="aircraft__desc">Compact NG-series narrowbody deployed on thinner regional and secondary domestic routes with unmatched operating economics.</p>
+      </div>
+      <div class="aircraft__image" aria-hidden="true">Image coming soon</div>
+    </article>
+
+    <!-- 2. Boeing 737-800 -->
+    <article class="aircraft">
+      <div class="aircraft__top">
+        <div class="aircraft__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg>
+        </div>
+        <h2 class="aircraft__name">Boeing 737-800</h2>
+        <div class="aircraft__airline">Xiamen Airlines</div>
+        <p class="aircraft__desc">The backbone of MFVA&rsquo;s domestic network — a reliable single-aisle workhorse on high-frequency trunk and regional jet services.</p>
+      </div>
+      <div class="aircraft__image" aria-hidden="true">Image coming soon</div>
+    </article>
+
+    <!-- 3. Boeing 757 -->
+    <article class="aircraft">
+      <div class="aircraft__top">
+        <div class="aircraft__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg>
+        </div>
+        <h2 class="aircraft__name">Boeing 757</h2>
+        <div class="aircraft__airline">Xiamen Airlines</div>
+        <p class="aircraft__desc">Classic long-range narrowbody, ideal for hot-and-high airports and premium medium-haul services stretching across East Asia.</p>
+      </div>
+      <div class="aircraft__image" aria-hidden="true">Image coming soon</div>
+    </article>
+
+    <!-- 4. Boeing 737 MAX 8 -->
+    <article class="aircraft">
+      <div class="aircraft__top">
+        <div class="aircraft__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg>
+        </div>
+        <h2 class="aircraft__name">Boeing 737 MAX 8</h2>
+        <div class="aircraft__airline">Xiamen Airlines</div>
+        <p class="aircraft__desc">Latest-generation narrowbody with CFM LEAP engines, delivering superior range and fuel efficiency on MFVA domestic and regional routes.</p>
+      </div>
+      <div class="aircraft__image" aria-hidden="true">Image coming soon</div>
+    </article>
+
+    <!-- 5. Boeing 787-8 -->
+    <article class="aircraft">
+      <div class="aircraft__top">
+        <div class="aircraft__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg>
+        </div>
+        <h2 class="aircraft__name">Boeing 787-8</h2>
+        <div class="aircraft__airline">Xiamen Airlines</div>
+        <p class="aircraft__desc">Compact Dreamliner widebody opening MFVA&rsquo;s thin long-haul routes to Northeast Asia, Oceania, and selected European destinations.</p>
+      </div>
+      <div class="aircraft__image" aria-hidden="true">Image coming soon</div>
+    </article>
+
+    <!-- 6. Boeing 787-9 -->
+    <article class="aircraft">
+      <div class="aircraft__top">
+        <div class="aircraft__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg>
+        </div>
+        <h2 class="aircraft__name">Boeing 787-9</h2>
+        <div class="aircraft__airline">Xiamen Airlines</div>
+        <p class="aircraft__desc">Stretched Dreamliner flagship powering MFVA&rsquo;s flagship long-haul network to Europe, North America, and premium transpacific markets.</p>
+      </div>
+      <div class="aircraft__image" aria-hidden="true">Image coming soon</div>
+    </article>
+
+    <!-- 7. Airbus A320neo -->
+    <article class="aircraft">
+      <div class="aircraft__top">
+        <div class="aircraft__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg>
+        </div>
+        <h2 class="aircraft__name">Airbus A320neo</h2>
+        <div class="aircraft__airline">Xiamen Airlines</div>
+        <p class="aircraft__desc">Next-generation single-aisle with Pratt &amp; Whitney GTF engines for quiet, fuel-efficient domestic and short-haul international operations.</p>
+      </div>
+      <div class="aircraft__image" aria-hidden="true">Image coming soon</div>
+    </article>
+
+    <!-- 8. Airbus A321neo -->
+    <article class="aircraft">
+      <div class="aircraft__top">
+        <div class="aircraft__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg>
+        </div>
+        <h2 class="aircraft__name">Airbus A321neo</h2>
+        <div class="aircraft__airline">Xiamen Airlines</div>
+        <p class="aircraft__desc">Latest generation A321 serving domestic and regional routes — a high-capacity, low-cost platform for MFVA&rsquo;s busiest shuttle markets.</p>
+      </div>
+      <div class="aircraft__image" aria-hidden="true">Image coming soon</div>
+    </article>
+  </main>
+
+  <!-- ---------- Floating crew menu + side drawer ---------- -->
+  <div class="crewmenu">
+    <button type="button" class="crewmenu__btn" id="crewMenuBtn" aria-label="Open crew menu">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      Crew Menu
+    </button>
+  </div>
+
+  <div class="drawer-backdrop" id="drawerBackdrop" aria-hidden="true"></div>
+  <aside class="drawer" id="drawer" aria-hidden="true" aria-label="Crew menu">
+    <div class="drawer__header">
+      <div class="drawer__title">Crew Menu</div>
+      <button type="button" class="drawer__close" id="drawerClose" aria-label="Close crew menu">&times;</button>
+    </div>
+    <ul>
+      <li>
+        <a href="crew.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+          Dashboard
+        </a>
+      </li>
+      <li>
+        <a href="pirep.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3h7v7"/><path d="M10 14 21 3"/><path d="M21 14v7H3V3h7"/></svg>
+          File PIREP
+        </a>
+      </li>
+      <li>
+        <button type="button" id="drawerFindRoutes">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          Find Routes
+        </button>
+      </li>
+      <li>
+        <a href="hubs.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s7-7.5 7-13a7 7 0 0 0-14 0c0 5.5 7 13 7 13z"/><circle cx="12" cy="9" r="2.5"/></svg>
+          Hubs
+        </a>
+      </li>
+      <li>
+        <a href="fleet.html" aria-current="page">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 17v2h20v-2"/><path d="M6 17 2 7l4-1 4 4h6l4-4 4 1-4 10H6z"/></svg>
+          Fleet
+        </a>
+      </li>
+      <li>
+        <a href="routes.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="6" r="2.5"/><circle cx="19" cy="6" r="2.5"/><path d="M7.5 6h9M5 8.5c0 3 3.5 4 7 4s7-1 7-4"/><path d="M12 12.5v3M8 19h8l-2-3.5h-4L8 19z"/></svg>
+          Routes
+        </a>
+      </li>
+      <li>
+        <a href="about.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v5h1"/></svg>
+          About MFVA
+        </a>
+      </li>
+    </ul>
+    <div class="drawer__divider"></div>
+    <ul>
+      <li>
+        <button type="button" id="signOutBtn" class="drawer__signout">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="m10 17 5-5-5-5"/><path d="M15 12H3"/></svg>
+          Sign out
+        </button>
+      </li>
+    </ul>
+    <div class="drawer__footer">
+      &copy; <span id="year"></span> MFVA &middot; Xiamen Virtual Airlines
+    </div>
+  </aside>
+
+  <script>
+    (function () {
+      // ---- Auth gate: signed-out users go back to the login page. ----
+      (function authGate() {
+        var logged = false;
+        try { logged = localStorage.getItem("mfva_logged_in") === "1"; } catch (e) {}
+        if (!logged) {
+          sessionStorage.setItem("mfva_redirect_after_login", "fleet.html");
+          window.location.replace("login.html");
+          return;
+        }
+      })();
+
+      var y = document.getElementById("year");
+      if (y) y.textContent = new Date().getFullYear();
+
+      // --- Drawer open/close ---
+      var drawer = document.getElementById("drawer");
+      var backdrop = document.getElementById("drawerBackdrop");
+      function openDrawer() {
+        drawer.classList.add("is-open");
+        drawer.setAttribute("aria-hidden", "false");
+        backdrop.classList.add("is-open");
+        backdrop.setAttribute("aria-hidden", "false");
+      }
+      function closeDrawer() {
+        drawer.classList.remove("is-open");
+        drawer.setAttribute("aria-hidden", "true");
+        backdrop.classList.remove("is-open");
+        backdrop.setAttribute("aria-hidden", "true");
+      }
+      var openers = [document.getElementById("crewMenuBtn"), document.getElementById("openDrawer")];
+      openers.forEach(function (el) { if (el) el.addEventListener("click", openDrawer); });
+      var closeEl = document.getElementById("drawerClose");
+      if (closeEl) closeEl.addEventListener("click", closeDrawer);
+      if (backdrop) backdrop.addEventListener("click", closeDrawer);
+      document.addEventListener("keydown", function (e) { if (e.key === "Escape") closeDrawer(); });
+
+      // Placeholders
+      var fr = document.getElementById("drawerFindRoutes");
+      if (fr) fr.addEventListener("click", function () { closeDrawer(); alert("Find Routes — coming soon."); });
+
+      // Sign out
+      var so = document.getElementById("signOutBtn");
+      if (so) {
+        so.addEventListener("click", function () {
+          try { localStorage.removeItem("mfva_logged_in"); } catch (e) {}
+          window.location.replace("index.html");
+        });
+      }
+    })();
+  </script>
+</body>
+</html>
