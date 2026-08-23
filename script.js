@@ -329,7 +329,7 @@
   }
 
   /* ---------------------------------------------------------
-     Environment banner: show "📱 Direct-open mode" notice for
+     Environment banner: show "📱 手机直开模式" notice for
      file:// users where localStorage is disabled.
      Duplicated in auth.js for pages that include it; here we
      use a shared DOM id to avoid double banners.
@@ -358,9 +358,9 @@
         "padding:8px 46px 8px 14px;box-shadow:0 2px 0 rgba(0,0,0,.04);",
         "border-bottom:1px solid #f2d76f;"
       ].join("");
-      el.innerHTML = '<b style="margin-right:6px;">📱 Direct-open mode</b>' +
-        'Login state persists across pages, but member data will be lost on refresh.' +
-        '<button id="mfva-env-banner-close" aria-label="Close" style="' +
+      el.innerHTML = '<b style="margin-right:6px;">📱 手机直开模式</b>' +
+        '登录状态可跨页保留，但成员数据刷新后会丢失。' +
+        '<button id="mfva-env-banner-close" aria-label="关闭" style="' +
         "position:absolute;right:10px;top:50%;transform:translateY(-50%);" +
         "border:0;background:transparent;color:#7c5a00;font-size:18px;line-height:1;" +
         "padding:2px 6px;cursor:pointer;\">×</button>";
