@@ -888,7 +888,7 @@
         <button type="button" class="modal__close" id="mmModalClose" aria-label="Close">&times;</button>
       </div>
       <div class="modal__body">
-        <div class="modal-flash" id="mmFlash" role="alert"></div>
+
         <form id="mmForm" novalidate>
           <input type="hidden" id="mmOriginalEmail" />
           <div class="form-grid">
@@ -973,10 +973,7 @@
         <button type="button" class="mm-btn mm-btn--ghost" id="mmCancelBtn">Cancel</button>
         <button type="button" class="mm-btn" id="mmSaveBtn">Save Member</button>
       </div>
-      <!-- Save result: show user visible evidence: password hash, updatedBy, etc. -->
-      <div class="mm-save-diagnostic" id="mmSaveDiagnostic"
-           style="display:none;margin:12px 20px 20px;padding:12px 14px;border:1px solid #c7e4d6;border-radius:10px;background:#f1fbf5;color:#14532d;font-size:12.5px;line-height:1.55;letter-spacing:.01em;">
-      </div>
+      <!-- Save result diagnostic removed for security -->
     </div>
   </div>
 
@@ -1057,7 +1054,7 @@
     </div>
   </aside>
 
-  <script src="auth.js?v=20260823-origlogo"></script>
+  <script src="auth.js?v=20260823-rolemgmt"></script>
   <script>
     (function () {
       "use strict";
@@ -1392,7 +1389,7 @@
       var mSave = document.getElementById("mmSaveBtn");
       var mTitle = document.getElementById("mmModalTitle");
       var mSub = document.getElementById("mmModalSubtitle");
-      var mFlash = document.getElementById("mmFlash");
+      var mFlash = document.getElementById("mmFlash"); // may be null - handled gracefully
       var rankSelect = document.getElementById("mmRank");
 
       // Populate rank dropdown
@@ -1445,10 +1442,7 @@
       }
       function hideDiagnostic() {
         var d = document.getElementById("mmSaveDiagnostic");
-        if (d) {
-          d.style.display = "none"; d.innerHTML = "";
-          d.style.borderColor = "#c7e4d6"; d.style.background = "#f1fbf5"; d.style.color = "#14532d";
-        }
+        if (d) { d.style.display = "none"; d.innerHTML = ""; }
       }
       function showDiagnostic(html, isError) {
         var d = document.getElementById("mmSaveDiagnostic");
@@ -1501,6 +1495,15 @@
           return e === "3689442439@qq.com" || e === "g6082@outlook.com";
         };
 
+        var isCEO = function () {
+          var u = (typeof currentUser === "function") ? currentUser() : null;
+          if (!u) return false;
+          var e = String(u.email || "").toLowerCase();
+          // CEO = first seed admin (3689442439@qq.com) OR any seed admin who is still admin role
+          // But for UI purposes, we treat BOTH seed admins as "CEO-level" for removal of admins
+          return (e === "3689442439@qq.com" || e === "g6082@outlook.com") && u.role === "admin";
+        };
+
         // ---- pending count badge ----
         var pendingCount = 0;
         for (var cp = 0; cp < members.length; cp++) {
@@ -1537,7 +1540,12 @@
           var r = rankMap[m.maxRankId] || { name: "-", label: "-" };
           var seed = isSeed(m.email);
           var canEdit = true;
-          var canRemove = !seed;
+          // Only CEO can remove admins; any admin can remove non-admin members
+          var callerIsCEO = isCEO();
+          var isAdminRow = m.role === "admin";
+          var canRemove = !seed && (!isAdminRow || callerIsCEO);
+          var canMakeAdmin = callerIsCEO && !isAdminRow && !seed;
+          var canDemoteAdmin = callerIsCEO && isAdminRow && !seed;
           var st = String(m.status || "active");
           var canReview = (!seed && st === "pending");
 
@@ -1658,6 +1666,16 @@
                     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>' +
                   '</button>'
                 ) : '') +
+                (canMakeAdmin ? (
+                  '<button type="button" class="mm-icon-btn" data-act="promote" data-email="' + escHtml(m.email) + '" title="Promote to Admin" style="color:#0369a1; background:#e0f2fe;">' +
+                    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg>' +
+                  '</button>'
+                ) : '') +
+                (canDemoteAdmin ? (
+                  '<button type="button" class="mm-icon-btn" data-act="demote" data-email="' + escHtml(m.email) + '" title="Demote to Pilot" style="color:#b45309; background:#fef3c7;">' +
+                    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12l7 7 7-7"/></svg>' +
+                  '</button>'
+                ) : '') +
                 (canRemove ? (
                   '<button type="button" class="mm-icon-btn mm-icon-btn--danger" data-act="remove" data-email="' + escHtml(m.email) + '" title="Remove member">' +
                     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>' +
@@ -1708,7 +1726,26 @@
                 auth.removeMember(em);
                 renderMembers();
               } catch (e) {
-                alert("Failed to remove: " + (e.message || String(e)));
+                var errMsg = (e && e.message) || String(e);
+                if (errMsg === "ONLY_CEO_CAN_REMOVE_ADMINS") errMsg = "Only the CEO can remove admin accounts.";
+                else if (errMsg === "CEO_CANNOT_BE_REMOVED_DIRECTLY") errMsg = "The CEO cannot be removed directly. The CEO must transfer role first.";
+                alert("Failed to remove: " + errMsg);
+              }
+            } else if (act === "promote") {
+              if (!confirm("Promote " + (em || "") + " to Admin? They will get full member management access.")) return;
+              try {
+                auth.upsertMember({ email: em, role: "admin", status: "active", maxRankId: 7 }, (me && me.email) || "admin");
+                renderMembers();
+              } catch (e) {
+                alert("Failed to promote: " + (e.message || String(e)));
+              }
+            } else if (act === "demote") {
+              if (!confirm("Demote " + (em || "") + " from Admin to Pilot? They will lose admin access.")) return;
+              try {
+                auth.upsertMember({ email: em, role: "pilot" }, (me && me.email) || "admin");
+                renderMembers();
+              } catch (e) {
+                alert("Failed to demote: " + (e.message || String(e)));
               }
             } else if (act === "approve") {
               if (!confirm("Approve application for " + (em || "") + "? They'll be able to sign in immediately.")) return;
@@ -1778,57 +1815,18 @@
           auth.upsertMember(patch, (me && me.email) || "admin");
           renderMembers();
 
-          // ---------- Save success: dump stored values for verification ----------
-          var diagHtml = '';
-          var pwChanged = false;   // declared here so setTimeout closeDelay can read it
-          try {
-            // Re-read DIRECTLY from localStorage (not via helpers) to show
-            // the user the exact bytes being used on future sign-ins.
-            var rawStore = localStorage.getItem("mfva_members") || "[]";
-            var allStored;
-            try { allStored = JSON.parse(rawStore); } catch (ee) { allStored = []; }
-            var saved = null;
-            for (var di = 0; di < allStored.length; di++) {
-              if (String((allStored[di] || {}).email || "").toLowerCase() === email.toLowerCase()) {
-                saved = allStored[di]; break;
-              }
-            }
-            if (saved) {
-              var plaintextLen = (typeof password === "string" && password !== "") ? password.length : null;
-              var pwChanged = (plaintextLen !== null);
-              diagHtml =
-                '<div style="font-weight:600;margin-bottom:6px;">✅ Saved. Values written to localStorage:</div>' +
-                '<div style="margin:2px 0;"><span style="opacity:.7;">email:</span> <b style="color:#065f46;">' + escapeHtml(saved.email) + '</b></div>' +
-                '<div style="margin:2px 0;"><span style="opacity:.7;">displayName:</span> <b>' + escapeHtml(saved.displayName || "") + '</b> &nbsp;·&nbsp; <span style="opacity:.7;">callsign:</span> <b>' + escapeHtml(saved.callsign || "") + '</b></div>' +
-                '<div style="margin:2px 0;"><span style="opacity:.7;">role:</span> <b>' + escapeHtml(saved.role || "") + '</b> &nbsp;·&nbsp; <span style="opacity:.7;">status:</span> <b>' + escapeHtml(saved.status || "") + '</b> &nbsp;·&nbsp; <span style="opacity:.7;">maxRankId:</span> <b>' + saved.maxRankId + '</b></div>' +
-                '<div style="margin:2px 0;"><span style="opacity:.7;">updatedBy:</span> <b style="color:#065f46;">' + escapeHtml(saved.updatedBy || "") + '</b> &nbsp;·&nbsp; <span style="opacity:.7;">updatedAt:</span> ' + escapeHtml(saved.updatedAt || "") + '</div>' +
-                (pwChanged ?
-                  ('<div style="margin:4px 0 2px;padding:8px 10px;background:#ecfdf5;border:1px solid #a7f3d0;border-radius:8px;">' +
-                    '<div style="margin-bottom:3px;"><span style="opacity:.85;">🔐 Password saved. Plaintext length <b>' + plaintextLen + '</b> chars. Stored hash (DJB2, irreversible):</span></div>' +
-                    '<div style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12.5px;letter-spacing:.03em;word-break:break-all;color:#083344;">' + escapeHtml(saved.password || "(EMPTY)") + '</div>' +
-                    '<div style="margin-top:4px;opacity:.85;">📒 After signing out, you must use this <b>new password</b> to log in; the default ashy********. will be locked out.</div>' +
-                  '</div>')
-                  :
-                  ('<div style="margin-top:2px;opacity:.86;">Password field was left blank, so the <b>existing password hash is kept unchanged</b>.</div>')
-                );
-            } else {
-              diagHtml = '<div style="color:#b91c1c;">⚠ Saved but could not find ' + escapeHtml(email) + ' in localStorage. Please refresh and try again.</div>';
-            }
-          } catch (de) {
-            diagHtml = '<div>Saved, but an error occurred reading storage diagnostics: ' + escapeHtml((de && de.message) || String(de)) + '</div>';
-          }
+          // Simple success message, no sensitive data exposed
+          var diagHtml = '<div style="font-weight:600;color:#065f46;">Member saved successfully.</div>';
           showModalFlash("Member saved successfully.", false);
           showDiagnostic(diagHtml, false);
-          // Keep open longer so you can read the evidence, then auto-close.
-          var diagPwChanged = (typeof pwChanged === "boolean") ? pwChanged : false;
-          setTimeout(closeModal, diagPwChanged ? 1900 : 800);
+          setTimeout(closeModal, 1200);
         } catch (e) {
           var msg = (e && e.message) || "Failed to save member.";
           if (msg === "ADMIN_REQUIRED") msg = "You must be an admin to make this change.";
           else if (msg === "MEMBER_EMAIL_REQUIRED") msg = "Email is required.";
           else if (msg === "CANNOT_REMOVE_ADMIN") msg = "The seeded admin account cannot be removed or disabled while it's the only admin.";
           showModalFlash(msg, true);
-          showDiagnostic('<div style="font-weight:600;margin-bottom:4px;">❌ Save failed</div><div style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12.5px;">' + escapeHtml(msg) + '</div><div style="margin-top:4px;opacity:.85;">(Password was not written to localStorage)</div>', true);
+          showDiagnostic('<div style="font-weight:600;color:#991b1b;">' + escapeHtml(msg) + '</div>', true);
         }
       });
 
@@ -2050,6 +2048,172 @@
       panel.style.display = "";
       renderPIREPs();
     })();
+
+    /* ==============================================================
+       SELF-SERVICE: Member self-management (visible to ALL members)
+       - Members can leave MFVA
+       - Admins (non-CEO) can resign admin role
+       - CEO can transfer role to another member
+       ============================================================== */
+    (function () {
+      var me = (typeof currentUser === "function") ? currentUser() : null;
+      if (!me) return;
+
+      var isCEO = auth.isCEO ? auth.isCEO() : false;
+      // Check if CEO: seed email
+      var isCEOEmail = function () {
+        var emails = ["3689442439@qq.com", "G6082@outlook.com"];
+        var myEmail = (me && me.email) ? String(me.email).toLowerCase() : "";
+        return emails.some(function (e) { return myEmail === e.toLowerCase(); });
+      };
+      isCEO = isCEOEmail();
+      var currentIsAdmin = !!(me && me.role === "admin");
+      var myEmail = (me && me.email) ? me.email : "";
+
+      var container = document.createElement("section");
+      container.className = "card mm-section";
+      container.id = "selfServicePanel";
+      container.style.cssText = "grid-column: 1 / -1;";
+
+      var html = '<div class="mm-head">' +
+        '<h2 style="text-transform:none; font-size:22px; letter-spacing:-.01em; color:var(--ink);">' +
+          '<span style="display:inline-flex; align-items:center; gap:10px;">' +
+            '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="color:#4b5563;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>' +
+            'My Account' +
+          '</span>' +
+        '</h2>' +
+      '</div>' +
+      '<div style="display:flex; flex-wrap:wrap; gap:10px; margin-top:12px;">';
+
+      // --- Member Leave (all members) ---
+      html += '<div style="flex:1 1 280px; min-width:280px; padding:14px 16px; border:1px solid #e5e7eb; border-radius:14px; background:#f9fafb;">' +
+        '<div style="font-weight:700; color:#111827; margin-bottom:6px;">Leave MFVA</div>' +
+        '<div style="font-size:13px; color:#4b5563; line-height:1.5; margin-bottom:10px;">Permanently remove your account from the virtual airline. This cannot be undone.</div>' +
+        '<button type="button" class="mm-btn mm-btn--danger" id="btnMemberLeave">Leave MFVA</button>' +
+      '</div>';
+
+      // --- Admin Resign (non-CEO admins) ---
+      if (currentIsAdmin && !isCEO) {
+        html += '<div style="flex:1 1 280px; min-width:280px; padding:14px 16px; border:1px solid #e5e7eb; border-radius:14px; background:#f0f9ff;">' +
+          '<div style="font-weight:700; color:#111827; margin-bottom:6px;">Resign Admin Role</div>' +
+          '<div style="font-size:13px; color:#4b5563; line-height:1.5; margin-bottom:10px;">Step down from admin to become a regular pilot. You will lose member management access.</div>' +
+          '<button type="button" class="mm-btn" id="btnResignAdmin" style="background:#0369a1; color:#fff; border-color:#0369a1;">Resign as Admin</button>' +
+        '</div>';
+      }
+
+      // --- CEO Transfer ---
+      if (isCEO) {
+        html += '<div style="flex:1 1 280px; min-width:280px; padding:14px 16px; border:1px solid #f59e0b; border-radius:14px; background:#fffbeb;">' +
+          '<div style="font-weight:700; color:#92400e; margin-bottom:6px;">Transfer CEO Role</div>' +
+          '<div style="font-size:13px; color:#78350f; line-height:1.5; margin-bottom:10px;">Transfer your CEO privileges to another member. You will become a regular pilot after transfer.</div>' +
+          '<button type="button" class="mm-btn" id="btnTransferCEO" style="background:#d97706; color:#fff; border-color:#d97706;">Transfer CEO Role</button>' +
+        '</div>';
+      }
+
+      html += '</div>';
+      container.innerHTML = html;
+
+      // Insert before PIREP panel or at the end
+      var pirepPanel = document.getElementById("pirepMgmt");
+      if (pirepPanel && pirepPanel.parentNode) {
+        pirepPanel.parentNode.insertBefore(container, pirepPanel.nextSibling);
+      } else {
+        var mmSection = document.getElementById("memberMgmt");
+        if (mmSection && mmSection.parentNode) {
+          mmSection.parentNode.insertBefore(container, mmSection.nextSibling);
+        }
+      }
+
+      // --- Bind member leave ---
+      var btnLeave = document.getElementById("btnMemberLeave");
+      if (btnLeave) {
+        btnLeave.addEventListener("click", function () {
+          var msg = "Are you sure you want to leave MFVA?\n\nYour account (" + (me.displayName || me.email) + ") will be permanently removed.";
+          if (!confirm(msg)) return;
+          var msg2 = "Type \"LEAVE\" to confirm:";
+          var input = prompt(msg2, "");
+          if (input === null) return;
+          if (String(input).trim().toUpperCase() !== "LEAVE") {
+            alert("Confirmation must be exactly LEAVE.");
+            return;
+          }
+          try {
+            var r = auth.memberLeave();
+            if (r && r.ok) {
+              alert("You have left MFVA. Redirecting to homepage...");
+              window.location.href = "index.html";
+            }
+          } catch (e) {
+            var errMsg = (e && e.message) || String(e);
+            if (errMsg === "CEO_MUST_TRANSFER") errMsg = "As CEO, you must transfer your role to another member first.";
+            else if (errMsg === "LAST_ADMIN_CANNOT_LEAVE") errMsg = "You are the last admin. Promote another member to admin first or transfer CEO.";
+            alert("Failed: " + errMsg);
+          }
+        });
+      }
+
+      // --- Bind admin resign ---
+      var btnResign = document.getElementById("btnResignAdmin");
+      if (btnResign) {
+        btnResign.addEventListener("click", function () {
+          var msg = "Resign your admin role?\n\nYou will become a regular pilot and lose member management access.";
+          if (!confirm(msg)) return;
+          try {
+            var r = auth.resignAsAdmin();
+            if (r && r.ok) {
+              alert("You have resigned as admin. Refreshing...");
+              location.reload();
+            }
+          } catch (e) {
+            var errMsg = (e && e.message) || String(e);
+            if (errMsg === "LAST_ADMIN_CANNOT_RESIGN") errMsg = "You are the last admin. Promote another member to admin first.";
+            alert("Failed: " + errMsg);
+          }
+        });
+      }
+
+      // --- Bind CEO transfer ---
+      var btnTransfer = document.getElementById("btnTransferCEO");
+      if (btnTransfer) {
+        btnTransfer.addEventListener("click", function () {
+          // Get list of members to choose from
+          var members;
+          try { members = auth.listMembers(); } catch (e) { alert("Cannot load members: " + e.message); return; }
+          if (!members || members.length === 0) { alert("No members found. Add a member first."); return; }
+
+          // Build selection dialog
+          var options = members.map(function (m) {
+            var roleTag = m.role === "admin" ? " [Admin]" : "";
+            return m.email + roleTag + (m.displayName ? " (" + m.displayName + ")" : "");
+          });
+
+          var choice = prompt(
+            "Transfer CEO role to which member?\n\n" +
+            "Enter the email address of the new CEO.\n\n" +
+            "Available members:\n" + options.join("\n"),
+            ""
+          );
+          if (!choice) return;
+          choice = String(choice).trim();
+
+          if (!confirm("Transfer CEO to " + choice + "?\n\nYou will be downgraded to pilot. This cannot be undone through the UI.")) return;
+
+          try {
+            var r = auth.transferCEO(choice);
+            if (r && r.ok) {
+              alert("CEO role transferred to " + (r.newCEO ? r.newCEO.email : choice) + ".\nYou are now a regular pilot. Redirecting...");
+              window.location.href = "index.html";
+            }
+          } catch (e) {
+            var errMsg = (e && e.message) || String(e);
+            if (errMsg === "MEMBER_NOT_FOUND") errMsg = "Member not found. Check the email address.";
+            else if (errMsg === "CANNOT_TRANSFER_TO_SELF") errMsg = "You cannot transfer to yourself.";
+            alert("Failed: " + errMsg);
+          }
+        });
+      }
+    })();
+
     })();
   </script>
 </body>
