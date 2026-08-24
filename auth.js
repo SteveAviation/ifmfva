@@ -3,10 +3,12 @@
    --------------------------------------------------------------------------
    Replaces the previous "any email/password signs in" rule with:
 
-     1. SEED ADMIN (can never be fully removed; can be demoted if a second
-        admin exists).
+     1. SEED ADMIN / CEO (can never be fully removed; can be demoted if a
+        second admin exists).
         - email:    3689442439@qq.com
-        - password: ashy********.
+        - password: NONE on first login (passwordless). The CEO sets their
+                    own password on first sign-in via set-password.html.
+                    After that, the password is required for every login.
         - role:     admin
 
      2. MEMBERS can only sign in IF an admin has first added their email to
@@ -53,14 +55,17 @@
     { id: 7, name: "Fleet Captain",           label: "Fleet CAPT" }
   ];
 
-  // NOTE: "ashy********." below is ashy + 8 asterisks + 1 dot = 13 chars total,
-  // matching the exact password the CEO types into the login form.
+  // The CEO (3689442439@qq.com) has NO default password. The first login is
+  // passwordless; the CEO sets their own password on first sign-in via
+  // set-password.html. passwordSet===false marks "not yet set".
+  // The IFC admin keeps a fixed default password.
   var ADMIN_PASSWORD = "ashy********.";
 
   var SEED_ADMINS = [
     {
       email: "3689442439@qq.com",
-      password: ADMIN_PASSWORD,
+      password: "",              // no default password — first login is passwordless
+      passwordSet: false,        // CEO must set a password on first login
       role: "admin",
       maxRankId: 7,
       canFilePirep: true,
@@ -438,6 +443,15 @@
     if (isAnySeedEmail(row.email)) {
       var seedDef = findSeedAdminByEmail(row.email);
       if (seedDef) {
+        // Seed admin with passwordless first login (CEO): no password set yet
+        // → accept any input (including empty) so the CEO can sign in once
+        // without a password, then set their own via set-password.html.
+        // A row that already has a custom password (updatedBy set, e.g. from
+        // a prior changePassword) is treated as "already set" and NOT passwordless.
+        if (seedDef.passwordSet === false && row.passwordSet !== true &&
+            !(row.updatedBy && String(row.updatedBy).trim())) {
+          return true;
+        }
         var edited = !!(row.updatedBy && String(row.updatedBy).trim() !== "");
         var stillDefault = (row.password === simpleHash(seedDef.password));
         if (!edited && stillDefault) {
@@ -528,7 +542,12 @@
       return { ok: false, code: "EMAIL_INVALID", message: "Please enter a valid email address." };
     }
     if (password == null || String(password) === "") {
-      return { ok: false, code: "PASSWORD_REQUIRED", message: "Password is required." };
+      // The CEO's first login is passwordless (password not yet set).
+      // For everyone else — including the CEO after they've set a password —
+      // a password is required.
+      if (!needsPasswordSetup(e)) {
+        return { ok: false, code: "PASSWORD_REQUIRED", message: "Password is required." };
+      }
     }
 
     // ====================================================================
@@ -640,7 +659,15 @@
 
     try { saveMembers(list); } catch (eSave) { /* swallow — session is enough */ }
     startSession(row);
-    return { ok: true, user: publicMember(row) };
+    // CEO first login: signal that the CEO must set a password before
+    // proceeding to the crew center.
+    var mustSetPw = false;
+    var seedDefFinal = findSeedAdminByEmail(e);
+    if (seedDefFinal && seedDefFinal.passwordSet === false && row.passwordSet !== true &&
+        !(row.updatedBy && String(row.updatedBy).trim())) {
+      mustSetPw = true;
+    }
+    return { ok: true, user: publicMember(row), mustSetPassword: mustSetPw };
   }
 
   // ------------------------------------------------------------------
@@ -877,6 +904,7 @@
   function _publicFields() {
     return ["email","role","displayName","callsign","status","maxRankId",
             "allowedAircraft","canFilePirep","canUseRoutesDB","allowAnyPassword",
+            "passwordSet",
             "memberSince","createdAt","updatedAt","lastLoginAt",
             "ifc","reviewNote","applyRequestedAt","reviewedAt","reviewedBy"];
   }
@@ -1214,6 +1242,53 @@
     row.updatedBy = normEmail(row.email);
     saveMembers(list);
     return { ok: true };
+  }
+
+  /**
+   * First-login password setup for seed admins that start passwordless (CEO).
+   * No current password required — only allowed while passwordSet is still
+   * false. After this runs, every subsequent login requires the new password.
+   */
+  function setInitialPassword(newPassword) {
+    var me = currentUser();
+    if (!me) throw new Error("NOT_SIGNED_IN");
+    var seedDef = findSeedAdminByEmail(me.email);
+    if (!seedDef || seedDef.passwordSet !== false) {
+      throw new Error("NOT_ALLOWED");
+    }
+    var list = getMembers();
+    var row = null;
+    for (var i = 0; i < list.length; i++) {
+      if (normEmail(list[i].email) === normEmail(me.email)) { row = list[i]; break; }
+    }
+    if (!row) throw new Error("NOT_FOUND");
+    if (row.passwordSet === true) throw new Error("ALREADY_SET");
+    var np = String(newPassword || "");
+    if (np.length < 4) throw new Error("PASSWORD_TOO_SHORT");
+    row.password = simpleHash(np);
+    row.passwordSet = true;
+    row.allowAnyPassword = false;
+    row.updatedAt = nowISO();
+    row.updatedBy = normEmail(row.email);
+    saveMembers(list);
+    return { ok: true };
+  }
+
+  /**
+   * Returns true when the given email is a seed admin whose password has not
+   * been set yet (i.e. the CEO's first, passwordless login is still pending).
+   * Used by login.html to relax the password field.
+   */
+  function needsPasswordSetup(email) {
+    var e = normEmail(email);
+    var seedDef = findSeedAdminByEmail(e);
+    if (!seedDef || seedDef.passwordSet !== false) return false;
+    var f = findMemberByEmail(e);
+    if (!f || !f.member) return true; // no row yet → first login is passwordless
+    var m = f.member;
+    if (m.passwordSet === true) return false;
+    if (m.updatedBy && String(m.updatedBy).trim()) return false; // already changed
+    return true;
   }
 
   function setMemberRank(email, maxRankId) {
@@ -1750,6 +1825,8 @@
     resignAsAdmin: resignAsAdmin,
     memberLeave: memberLeave,
     changePassword: changePassword,
+    setInitialPassword: setInitialPassword,
+    needsPasswordSetup: needsPasswordSetup,
 
     // Application review (admin → approve / reject pending pilots)
     approveMember: approveMember,

@@ -780,7 +780,7 @@
     </div>
   </div>
 
-  <script src="auth.js?v=20260823-passwordfix"></script>
+  <script src="auth.js?v=20260824-ceopasswordless"></script>
   <script>
     (function () {
       "use strict";
@@ -817,6 +817,16 @@
           }
           // Continue showing sign out etc.
         }
+      })();
+
+      // CEO first-login guard: must set a password before using the site.
+      (function ceoPasswordGate() {
+        try {
+          var u = auth.currentUser();
+          if (u && typeof auth.needsPasswordSetup === "function" && auth.needsPasswordSetup(u.email)) {
+            window.location.replace("set-password.html");
+          }
+        } catch (e) { /* ignore */ }
       })();
 
       var grants = auth.grantsFor();

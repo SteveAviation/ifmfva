@@ -348,7 +348,7 @@
 
       <p class="auth-card__eyebrow">MFVA Crew Center</p>
       <h1 id="sign-in-title" class="auth-card__title">Welcome Back</h1>
-      <p class="auth-card__subtitle">Sign in with any email and any password — no invite needed.</p>
+      <p class="auth-card__subtitle">Sign in with your registered email and password.</p>
 
       <form id="signInForm" novalidate>
         <div class="field">
@@ -378,7 +378,6 @@
               type="password"
               autocomplete="current-password"
               placeholder="Your password"
-              required
               style="padding-right:58px;"
             />
             <button type="button" class="field__toggle" id="togglePw" aria-label="Show password">
@@ -388,7 +387,7 @@
               </svg>
             </button>
           </div>
-          <div class="ff-help" id="pwHelp">Type any password you used during Apply — or anything, really.</div>
+          <div class="ff-help" id="pwHelp">Enter the password you chose. The CEO's first login needs no password.</div>
         </div>
 
         <button type="submit" class="btn-primary">Sign In</button>
@@ -405,7 +404,7 @@
     </p>
   </main>
 
-  <script src="auth.js?v=20260823-passwordfix"></script>
+  <script src="auth.js?v=20260824-ceopasswordless"></script>
   <script>
     (function () {
       "use strict";
@@ -447,7 +446,13 @@
       // ---------- If already signed in, skip straight to crew center ----------
       try {
         if (window.MFVAauth && MFVAauth.isSignedIn()) {
-          window.location.replace("crew.html");
+          // CEO who hasn't set a password yet → go straight to set-password.
+          var cu = MFVAauth.currentUser();
+          if (cu && typeof MFVAauth.needsPasswordSetup === "function" && MFVAauth.needsPasswordSetup(cu.email)) {
+            window.location.replace("set-password.html");
+          } else {
+            window.location.replace("crew.html");
+          }
           return;
         }
       } catch (e) {}
@@ -465,6 +470,35 @@
           } catch (e) {}
         }
       })();
+
+      // ---------- CEO first-login hint (passwordless) ----------
+      // When the typed email is the CEO's and the password hasn't been set yet,
+      // tell the user they can sign in without a password.
+      var pwHelp = $("pwHelp");
+      var pwField = pwInput ? pwInput.closest(".field") : null;
+      function refreshCeoHint() {
+        var hint = false;
+        try {
+          var e = normEmail(emailInput.value);
+          if (e && window.MFVAauth && typeof MFVAauth.needsPasswordSetup === "function") {
+            hint = MFVAauth.needsPasswordSetup(e);
+          }
+        } catch (err) { hint = false; }
+        if (pwHelp) {
+          pwHelp.innerHTML = hint
+            ? "First login as CEO — no password needed. You'll set one right after signing in."
+            : "Enter the password you chose. The CEO's first login needs no password.";
+        }
+        if (pwField) {
+          pwField.style.opacity = hint ? "0.55" : "";
+          if (pwInput) pwInput.placeholder = hint ? "(optional — leave blank)" : "Your password";
+        }
+      }
+      if (emailInput) {
+        emailInput.addEventListener("blur", refreshCeoHint);
+        emailInput.addEventListener("input", refreshCeoHint);
+      }
+      refreshCeoHint();
 
       // ---------- Show/hide password toggle ----------
       if (togglePw && pwInput) {
@@ -498,7 +532,6 @@
           var pw    = String(pwInput ? pwInput.value : "");
 
           if (!validEmail(email)) { showFlash("Please enter a valid email address.", true); emailInput.focus(); return; }
-          if (pw === "") { showFlash("Please enter any password (it doesn't have to match anything).", true); pwInput.focus(); return; }
 
           if (!window.MFVAauth) {
             showFlash("Authentication module failed to load. Please refresh the page.", true);
@@ -530,6 +563,14 @@
           }
 
           var name = (result && result.user && (result.user.displayName || result.user.callsign)) || "Pilot";
+
+          // CEO first login: passwordless → must set a password before entering.
+          if (result && result.mustSetPassword) {
+            showFlash("Welcome, " + name + "! Let's set your password first.", false);
+            setTimeout(function () { window.location.replace("set-password.html"); }, 600);
+            return;
+          }
+
           showFlash("Welcome back, " + name + "!", false);
           setTimeout(gotoCrewOrSaved, 350);
         });

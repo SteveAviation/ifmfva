@@ -1057,7 +1057,7 @@
     </div>
   </aside>
 
-  <script src="auth.js?v=20260823-passwordfix"></script>
+  <script src="auth.js?v=20260824-ceopasswordless"></script>
   <script>
     (function () {
       "use strict";
@@ -1077,6 +1077,17 @@
           try { sessionStorage.setItem("mfva_redirect_after_login", "crew.html"); } catch (e) {}
           window.location.replace("login.html");
         }
+      })();
+
+      // CEO first-login guard: if the signed-in CEO hasn't set a password yet,
+      // send them to set-password.html before they can use the Crew Center.
+      (function ceoPasswordGate() {
+        try {
+          var u = auth.currentUser();
+          if (u && typeof auth.needsPasswordSetup === "function" && auth.needsPasswordSetup(u.email)) {
+            window.location.replace("set-password.html");
+          }
+        } catch (e) { /* ignore */ }
       })();
 
       var grants = auth.grantsFor();
