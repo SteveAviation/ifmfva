@@ -872,6 +872,10 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
           Add Member
         </button>
+        <button type="button" class="mm-btn" id="btnSyncCloud" style="margin-left:8px; background:#059669; color:#fff; border-color:#059669;" title="Pull latest applications from cloud">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><polyline points="21 3 21 9 15 9"/></svg>
+          Sync
+        </button>
       </div>
 
       <div id="mmBody">
@@ -1057,7 +1061,8 @@
     </div>
   </aside>
 
-  <script src="auth.js?v=20260824-ceopasswordless"></script>
+  <script src="supabase-sync.js?v=1"></script>
+  <script src="auth.js?v=20260825-supabase"></script>
   <script>
     (function () {
       "use strict";
@@ -1089,6 +1094,18 @@
           }
         } catch (e) { /* ignore */ }
       })();
+
+      // ---------- Pull latest members from Supabase cloud ----------
+      // Fire-and-forget: refreshes localStorage from the cloud, then re-renders
+      // the member management table so the admin sees other people's applications.
+      try {
+        if (typeof auth.syncFromCloud === "function") {
+          auth.syncFromCloud().then(function () {
+            // Re-render member table after cloud data arrives
+            try { renderMembers(); } catch (e) {}
+          }).catch(function () {});
+        }
+      } catch (e) {}
 
       var grants = auth.grantsFor();
       var me = auth.currentUser();
@@ -2042,6 +2059,34 @@
       });
 
       renderMembers();
+
+      // ---------- Bind cloud sync button ----------
+      var btnSyncCloud = document.getElementById("btnSyncCloud");
+      if (btnSyncCloud) {
+        btnSyncCloud.addEventListener("click", function () {
+          var orig = btnSyncCloud.innerHTML;
+          btnSyncCloud.innerHTML = "Syncing…";
+          btnSyncCloud.disabled = true;
+          try {
+            if (typeof auth.syncFromCloud === "function") {
+              auth.syncFromCloud().then(function () {
+                renderMembers();
+                btnSyncCloud.innerHTML = orig;
+                btnSyncCloud.disabled = false;
+              }).catch(function () {
+                btnSyncCloud.innerHTML = orig;
+                btnSyncCloud.disabled = false;
+              });
+            } else {
+              btnSyncCloud.innerHTML = orig;
+              btnSyncCloud.disabled = false;
+            }
+          } catch (e) {
+            btnSyncCloud.innerHTML = orig;
+            btnSyncCloud.disabled = false;
+          }
+        });
+      }
 
     /* ==============================================================
        ADMIN : Submitted PIREPs review panel

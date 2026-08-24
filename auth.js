@@ -379,6 +379,118 @@
     storeSet(LS_MEMBERS, JSON.stringify(list));
   }
 
+  /* ------------------------------------------------------------------ *
+   *  Supabase cloud sync (fire-and-forget)                             *
+   *  Pushes member changes to Supabase so other devices can see them.  *
+   * ------------------------------------------------------------------ */
+  function cloudPush(row) {
+    try {
+      if (!row || !row.email) return;
+      if (typeof window === "undefined" || !window.MFVAsupabase) return;
+      if (!window.MFVAsupabase.isConfigured()) return;
+      window.MFVAsupabase.upsertMember(row).then(
+        function () { /* synced ok */ },
+        function (err) { /* swallow — local data still works */ if (typeof console !== "undefined") console.warn("[MFVA] Supabase push failed:", err && err.message); }
+      );
+    } catch (e) { /* never block local ops on cloud failure */ }
+  }
+
+  function cloudPushMany(rows) {
+    try {
+      if (!rows || rows.length === 0) return;
+      if (typeof window === "undefined" || !window.MFVAsupabase) return;
+      if (!window.MFVAsupabase.isConfigured()) return;
+      window.MFVAsupabase.upsertMany(rows).then(
+        function () { /* synced ok */ },
+        function (err) { if (typeof console !== "undefined") console.warn("[MFVA] Supabase batch push failed:", err && err.message); }
+      );
+    } catch (e) { /* never block */ }
+  }
+
+  function cloudRemove(email) {
+    try {
+      if (!email) return;
+      if (typeof window === "undefined" || !window.MFVAsupabase) return;
+      if (!window.MFVAsupabase.isConfigured()) return;
+      window.MFVAsupabase.deleteMember(email).then(
+        function () { /* deleted ok */ },
+        function (err) { if (typeof console !== "undefined") console.warn("[MFVA] Supabase delete failed:", err && err.message); }
+      );
+    } catch (e) { /* never block */ }
+  }
+
+  /**
+   * Pull all members from Supabase and merge into localStorage.
+   * Cloud records that are newer or missing locally replace local copies.
+   * Local-only records (e.g. seed admins) are preserved and pushed up.
+   * Returns a Promise that resolves to the merged list.
+   */
+  function syncFromCloud() {
+    if (typeof window === "undefined" || !window.MFVAsupabase) {
+      return Promise.resolve(getMembers());
+    }
+    if (!window.MFVAsupabase.isConfigured()) {
+      return Promise.resolve(getMembers());
+    }
+
+    return window.MFVAsupabase.fetchMembers().then(function (cloudList) {
+      var local = getMembers();
+      var localMap = {};
+      for (var i = 0; i < local.length; i++) {
+        localMap[normEmail(local[i].email)] = local[i];
+      }
+      var toPush = [];
+
+      for (var c = 0; c < cloudList.length; c++) {
+        var cloudMember = cloudList[c];
+        if (!cloudMember || !cloudMember.email) continue;
+        var ce = normEmail(cloudMember.email);
+        var localMember = localMap[ce];
+
+        if (!localMember) {
+          // Cloud-only member → add to local
+          local.push(cloudMember);
+          localMap[ce] = cloudMember;
+        } else {
+          // Both exist → take the one with the newer updatedAt
+          var localTs = localMember.updatedAt ? new Date(localMember.updatedAt).getTime() : 0;
+          var cloudTs = cloudMember.updatedAt ? new Date(cloudMember.updatedAt).getTime() : 0;
+          if (cloudTs > localTs) {
+            // Cloud is newer → replace local
+            for (var k = 0; k < local.length; k++) {
+              if (normEmail(local[k].email) === ce) { local[k] = cloudMember; break; }
+            }
+            localMap[ce] = cloudMember;
+          } else if (localTs > cloudTs) {
+            // Local is newer → will push local to cloud
+            toPush.push(localMember);
+          }
+        }
+      }
+
+      // Push any local-only or local-newer members to cloud
+      for (var key in localMap) {
+        var found = false;
+        for (var ci = 0; ci < cloudList.length; ci++) {
+          if (cloudList[ci] && normEmail(cloudList[ci].email) === key) { found = true; break; }
+        }
+        if (!found) toPush.push(localMap[key]);
+      }
+
+      // Ensure seed admins are always present locally (getMembers re-seeds)
+      saveMembers(local);
+      var reseeded = getMembers(); // this re-adds seed admins if missing
+
+      if (toPush.length > 0) {
+        cloudPushMany(toPush);
+      }
+      return reseeded;
+    }).catch(function (err) {
+      if (typeof console !== "undefined") console.warn("[MFVA] Supabase fetch failed:", err && err.message);
+      return getMembers();
+    });
+  }
+
   function findMemberByEmail(email) {
     var e = normEmail(email);
     if (!e) return null;
@@ -813,6 +925,7 @@
     if (!placed) list.push(row);
 
     saveMembers(list);
+    cloudPush(row);
     return { ok: true, user: publicMember(row), status: "pending" };
   }
 
@@ -853,6 +966,7 @@
     }
     list[idx] = row;
     saveMembers(list);
+    cloudPush(row);
     return { ok: true, user: publicMember(row) };
   }
 
@@ -885,6 +999,7 @@
     row.updatedAt = row.reviewedAt;
     list[idx] = row;
     saveMembers(list);
+    cloudPush(row);
     return { ok: true, user: publicMember(row) };
   }
 
@@ -1016,6 +1131,7 @@
 
     if (found) list[found.i] = row; else list.push(row);
     saveMembers(list);
+    cloudPush(row);
     return publicMember(row);
   }
 
@@ -1057,6 +1173,7 @@
 
     list.splice(target.i, 1);
     saveMembers(list);
+    cloudRemove(normEmail(email));
     return true;
   }
 
@@ -1115,6 +1232,7 @@
 
     list[newCEOIndex] = newCEOMember;
     saveMembers(list);
+    cloudPushMany([newCEOMember, list.filter(function(m){ return normEmail(m.email)===normEmail(caller.email); })[0]]);
 
     return { ok: true, newCEO: publicMember(newCEOMember) };
   }
@@ -1157,6 +1275,7 @@
       }
     }
     saveMembers(list);
+    cloudPush(list.filter(function(m){ return normEmail(m.email)===normEmail(caller.email); })[0]);
 
     // Update session
     var s = getSession();
@@ -1200,6 +1319,7 @@
     if (list.length === before) throw new Error("NOT_FOUND");
 
     saveMembers(list);
+    cloudRemove(normEmail(caller.email));
     endSession();
 
     return { ok: true };
@@ -1241,6 +1361,7 @@
     row.updatedAt = nowISO();
     row.updatedBy = normEmail(row.email);
     saveMembers(list);
+    cloudPush(row);
     return { ok: true };
   }
 
@@ -1271,6 +1392,7 @@
     row.updatedAt = nowISO();
     row.updatedBy = normEmail(row.email);
     saveMembers(list);
+    cloudPush(row);
     return { ok: true };
   }
 
@@ -1819,6 +1941,9 @@
     removeMember: removeMember,
     setMemberRank: setMemberRank,
     grantsFor: grantsFor,
+
+    // Supabase cloud sync
+    syncFromCloud: syncFromCloud,
 
     // Role management
     transferCEO: transferCEO,

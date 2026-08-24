@@ -404,7 +404,8 @@
     </p>
   </main>
 
-  <script src="auth.js?v=20260824-ceopasswordless"></script>
+  <script src="supabase-sync.js?v=1"></script>
+  <script src="auth.js?v=20260825-supabase"></script>
   <script>
     (function () {
       "use strict";
@@ -499,6 +500,15 @@
         emailInput.addEventListener("input", refreshCeoHint);
       }
       refreshCeoHint();
+
+      // ---------- Pull latest members from Supabase (so login checks against cloud data) ----------
+      try {
+        if (window.MFVAauth && typeof MFVAauth.syncFromCloud === "function") {
+          MFVAauth.syncFromCloud().then(function () {
+            refreshCeoHint(); // re-evaluate after cloud data arrives
+          }).catch(function () {});
+        }
+      } catch (e) {}
 
       // ---------- Show/hide password toggle ----------
       if (togglePw && pwInput) {
