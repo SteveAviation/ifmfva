@@ -1,11 +1,11 @@
 /* ==========================================================================
-   MFVA — Authentication & Membership (local-only)
+   MFVA — Authentication & Membership (Supabase Auth)
    --------------------------------------------------------------------------
    Replaces the previous "any email/password signs in" rule with:
 
      1. SEED ADMIN / CEO (can never be fully removed; can be demoted if a
         second admin exists).
-        - email:    3689442439@qq.com
+        - email:    demo-admin@example.com
         - password: NONE on first login (passwordless). The CEO sets their
                     own password on first sign-in via set-password.html.
                     After that, the password is required for every login.
@@ -55,55 +55,13 @@
     { id: 7, name: "Fleet Captain",           label: "Fleet CAPT" }
   ];
 
-  // The CEO (3689442439@qq.com) has NO default password. The first login is
-  // passwordless; the CEO sets their own password on first sign-in via
-  // set-password.html. passwordSet===false marks "not yet set".
-  // The IFC admin keeps a fixed default password.
-  var ADMIN_PASSWORD = "ashy********.";
+  // No hard-coded administrator accounts or default passwords.
+  // Roles must be assigned separately by a trusted administrator workflow.
+  var SEED_ADMINS = [];
+  var SEED_ADMIN = null;
 
-  var SEED_ADMINS = [
-    {
-      email: "3689442439@qq.com",
-      password: "",              // no default password — first login is passwordless
-      passwordSet: false,        // CEO must set a password on first login
-      role: "admin",
-      maxRankId: 7,
-      canFilePirep: true,
-      canUseRoutesDB: true,
-      status: "active",
-      displayName: "Admin / CEO",
-      createdBy: "seed",
-      createdAt: "seed",
-      memberSince: "2025-01-01",
-      callsign: "MFVA001"
-    },
-    {
-      email: "G6082@outlook.com",
-      password: ADMIN_PASSWORD,
-      role: "admin",
-      maxRankId: 7,
-      canFilePirep: true,
-      canUseRoutesDB: true,
-      status: "active",
-      displayName: "Admin / IFC",
-      createdBy: "seed",
-      createdAt: "seed",
-      memberSince: "2025-01-01",
-      callsign: "MFVA002"
-    }
-  ];
-
-  // Backwards-compat alias — anything that used SEED_ADMIN (e.g. QQ CEO) still works.
-  var SEED_ADMIN = SEED_ADMINS[0];
-
-  function findSeedAdminByEmail(email) {
-    var e = normEmail(email);
-    for (var i = 0; i < SEED_ADMINS.length; i++) {
-      if (normEmail(SEED_ADMINS[i].email) === e) return SEED_ADMINS[i];
-    }
-    return null;
-  }
-  function isAnySeedEmail(email) { return !!findSeedAdminByEmail(email); }
+  function findSeedAdminByEmail(email) { return null; }
+  function isAnySeedEmail(email) { return false; }
 
   /* ------------------------------------------------------------------ *
    *  Environment detection (HTTP vs file://) + capability probe       *
@@ -1511,7 +1469,7 @@
       var d2 = new Date(now.getTime() - 3 * 3600 * 1000);  // 3 hours ago
       list.push({
         id: pirepUid(),
-        pilotEmail: "3689442439@qq.com",
+        pilotEmail: "demo-admin@example.com",
         displayName: "Admin / CEO",
         callsign: "MFVA001",
         flightNumber: "MF8101",
@@ -1533,7 +1491,7 @@
       });
       list.push({
         id: pirepUid(),
-        pilotEmail: "G6082@outlook.com",
+        pilotEmail: "demo-pilot@example.com",
         displayName: "Admin / IFC",
         callsign: "MFVA002",
         flightNumber: "MF8502",
@@ -1753,12 +1711,28 @@
     }
     if (!password) return Promise.resolve({ ok: false, code: "PASSWORD_REQUIRED", message: "Password is required." });
     return supabaseAuthRequest("token?grant_type=password", { email: e, password: password }).then(function (authData) {
-      var member = findMemberByEmail(e);
-      if (!member || !member.member) {
-        return { ok: false, code: "NOT_AUTHORIZED", message: "Your application/member record was not found. Please apply first." };
+      var found = findMemberByEmail(e);
+      var row = found && found.member ? found.member : null;
+      if (!row) {
+        // Auth accounts are independent from airline membership applications.
+        // Create a basic, non-admin local profile; membership privileges remain gated.
+        row = {
+          email: e,
+          displayName: e.split("@")[0],
+          callsign: "",
+          role: "pilot",
+          status: "pending",
+          maxRankId: 1,
+          canFilePirep: false,
+          canUseRoutesDB: false,
+          createdAt: nowISO(),
+          memberSince: "",
+          createdBy: "supabase-auth"
+        };
+        var members = getMembers();
+        members.push(row);
+        saveMembers(members);
       }
-      var row = member.member;
-      if (row.status === "pending") return { ok: false, code: "PENDING_REVIEW", message: "Your application is pending admin approval." };
       if (row.status === "rejected") return { ok: false, code: "APPLICATION_REJECTED", message: row.reviewNote || "Your application was declined." };
       if (row.status === "disabled") return { ok: false, code: "DISABLED", message: "This account has been disabled. Contact staff." };
       row.lastLoginAt = nowISO();
@@ -1769,7 +1743,8 @@
       return { ok: true, user: publicMember(row), mustSetPassword: false };
     }).catch(function (err) {
       var msg = (err && err.message) || "Unable to sign in.";
-      return { ok: false, code: "BAD_PASSWORD", message: /invalid login credentials/i.test(msg) ? "Incorrect email or password." : msg };
+      var code = /invalid login credentials/i.test(msg) ? "BAD_PASSWORD" : "AUTH_ERROR";
+      return { ok: false, code: code, message: /invalid login credentials/i.test(msg) ? "Supabase rejected this email/password. Check the account and password in Supabase Authentication → Users." : msg };
     });
   }
   function signUpWithSupabase(email, password) {
