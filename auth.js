@@ -1619,6 +1619,20 @@
     var list = readPireps();
     list.unshift(row);
     writePireps(list);
+
+    // Persist the submitted PIREP to Supabase as well. Local storage remains
+    // the immediate fallback so the current UI stays synchronous.
+    try {
+      if (typeof window !== "undefined" && window.MFVAsupabase &&
+          window.MFVAsupabase.isConfigured && window.MFVAsupabase.isConfigured() &&
+          window.MFVAsupabase.upsertPirep) {
+        window.MFVAsupabase.upsertPirep(row).catch(function (err) {
+          if (typeof console !== "undefined") console.warn("[MFVA] PIREP cloud save failed:", err && err.message);
+        });
+      }
+    } catch (cloudErr) {
+      if (typeof console !== "undefined") console.warn("[MFVA] PIREP cloud save error:", cloudErr);
+    }
     return Object.assign({}, row);
   }
 
@@ -1713,6 +1727,53 @@
       pendingCount: pendingCount,
       rejectedCount: rejectedCount
     };
+  }
+
+
+  // Real Supabase Auth bridge. Password verification is performed by Supabase,
+  // while the existing MFVA member record continues to control approval/roles.
+  var AUTH_SUPABASE_URL = "https://mexxmqnectzqkaevluwz.supabase.co";
+  var AUTH_SUPABASE_KEY = "sb_publishable_HtQ685W0ZA5-TVX4m1CXuA_YHkqMHNz";
+  function supabaseAuthRequest(path, body) {
+    return fetch(AUTH_SUPABASE_URL + "/auth/v1/" + path, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "apikey": AUTH_SUPABASE_KEY },
+      body: JSON.stringify(body)
+    }).then(function (r) {
+      return r.json().catch(function () { return {}; }).then(function (data) {
+        if (!r.ok) throw new Error(data.msg || data.message || data.error_description || data.error || "Authentication failed.");
+        return data;
+      });
+    });
+  }
+  function signInWithSupabase(email, password) {
+    var e = normEmail(email);
+    if (!e || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)) {
+      return Promise.resolve({ ok: false, code: "EMAIL_INVALID", message: "Please enter a valid email address." });
+    }
+    if (!password) return Promise.resolve({ ok: false, code: "PASSWORD_REQUIRED", message: "Password is required." });
+    return supabaseAuthRequest("token?grant_type=password", { email: e, password: password }).then(function (authData) {
+      var member = findMemberByEmail(e);
+      if (!member || !member.member) {
+        return { ok: false, code: "NOT_AUTHORIZED", message: "Your application/member record was not found. Please apply first." };
+      }
+      var row = member.member;
+      if (row.status === "pending") return { ok: false, code: "PENDING_REVIEW", message: "Your application is pending admin approval." };
+      if (row.status === "rejected") return { ok: false, code: "APPLICATION_REJECTED", message: row.reviewNote || "Your application was declined." };
+      if (row.status === "disabled") return { ok: false, code: "DISABLED", message: "This account has been disabled. Contact staff." };
+      row.lastLoginAt = nowISO();
+      row.updatedAt = nowISO();
+      saveMembers(getMembers());
+      startSession(row);
+      try { sessionStorage.setItem("mfva_supabase_access_token", authData.access_token || ""); } catch (e2) {}
+      return { ok: true, user: publicMember(row), mustSetPassword: false };
+    }).catch(function (err) {
+      var msg = (err && err.message) || "Unable to sign in.";
+      return { ok: false, code: "BAD_PASSWORD", message: /invalid login credentials/i.test(msg) ? "Incorrect email or password." : msg };
+    });
+  }
+  function signUpWithSupabase(email, password) {
+    return supabaseAuthRequest("signup", { email: normEmail(email), password: password });
   }
 
   /* ------------------------------------------------------------------ *
@@ -1906,12 +1967,61 @@
     return { ok: true, user: publicMember(member) };
   }
 
+
+  // Real Supabase Auth bridge. Password verification is performed by Supabase,
+  // while the existing MFVA member record continues to control approval/roles.
+  var AUTH_SUPABASE_URL = "https://mexxmqnectzqkaevluwz.supabase.co";
+  var AUTH_SUPABASE_KEY = "sb_publishable_HtQ685W0ZA5-TVX4m1CXuA_YHkqMHNz";
+  function supabaseAuthRequest(path, body) {
+    return fetch(AUTH_SUPABASE_URL + "/auth/v1/" + path, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "apikey": AUTH_SUPABASE_KEY },
+      body: JSON.stringify(body)
+    }).then(function (r) {
+      return r.json().catch(function () { return {}; }).then(function (data) {
+        if (!r.ok) throw new Error(data.msg || data.message || data.error_description || data.error || "Authentication failed.");
+        return data;
+      });
+    });
+  }
+  function signInWithSupabase(email, password) {
+    var e = normEmail(email);
+    if (!e || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)) {
+      return Promise.resolve({ ok: false, code: "EMAIL_INVALID", message: "Please enter a valid email address." });
+    }
+    if (!password) return Promise.resolve({ ok: false, code: "PASSWORD_REQUIRED", message: "Password is required." });
+    return supabaseAuthRequest("token?grant_type=password", { email: e, password: password }).then(function (authData) {
+      var member = findMemberByEmail(e);
+      if (!member || !member.member) {
+        return { ok: false, code: "NOT_AUTHORIZED", message: "Your application/member record was not found. Please apply first." };
+      }
+      var row = member.member;
+      if (row.status === "pending") return { ok: false, code: "PENDING_REVIEW", message: "Your application is pending admin approval." };
+      if (row.status === "rejected") return { ok: false, code: "APPLICATION_REJECTED", message: row.reviewNote || "Your application was declined." };
+      if (row.status === "disabled") return { ok: false, code: "DISABLED", message: "This account has been disabled. Contact staff." };
+      row.lastLoginAt = nowISO();
+      row.updatedAt = nowISO();
+      saveMembers(getMembers());
+      startSession(row);
+      try { sessionStorage.setItem("mfva_supabase_access_token", authData.access_token || ""); } catch (e2) {}
+      return { ok: true, user: publicMember(row), mustSetPassword: false };
+    }).catch(function (err) {
+      var msg = (err && err.message) || "Unable to sign in.";
+      return { ok: false, code: "BAD_PASSWORD", message: /invalid login credentials/i.test(msg) ? "Incorrect email or password." : msg };
+    });
+  }
+  function signUpWithSupabase(email, password) {
+    return supabaseAuthRequest("signup", { email: normEmail(email), password: password });
+  }
+
   /* ------------------------------------------------------------------ *
    *  Public API                                                        *
    * ------------------------------------------------------------------ */
   var api = {
     // Password auth (registered-email-only, any non-empty password accepted)
     signIn: signIn,
+    signInWithSupabase: signInWithSupabase,
+    signUpWithSupabase: signUpWithSupabase,
     signOut: signOut,
 
     // Self-service registration (register.html Apply form)

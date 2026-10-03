@@ -405,7 +405,7 @@
   </main>
 
   <script src="supabase-sync.js?v=1"></script>
-  <script src="auth.js?v=20260825-supabase"></script>
+  <script src="auth.js?v=20261003-supabase-auth"></script>
   <script>
     (function () {
       "use strict";
@@ -534,7 +534,7 @@
 
       // ---------- Submit → MFVAauth.signIn (registered email + password required) ----------
       if (form) {
-        form.addEventListener("submit", function (e) {
+        form.addEventListener("submit", async function (e) {
           e.preventDefault();
           hideFlash();
 
@@ -551,7 +551,7 @@
           showFlash("Signing you in…", false);
           var result;
           try {
-            result = MFVAauth.signIn(email, pw);
+            result = await MFVAauth.signInWithSupabase(email, pw);
           } catch (err) {
             result = { ok: false, message: (err && err.message) || "Sign in failed." };
           }

@@ -37,3 +37,19 @@ create policy "Members are deletable by all"
 -- Done! You can verify by running:
 --   select email, data->>'displayName' as name, data->>'status' as status
 --   from members order by updated_at desc;
+
+
+-- 6. PIREP storage (keeps the existing permissive policy requested by the owner)
+create table if not exists pireps (
+  id text primary key,
+  data jsonb not null,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+alter table pireps enable row level security;
+drop policy if exists "PIREP access for all" on pireps;
+create policy "PIREP access for all"
+  on pireps for all
+  using (true)
+  with check (true);

@@ -399,7 +399,7 @@
   </div>
 
   <script src="supabase-sync.js?v=1"></script>
-  <script src="auth.js?v=20260825-supabase"></script>
+  <script src="auth.js?v=20261003-supabase-auth"></script>
   <script>
     (function () {
       "use strict";
@@ -425,7 +425,7 @@
       }
 
       if (form) {
-        form.addEventListener("submit", function (e) {
+        form.addEventListener("submit", async function (e) {
           e.preventDefault();
 
           var name     = document.getElementById("name").value.trim();
@@ -464,6 +464,9 @@
 
           var result;
           try {
+            // Create a real Supabase Auth account first; the member application
+            // remains pending until an admin approves it.
+            await MFVAauth.signUpWithSupabase(email, pw);
             result = MFVAauth.registerMember({
               email: email,
               displayName: name,

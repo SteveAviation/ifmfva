@@ -136,13 +136,47 @@
     });
   }
 
+  // ---- PIREP cloud storage -----------------------------------------
+  function fetchPireps() {
+    if (!isConfigured()) return Promise.reject(new Error("NOT_CONFIGURED"));
+    return fetch(REST_BASE + "/pireps?select=data&order=created_at.desc", {
+      method: "GET", headers: headers()
+    }).then(function (resp) {
+      if (!resp.ok) throw new Error("SB_PIREP_FETCH_" + resp.status);
+      return resp.json();
+    }).then(function (rows) {
+      return (Array.isArray(rows) ? rows : []).map(function (r) { return r && r.data; }).filter(Boolean);
+    });
+  }
+
+  function upsertPirep(pirep) {
+    if (!isConfigured()) return Promise.reject(new Error("NOT_CONFIGURED"));
+    if (!pirep || !pirep.id) return Promise.reject(new Error("NO_PIREP_ID"));
+    return fetch(REST_BASE + "/pireps?on_conflict=id", {
+      method: "POST",
+      headers: headers({ "Prefer": "resolution=merge-duplicates,return=minimal" }),
+      body: JSON.stringify({ id: pirep.id, data: pirep, created_at: pirep.createdAt || new Date().toISOString(), updated_at: new Date().toISOString() })
+    }).then(function (resp) {
+      if (!resp.ok && resp.status !== 201) throw new Error("SB_PIREP_UPSERT_" + resp.status);
+      return { ok: true };
+    });
+  }
+
+  function upsertPireps(pireps) {
+    if (!Array.isArray(pireps) || !pireps.length) return Promise.resolve({ ok: true });
+    return Promise.all(pireps.map(upsertPirep)).then(function () { return { ok: true }; });
+  }
+
   // ---- Export ----
   root.MFVAsupabase = {
     isConfigured: isConfigured,
     fetchMembers: fetchMembers,
     upsertMember: upsertMember,
     upsertMany: upsertMany,
-    deleteMember: deleteMember
+    deleteMember: deleteMember,
+    fetchPireps: fetchPireps,
+    upsertPirep: upsertPirep,
+    upsertPireps: upsertPireps
   };
 
 })(typeof window !== "undefined" ? window : this);
