@@ -1732,8 +1732,8 @@
 
   // Real Supabase Auth bridge. Password verification is performed by Supabase,
   // while the existing MFVA member record continues to control approval/roles.
-  var AUTH_SUPABASE_URL = "https://mexxmqnectzqkaevluwz.supabase.co";
-  var AUTH_SUPABASE_KEY = "sb_publishable_HtQ685W0ZA5-TVX4m1CXuA_YHkqMHNz";
+  var AUTH_SUPABASE_URL = "https://jomvbcpxtmsvexepqlbn.supabase.co";
+  var AUTH_SUPABASE_KEY = "sb_publishable_Gkd4gOBvG7Y4Ko9HHZZr4Q_fHwbJ16h";
   function supabaseAuthRequest(path, body) {
     return fetch(AUTH_SUPABASE_URL + "/auth/v1/" + path, {
       method: "POST",
@@ -1970,8 +1970,8 @@
 
   // Real Supabase Auth bridge. Password verification is performed by Supabase,
   // while the existing MFVA member record continues to control approval/roles.
-  var AUTH_SUPABASE_URL = "https://mexxmqnectzqkaevluwz.supabase.co";
-  var AUTH_SUPABASE_KEY = "sb_publishable_HtQ685W0ZA5-TVX4m1CXuA_YHkqMHNz";
+  var AUTH_SUPABASE_URL = "https://jomvbcpxtmsvexepqlbn.supabase.co";
+  var AUTH_SUPABASE_KEY = "sb_publishable_Gkd4gOBvG7Y4Ko9HHZZr4Q_fHwbJ16h";
   function supabaseAuthRequest(path, body) {
     return fetch(AUTH_SUPABASE_URL + "/auth/v1/" + path, {
       method: "POST",

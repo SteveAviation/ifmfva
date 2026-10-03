@@ -20,8 +20,8 @@
   // ============================================================
   //  CONFIG — replace with your Supabase project values
   // ============================================================
-  var SUPABASE_URL = "https://mexxmqnectzqkaevluwz.supabase.co";
-  var SUPABASE_ANON_KEY = "sb_publishable_HtQ685W0ZA5-TVX4m1CXuA_YHkqMHNz";
+  var SUPABASE_URL = "https://jomvbcpxtmsvexepqlbn.supabase.co";
+  var SUPABASE_ANON_KEY = "sb_publishable_Gkd4gOBvG7Y4Ko9HHZZr4Q_fHwbJ16h";
   // ============================================================
 
   var REST_BASE = SUPABASE_URL + "/rest/v1";
